@@ -36,7 +36,7 @@ namespace BloodyUnitTests
             // Create
             lines.Add($"{indent}public {typeName} Create()");
             lines.Add($"{indent}{{");
-            lines.Add($"{indent}{indent} return new {typeName}({string.Join(", ", interfaces.Select(i => m_TypeDescriber.GetVariableName(i.ParameterType, false)))})");
+            lines.Add($"{indent}{indent} return new {typeName}({string.Join(", ", interfaces.Select(i => m_TypeDescriber.GetVariableName(i.ParameterType, Scope.Member)))})");
             lines.Add($"{indent}}}");
 
             lines.Add(String.Empty);
@@ -48,7 +48,7 @@ namespace BloodyUnitTests
             {
                 var t = parameter.ParameterType;
                 if (!t.IsInterface) continue;
-                lines.Add($"{indent}{indent}{m_TypeDescriber.GetVariableName(t, false)}.VerifyAllExpectations();");
+                lines.Add($"{indent}{indent}{m_TypeDescriber.GetVariableName(t, Scope.Member)}.VerifyAllExpectations();");
             }
             lines.Add($"{indent}}}");
             lines.Add("}");
@@ -95,12 +95,12 @@ namespace BloodyUnitTests
                 {
                     arguments[i] = $"\"{parameters[i].Name}\"";
                 }else if (t.IsClass)
-                    arguments[i] = $"Create{m_TypeDescriber.GetVariableName(t, false)}()";
+                    arguments[i] = $"Create{m_TypeDescriber.GetVariableName(t, Scope.Member)}()";
             }
 
             var indent = new string(' ', indentSize);
             var lines = new List<string>();
-            lines.Add($"{indent}private {m_TypeDescriber.GetTypeNameForCSharp(type)} Create{m_TypeDescriber.GetVariableName(type, false)}()");
+            lines.Add($"{indent}private {m_TypeDescriber.GetTypeNameForCSharp(type)} Create{m_TypeDescriber.GetVariableName(type, Scope.Member)}()");
             lines.Add($"{indent}{{");
             lines.Add($"{indent}{indent} return new {m_TypeDescriber.GetTypeNameForCSharp(type)}({string.Join(", ", arguments)})");
             lines.Add($"{indent}}}");
@@ -126,7 +126,7 @@ namespace BloodyUnitTests
         private string GetInterfaceMemberDeclaration(ParameterInfo parameter)
         {
             var t = parameter.ParameterType;
-            return $"public {m_TypeDescriber.GetTypeNameForCSharp(t)} {m_TypeDescriber.GetVariableName(t, false)}" +
+            return $"public {m_TypeDescriber.GetTypeNameForCSharp(t)} {m_TypeDescriber.GetVariableName(t, Scope.Member)}" +
                    $" = MockRepository.GenerateMock<{m_TypeDescriber.GetTypeNameForCSharp(t)}>();";
         }
     }

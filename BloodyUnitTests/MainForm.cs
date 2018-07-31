@@ -131,7 +131,6 @@ namespace BloodyUnitTests
             {
                 MessageBox.Show(ex.ToString());
             }
-
         }
 
         private Assembly m_Assembly;

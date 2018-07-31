@@ -23,9 +23,11 @@ namespace BloodyUnitTests
             return str[0].ToString().ToLower() + new string(str.Skip(1).ToArray());
         }
 
-        public string GetVariableName(Type type, bool local = true)
+        public string GetVariableName(Type type, Scope scope = Scope.Local)
         {
-            return local ? ToLowerInitial(GetTypeNameForIdentifier(type)) : GetTypeNameForIdentifier(type);
+            return scope == Scope.Local
+                ? ToLowerInitial(GetTypeNameForIdentifier(type))
+                : GetTypeNameForIdentifier(type);
         }
 
         public string GetDummyVariableName(Type type)
@@ -159,4 +161,6 @@ namespace BloodyUnitTests
             return typeDisplayName;
         }
     }
+
+    enum Scope { Local, Member }
 }
