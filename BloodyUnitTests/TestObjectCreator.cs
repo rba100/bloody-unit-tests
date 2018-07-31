@@ -72,7 +72,7 @@ namespace BloodyUnitTests
 
             foreach (var c in classes)
             {
-                lines.AddRange(GetObjectCreator(c, 4));
+                lines.AddRange(GetObjectCreator(c, 0));
                 lines.Add("");
             }
 

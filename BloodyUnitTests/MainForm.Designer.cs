@@ -65,7 +65,7 @@
             this.m_NullTestButton.TabIndex = 1;
             this.m_NullTestButton.Text = "Create tests";
             this.m_NullTestButton.UseVisualStyleBackColor = true;
-            this.m_NullTestButton.Click += new System.EventHandler(this._nullTests_click);
+            this.m_NullTestButton.Click += new System.EventHandler(this._createTests_click);
             // 
             // comboBox1
             // 

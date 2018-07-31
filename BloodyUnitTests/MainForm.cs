@@ -100,17 +100,18 @@ namespace BloodyUnitTests
             }
         }
 
-        private void _nullTests_click(object sender, EventArgs e)
+        private void _createTests_click(object sender, EventArgs e)
         {
             try
             {
-                var splunter = new TestWriter();
+                var splunter = new NullTestCreator();
                 var splunter2 = new TestObjectCreator();
 
                 var type = AssemblyHelper.GetLoadableTypes(m_Assembly).First(t => t.Name == comboBox1.SelectedItem as string);
 
-                var nullCtorTest = splunter.GetNullConstructorArgsTest(m_Assembly, comboBox1.SelectedItem as string);
-                var nullMethodTest = splunter.GetNullMethodArgsTest(m_Assembly, comboBox1.SelectedItem as string);
+                var nullCtorTest = splunter.GetNullConstructorArgsTest(type);
+                var nullMethodTest = splunter.GetNullMethodArgsTest(type);
+
                 var testFactory = string.Join(Environment.NewLine, splunter2.TestFactoryDeclaration(type));
                 var helperMethods = string.Join(Environment.NewLine, splunter2.GetObjectCreatorsForMethods(type));
 

@@ -6,17 +6,18 @@ using System.Text;
 
 namespace BloodyUnitTests
 {
-    public class TestWriter
+    public class NullTestCreator
     {
         private readonly TypeDescriber m_TypeDescriber = new TypeDescriber();
 
-        public string GetNullConstructorArgsTest(Assembly assembly, string typeName)
+        public string GetNullConstructorArgsTest(Type type)
         {
+            var typeName = type.Name;
             StringBuilder sb = new StringBuilder();
             var testCaseSource = $"{typeName}_constructor_null_argument_testcases";
             sb.AppendLine($"public static IEnumerable<TestCaseData> {testCaseSource}()");
             sb.AppendLine("{");
-            foreach (var line in GetConstructorNullTestCaseSource(assembly, typeName))
+            foreach (var line in GetConstructorNullTestCaseSource(type))
             {
                 sb.AppendLine(new String(' ', 4) + line);
             }
@@ -34,13 +35,14 @@ namespace BloodyUnitTests
             return sb.ToString();
         }
 
-        public string GetNullMethodArgsTest(Assembly assembly, string typeName)
+        public string GetNullMethodArgsTest(Type type)
         {
+            var typeName = type.Name;
             StringBuilder sb = new StringBuilder();
             var testCaseSource = $"{typeName}_method_null_argument_testcases";
             sb.AppendLine($"public static IEnumerable<TestCaseData> {testCaseSource}()");
             sb.AppendLine("{");
-            foreach (var line in GetMethodNullTestCaseSource(assembly, typeName))
+            foreach (var line in GetMethodNullTestCaseSource(type))
             {
                 sb.AppendLine(new String(' ', 4) + line);
             }
@@ -58,10 +60,8 @@ namespace BloodyUnitTests
             return sb.ToString();
         }
 
-        private string[] GetMethodNullTestCaseSource(Assembly assembly, string typeName)
+        private string[] GetMethodNullTestCaseSource(Type type)
         {
-            var type = AssemblyHelper.GetLoadableTypes(assembly).First(t => t.Name == typeName);
-
             var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
                               .Where(m => AssemblyHelper.IsTestableMethod(type, m))
                               .ToArray();
@@ -111,10 +111,8 @@ namespace BloodyUnitTests
             return lines.ToArray();
         }
 
-        private string[] GetConstructorNullTestCaseSource(Assembly assembly, string typeName)
+        private string[] GetConstructorNullTestCaseSource(Type type)
         {
-            var type = AssemblyHelper.GetLoadableTypes(assembly).First(t => t.Name == typeName);
-
             var ctors = type.GetConstructors();
             if (!ctors.Any()) ctors = type.GetConstructors(BindingFlags.NonPublic | BindingFlags.CreateInstance);
 
