@@ -84,7 +84,7 @@ namespace BloodyUnitTests
             lines.AddRange(variableDeclarations);
             if (variableDeclarations.Any()) lines.Add(string.Empty);
 
-            var instanceName = m_TypeDescriber.GetVariableName(type);
+            var instanceName = m_TypeDescriber.GetVariableName(type, Scope.Local);
 
             lines.AddRange(GetStubbedInstantiation(type));
             lines.Add(string.Empty);
@@ -198,7 +198,7 @@ namespace BloodyUnitTests
         {
             var sb = new StringBuilder();
 
-            var variableName = m_TypeDescriber.GetVariableName(type);
+            var variableName = m_TypeDescriber.GetVariableName(type, Scope.Local);
             var nameForCSharp = m_TypeDescriber.GetTypeNameForCSharp(type);
             var ctor = type.GetConstructors().First();
 

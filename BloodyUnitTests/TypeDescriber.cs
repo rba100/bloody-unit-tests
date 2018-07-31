@@ -23,7 +23,7 @@ namespace BloodyUnitTests
             return str[0].ToString().ToLower() + new string(str.Skip(1).ToArray());
         }
 
-        public string GetVariableName(Type type, Scope scope = Scope.Local)
+        public string GetVariableName(Type type, Scope scope)
         {
             return scope == Scope.Local
                 ? ToLowerInitial(GetTypeNameForIdentifier(type))
@@ -51,7 +51,7 @@ namespace BloodyUnitTests
             if (nullableType != null) return $"{GetDummyVariableName(nullableType)}Nullable";
             if (type.IsInterface)
             {
-                if (type.Name.StartsWith("I")) return $"stub{new string(GetTypeNameForIdentifier(type).Skip(1).ToArray())}";
+                if (type.Name.StartsWith("I")) return $"stub{GetTypeNameForIdentifier(type)}";
                 return $"stub{GetTypeNameForIdentifier(type)}";
             }
             if (type.IsClass && type.Namespace != "System") return ToLowerInitial(name);
