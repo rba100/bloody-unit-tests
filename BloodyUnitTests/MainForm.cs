@@ -114,7 +114,7 @@ namespace BloodyUnitTests
                 var nullCtorTest = nullTestCreator.GetNullConstructorArgsTest(type);
                 var nullMethodTest = nullTestCreator.GetNullMethodArgsTest(type);
                 var testFactory = string.Join(Environment.NewLine, testObjectCreator.TestFactoryDeclaration(type));
-                var helperMethods = string.Join(Environment.NewLine, testObjectCreator.GetObjectCreatorsForMethods(type));
+                var helperMethods = string.Join(Environment.NewLine, testObjectCreator.GetHelperObjectCreatorsForType(type));
 
                 var editor = GetDefaultEditor();
                 var tab = new TabPage(comboBox1.SelectedItem as string);

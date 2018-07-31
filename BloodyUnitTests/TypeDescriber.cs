@@ -6,21 +6,16 @@ namespace BloodyUnitTests
 {
     class TypeDescriber
     {
-        public bool HasParamKeyWord(ParameterInfo arg)
+        public bool HasParamKeyword(ParameterInfo arg)
         {
             return arg.IsOut || arg.ParameterType.IsByRef;
         }
 
-        public string ParamKeyWord(ParameterInfo arg)
+        public string ParamKeyword(ParameterInfo arg)
         {
             if (arg.IsOut) return "out";
             if (arg.ParameterType.IsByRef) return "ref";
             throw new InvalidOperationException("Parameter is neither 'out' or 'ref'");
-        }
-
-        private string ToLowerInitial(string str)
-        {
-            return str[0].ToString().ToLower() + new string(str.Skip(1).ToArray());
         }
 
         public string GetVariableName(Type type, Scope scope)
@@ -112,13 +107,11 @@ namespace BloodyUnitTests
 
         public string GetTypeNameForCSharp(Type type)
         {
-            var unRefType = type?.IsByRef == true ? type.GetElementType() : type;
+            if (type == null) throw new ArgumentNullException(nameof(type));
 
-            if (unRefType == null)
-            {
-                throw new ArgumentException($@"{nameof(type)} can't be null-ish", nameof(type));
-            }
+            var unRefType = type.IsByRef ? type.GetElementType() : type;
 
+            // ReSharper disable once AssignNullToNotNullAttribute
             var nullableType = Nullable.GetUnderlyingType(unRefType);
             if (nullableType != null) return $"{nullableType.Name}?";
 
@@ -160,6 +153,12 @@ namespace BloodyUnitTests
 
             return typeDisplayName;
         }
+
+        private string ToLowerInitial(string str)
+        {
+            return str[0].ToString().ToLower() + new string(str.Skip(1).ToArray());
+        }
+
     }
 
     enum Scope { Local, Member }

@@ -98,7 +98,7 @@ namespace BloodyUnitTests
                 for (var i = 0; i < parameters.Length; i++)
                 {
                     if (parameters[i].ParameterType.IsValueType) continue;
-                    if (m_TypeDescriber.HasParamKeyWord(parameters[i])) continue;
+                    if (m_TypeDescriber.HasParamKeyword(parameters[i])) continue;
 
                     var copyOfArguments = new List<string>(arguments) { [i] = "null" };
 
@@ -167,10 +167,10 @@ namespace BloodyUnitTests
             {
                 var pInfo = parameters[index];
                 var type = pInfo.ParameterType;
-                if (m_TypeDescriber.HasParamKeyWord(pInfo))
+                if (m_TypeDescriber.HasParamKeyword(pInfo))
                 {
                     var argument = arguments[index];
-                    arguments[index] = $"{m_TypeDescriber.ParamKeyWord(pInfo)} {argument}";
+                    arguments[index] = $"{m_TypeDescriber.ParamKeyword(pInfo)} {argument}";
                 }
                 else if (m_TypeDescriber.IsImmediateValueTolerable(type))
                 {
@@ -186,8 +186,8 @@ namespace BloodyUnitTests
             string asDeclaration(Type type) => $"var {m_TypeDescriber.GetDummyVariableName(type)}"
                                              + $" = {m_TypeDescriber.GetDummyInstantiation(type)};";
 
-            return parameters.Where(p => !p.ParameterType.IsValueType || m_TypeDescriber.HasParamKeyWord(p))
-                             .Where(p => !m_TypeDescriber.IsImmediateValueTolerable(p.ParameterType) || m_TypeDescriber.HasParamKeyWord(p))
+            return parameters.Where(p => !p.ParameterType.IsValueType || m_TypeDescriber.HasParamKeyword(p))
+                             .Where(p => !m_TypeDescriber.IsImmediateValueTolerable(p.ParameterType) || m_TypeDescriber.HasParamKeyword(p))
                              .Select(p => p.ParameterType)
                              .Distinct()
                              .Select(asDeclaration)

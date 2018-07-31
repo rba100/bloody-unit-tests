@@ -56,7 +56,7 @@ namespace BloodyUnitTests
             return lines.ToArray();
         }
 
-        public string[] GetObjectCreatorsForMethods(Type type)
+        public string[] GetHelperObjectCreatorsForType(Type type)
         {
             var lines = new List<string>();
 
@@ -67,7 +67,7 @@ namespace BloodyUnitTests
                                  .Where(t => t.IsClass
                                           && t != typeof(string) 
                                           && t != typeof(object))
-                                 .Where(IsRelativelySimple)
+                                 .Where(IsValueTypeOrPOCO)
                                  .Distinct();
 
             foreach (var c in classes)
@@ -107,7 +107,7 @@ namespace BloodyUnitTests
             return lines.ToArray();
         }
 
-        private bool IsRelativelySimple(Type type)
+        private bool IsValueTypeOrPOCO(Type type)
         {
             if (type.IsValueType) return true;
             if (type == typeof(string)) return true;
@@ -120,7 +120,7 @@ namespace BloodyUnitTests
             if (ctor == null) return false;
 
             return ctor.GetParameters()
-                       .All(p => !p.IsOut && IsRelativelySimple(p.ParameterType));
+                       .All(p => !p.IsOut && IsValueTypeOrPOCO(p.ParameterType));
         }
 
         private string GetInterfaceMemberDeclaration(ParameterInfo parameter)
