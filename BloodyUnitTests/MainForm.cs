@@ -1,9 +1,11 @@
-﻿using System;
+﻿
+using System;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
+
 using ScintillaNET;
 
 namespace BloodyUnitTests
@@ -88,7 +90,7 @@ namespace BloodyUnitTests
             {
                 using (var dialog = new OpenFileDialog())
                 {
-                    dialog.Filter = "Assemblies|*.dll;*.exe|All files|*.*";
+                    dialog.Filter = @"Assemblies|*.dll;*.exe|All files|*.*";
                     var result = dialog.ShowDialog(this);
                     if (result != DialogResult.OK) return;
                     LoadAssembly(dialog.FileName);
@@ -104,16 +106,15 @@ namespace BloodyUnitTests
         {
             try
             {
-                var splunter = new NullTestCreator();
-                var splunter2 = new TestObjectCreator();
+                var nullTestCreator = new NullTestCreator();
+                var testObjectCreator = new TestObjectCreator();
 
                 var type = AssemblyHelper.GetLoadableTypes(m_Assembly).First(t => t.Name == comboBox1.SelectedItem as string);
 
-                var nullCtorTest = splunter.GetNullConstructorArgsTest(type);
-                var nullMethodTest = splunter.GetNullMethodArgsTest(type);
-
-                var testFactory = string.Join(Environment.NewLine, splunter2.TestFactoryDeclaration(type));
-                var helperMethods = string.Join(Environment.NewLine, splunter2.GetObjectCreatorsForMethods(type));
+                var nullCtorTest = nullTestCreator.GetNullConstructorArgsTest(type);
+                var nullMethodTest = nullTestCreator.GetNullMethodArgsTest(type);
+                var testFactory = string.Join(Environment.NewLine, testObjectCreator.TestFactoryDeclaration(type));
+                var helperMethods = string.Join(Environment.NewLine, testObjectCreator.GetObjectCreatorsForMethods(type));
 
                 var editor = GetDefaultEditor();
                 var tab = new TabPage(comboBox1.SelectedItem as string);
