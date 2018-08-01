@@ -164,8 +164,8 @@ namespace BloodyUnitTests
         {
             if (type.IsValueType) return true;
             if (type == typeof(string)) return true;
-            if (!type.IsClass) return false;
             if (IsArrayAssignable(type)) return true;
+            if (!type.IsClass) return false;
 
             if (typeHistory.Contains(type)) return false;
             typeHistory.Add(type);
