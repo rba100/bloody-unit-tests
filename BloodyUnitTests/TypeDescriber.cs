@@ -24,7 +24,6 @@ namespace BloodyUnitTests
             switch (scope)
             {
                 case Scope.Local:
-                case Scope.LocalDummy:
                     return ToLowerInitial(info.Name);
                 case Scope.Member:
                     return ToUpperInitial(info.Name);
@@ -38,9 +37,7 @@ namespace BloodyUnitTests
             switch (scope)
             {
                 case Scope.Local:
-                    return GetLocalVariableName(type, dummyPrefix: false);
-                case Scope.LocalDummy:
-                    return GetLocalVariableName(type, dummyPrefix: true);
+                    return GetLocalVariableName(type);
                 case Scope.Member:
                     return GetVariableName(type);
                 default:
@@ -112,18 +109,27 @@ namespace BloodyUnitTests
 
             if (type == typeof(IntPtr)) return "IntPtr.Zero";
 
+            if (type == typeof(Type)) return "typeof(object)";
+
             // ReSharper disable once PossibleNullReferenceException
             if (type.IsInterface)
                 return $"MockRespository.GenerateStub<{GetTypeNameForCSharp(type)}>()";
 
             if (type.IsClass)
             {
-                // If a List<> will do, supply a list
                 if (type.IsGenericType)
                 {
-                    var genArgs = type.GetGenericArguments();
+                    var genArgs = type.GetGenericArguments().FirstOrDefault() ?? typeof(object);
+
+                    // List<T>
                     var listType = typeof(List<>).MakeGenericType(genArgs);
-                    if(type.IsAssignableFrom(listType)) return $"new {GetTypeNameForCSharp(listType)}()";
+                    if (type.IsAssignableFrom(listType)) return $"new {GetTypeNameForCSharp(listType)}()";
+                    // Func<T>
+                    var funcType = typeof(Func<>).MakeGenericType(genArgs);
+                    if (type.IsAssignableFrom(funcType)) return $"() => {GetInstance(genArgs)}";
+                    // Action<T>
+                    var actionType = typeof(Action<>).MakeGenericType(genArgs);
+                    if (type.IsAssignableFrom(actionType)) return $"(_) => {{}}";
                 }
 
                 // If it's a POCO type then we will assume there is a helper method called 'CreateThing()'
@@ -135,7 +141,7 @@ namespace BloodyUnitTests
             var nullableType = Nullable.GetUnderlyingType(type);
             if (nullableType != null) return $"({nullableType.Name}?) {GetInstance(nullableType)}";
 
-            if (type == typeof(DateTime)) return "DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc)";
+            if (type == typeof(DateTime)) return "DateTime.UtcNow";
 
             return $"default(typeof({GetTypeNameForCSharp(type)}))";
         }
@@ -228,14 +234,15 @@ namespace BloodyUnitTests
             return typeDisplayName;
         }
 
-        private string GetLocalVariableName(Type type, bool dummyPrefix)
+        private string GetLocalVariableName(Type type)
         {
             var varName = GetVariableName(type);
-            var prefix = dummyPrefix ? type.IsInterface ? "stub" : "dummy" : string.Empty;
+            var prefix = type.IsInterface ? "stub" : "dummy";
             var unRefType = type.IsByRef ? type.GetElementType() : type;
             if (type.IsClass && type.Namespace != "System") return ToLowerInitial(varName);
-            if (unRefType == typeof(DateTime)) return dummyPrefix ? "dummyDateTimeUtc" : "dateTimeUtc";
-            return ToLowerInitial($"{prefix}{varName}");
+            if (unRefType == typeof(DateTime)) return "dateTimeUtc";
+            var output = ToLowerInitial($"{prefix}{varName}");
+            return output == type.Name ? output + "1" : output;
         }
 
         private string ToLowerInitial(string str)
@@ -249,5 +256,5 @@ namespace BloodyUnitTests
         }
     }
 
-    enum Scope { Local, LocalDummy, Member }
+    enum Scope { Local, Member }
 }

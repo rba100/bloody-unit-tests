@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Windows.Forms;
 
 namespace BloodyUnitTests
@@ -16,6 +17,7 @@ namespace BloodyUnitTests
             var form = new MainForm();
 
             if(args.Length == 1) form.LoadAssembly(args[0]);
+            else form.LoadAssembly(Assembly.GetEntryAssembly().Location);
 
             Application.Run(form);
         }

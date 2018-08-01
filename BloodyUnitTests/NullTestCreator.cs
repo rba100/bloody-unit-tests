@@ -160,7 +160,7 @@ namespace BloodyUnitTests
             var parameters = methodBase.GetParameters();
 
             var arguments = assumeDummyVariablesExist
-                ? parameters.Select(p => p.ParameterType).Select(t => m_TypeDescriber.GetVariableName(t, Scope.LocalDummy)).ToArray()
+                ? parameters.Select(p => p.ParameterType).Select(t => m_TypeDescriber.GetVariableName(t, Scope.Local)).ToArray()
                 : parameters.Select(p => p.ParameterType).Select(m_TypeDescriber.GetInstance).ToArray();
 
             for (var index = 0; index < parameters.Length; index++)
@@ -185,10 +185,10 @@ namespace BloodyUnitTests
 
         private string[] GetVariableDeclarations(IEnumerable<ParameterInfo> parameters)
         {
-            string asDeclaration(Type type) => $"var {m_TypeDescriber.GetVariableName(type, Scope.LocalDummy)}"
+            string asDeclaration(Type type) => $"var {m_TypeDescriber.GetVariableName(type, Scope.Local)}"
                                              + $" = {m_TypeDescriber.GetInstance(type)};";
 
-            return parameters.Where(p => !p.ParameterType.IsValueType || m_TypeDescriber.HasParamKeyword(p))
+            return parameters.Where(p => !p.ParameterType.IsValueType || m_TypeDescriber.HasParamKeyword(p) || p.ParameterType.IsEnum)
                              .Where(p => !m_TypeDescriber.IsImmediateValueTolerable(p.ParameterType) || m_TypeDescriber.HasParamKeyword(p))
                              .Select(p => p.ParameterType)
                              .Distinct()
@@ -204,7 +204,7 @@ namespace BloodyUnitTests
             var nameForCSharp = m_TypeDescriber.GetTypeNameForCSharp(type);
             var ctor = type.GetConstructors().First();
 
-            var arguments = GetMethodArguments(ctor, false);
+            var arguments = GetMethodArguments(ctor, assumeDummyVariablesExist: false);
 
             var declarationStart = $"var {variableName} = new {nameForCSharp}(";
 

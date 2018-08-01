@@ -32,11 +32,16 @@ namespace BloodyUnitTests
             }
 
             if (interfaces.Any()) lines.Add(String.Empty);
+            var args = parameters.Select(p =>
+            {
+                if (p.ParameterType.IsInterface) return m_TypeDescriber.GetVariableName(p, Scope.Member);
+                return m_TypeDescriber.GetInstance(p.ParameterType);
+            });
 
             // Create
             lines.Add($"{indent}public {typeName} Create()");
             lines.Add($"{indent}{{");
-            lines.Add($"{indent}{indent} return new {typeName}({string.Join(", ", interfaces.Select(i => m_TypeDescriber.GetVariableName(i, Scope.Member)))})");
+            lines.Add($"{indent}{indent} return new {typeName}({string.Join(", ", args)})");
             lines.Add($"{indent}}}");
 
             lines.Add(String.Empty);
