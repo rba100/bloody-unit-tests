@@ -108,10 +108,6 @@ namespace BloodyUnitTests
                 {
                     arguments[i] = "new object()";
                 }
-                else if (t.IsClass) // Guaranteed to be a POCO by IsPoco() below
-                {
-                    arguments[i] = $"Create{m_TypeDescriber.GetVariableName(t, Scope.Member)}()";
-                }
             }
 
             var indent = new string(' ', 4);

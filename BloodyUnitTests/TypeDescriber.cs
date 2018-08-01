@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -24,7 +25,6 @@ namespace BloodyUnitTests
             switch (scope)
             {
                 case Scope.Local:
-                    return ToLowerInitial(info.Name);
                 case Scope.LocalDummy:
                     return ToLowerInitial(info.Name);
                 case Scope.Member:
@@ -108,8 +108,16 @@ namespace BloodyUnitTests
 
             if (type.IsClass)
             {
+                if (type.IsGenericType)
+                {
+                    var genArgs = type.GetGenericArguments();
+                    var genArgNamess = genArgs.Select(a=>a.Name);
+                    var listType = typeof(List<>).MakeGenericType(genArgs);
+                    if(type.IsAssignableFrom(listType)) return $"new List<{string.Join(", ", genArgNamess)}>()";
+                }
+
                 // If it's a POCO type then we will assume there is a helper method called 'CreateThing()'
-                if (IsPoco(type)) return $"Create{GetTypeNameForCSharp(type)}()";
+                if (IsPoco(type)) return $"Create{GetVariableName(type, Scope.Member)}()";
                 // Otherwise prepare an instantiation but let the user fill out the arguments later
                 return $"new {GetTypeNameForCSharp(type)}(/* ... */)";
             }
