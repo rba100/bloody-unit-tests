@@ -65,7 +65,17 @@ namespace BloodyUnitTests
                    || type == typeof(float)
                    || type == typeof(double)
                    || type == typeof(decimal)
-                   || type == typeof(bool);
+                   || type == typeof(bool)
+                   || IsArrayAssignable(type);
+        }
+
+        internal static bool IsArrayAssignable(Type type)
+        {
+            var gArgs = type.GetGenericArguments();
+            if (!type.HasElementType && gArgs.Length != 1) return false;
+            var elementType = gArgs.SingleOrDefault() ?? type.GetElementType();
+            // ReSharper disable once PossibleNullReferenceException
+            return type.IsAssignableFrom(elementType.MakeArrayType());
         }
 
         public string GetDummyInstantiation(Type possibleReftype)
@@ -75,6 +85,13 @@ namespace BloodyUnitTests
             var type = possibleReftype.IsByRef
                 ? possibleReftype.GetElementType()
                 : possibleReftype;
+
+            if (IsArrayAssignable(type))
+            {
+                var gArgs = type.GetGenericArguments();
+                var elementType = gArgs.SingleOrDefault() ?? type.GetElementType();
+                return $"new {GetTypeNameForCSharp(elementType)}[0]";
+            }
 
             if (type == typeof(string))
                 return "\"\"";
@@ -91,6 +108,8 @@ namespace BloodyUnitTests
                 || type == typeof(decimal)) return "0";
 
             if (type == typeof(bool)) return "false";
+
+            if (type == typeof(IntPtr)) return "IntPtr.Zero";
 
             // ReSharper disable once PossibleNullReferenceException
             if (type.IsInterface)

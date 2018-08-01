@@ -1,7 +1,10 @@
 ﻿using System;
+using System.CodeDom;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace BloodyUnitTests
 {
@@ -60,31 +63,37 @@ namespace BloodyUnitTests
         {
             var lines = new List<string>();
 
-            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance);
+            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                              .Where(m=>m.DeclaringType != typeof(object));
 
             var classes = methods.SelectMany(m => m.GetParameters())
                                  .Select(p => p.ParameterType)
                                  .Where(t => t.IsClass
-                                          && t != typeof(string) 
-                                          && t != typeof(object))
+                                          && t.Namespace != "System")
                                  .Where(IsValueTypeOrPOCO)
-                                 .Distinct();
+                                 .Distinct()
+                                 .ToArray();
 
             foreach (var c in classes)
             {
-                lines.AddRange(GetObjectCreator(c, 0));
+                var delcaration = GetObjectCreator(c);
+                if (!delcaration.Any()) continue;
+                lines.AddRange(delcaration);
                 lines.Add("");
             }
 
             return lines.ToArray();
         }
 
-        private string[] GetObjectCreator(Type type, int indentSize)
+        private string[] GetObjectCreator(Type type)
         {
+            var lines = new List<string>();
             var parameters = type.GetConstructors()
                                  .OrderByDescending(c=>c.GetParameters().Length)
                                  .First()
                                  .GetParameters();
+
+            if (parameters.Length == 0) return lines.ToArray();
 
             var arguments = parameters.Select(p => m_TypeDescriber.GetDummyInstantiation(p.ParameterType)).ToArray();
 
@@ -94,23 +103,43 @@ namespace BloodyUnitTests
                 if (t == typeof(string))
                 {
                     arguments[i] = $"\"{parameters[i].Name}\"";
-                }else if (t.IsClass)
+                }
+                else if (t.IsArray)
+                {
+                    arguments[i] = $"new {m_TypeDescriber.GetTypeNameForCSharp(GetElementType(t))}[0]";
+                }
+                else if (t == typeof(object))
+                {
+                    arguments[i] = "new object()";
+                }
+                else if (t.IsClass)
+                {
                     arguments[i] = $"Create{m_TypeDescriber.GetVariableName(t, Scope.Member)}()";
+                }
             }
 
-            var indent = new string(' ', indentSize);
-            var lines = new List<string>();
-            lines.Add($"{indent}private {m_TypeDescriber.GetTypeNameForCSharp(type)} Create{m_TypeDescriber.GetVariableName(type, Scope.Member)}()");
-            lines.Add($"{indent}{{");
-            lines.Add($"{indent}{indent} return new {m_TypeDescriber.GetTypeNameForCSharp(type)}({string.Join(", ", arguments)})");
-            lines.Add($"{indent}}}");
+            var indent = new string(' ', 4);
+            lines.Add($"private {m_TypeDescriber.GetTypeNameForCSharp(type)} Create{m_TypeDescriber.GetVariableName(type, Scope.Member)}()");
+            lines.Add($"{{");
+            lines.Add($"{indent}return new {m_TypeDescriber.GetTypeNameForCSharp(type)}({string.Join(", ", arguments)})");
+            lines.Add($"}}");
             return lines.ToArray();
         }
 
         private bool IsValueTypeOrPOCO(Type type)
         {
+            return IsValueTypeOrPOCOInner(type, new List<Type>());
+        }
+
+        private bool IsValueTypeOrPOCOInner(Type type, IList<Type> typeHistory)
+        {
+            if (typeHistory.Contains(type)) return false;
+            typeHistory.Add(type);
+
             if (type.IsValueType) return true;
             if (type == typeof(string)) return true;
+            if (type.IsArray && IsValueTypeOrPOCOInner(type.GetElementType(), typeHistory)) return true;
+            if (IsArrayAssignable(type)) return true;
             if (!type.IsClass) return false;
 
             var ctor = type.GetConstructors()
@@ -120,7 +149,22 @@ namespace BloodyUnitTests
             if (ctor == null) return false;
 
             return ctor.GetParameters()
-                       .All(p => !p.IsOut && IsValueTypeOrPOCO(p.ParameterType));
+                       .All(p => !p.IsOut && IsValueTypeOrPOCOInner(p.ParameterType, typeHistory));
+        }
+
+        internal static bool IsArrayAssignable(Type type)
+        {
+            var gArgs = type.GetGenericArguments();
+            if (!type.HasElementType && gArgs.Length != 1) return false;
+            var elementType = gArgs.SingleOrDefault() ?? type.GetElementType();
+            // ReSharper disable once PossibleNullReferenceException
+            return type.IsAssignableFrom(elementType.MakeArrayType());
+        }
+
+        private Type GetElementType(Type collectionType)
+        {
+            var gArgs = collectionType.GetGenericArguments();
+            return gArgs.SingleOrDefault() ?? collectionType.GetElementType();
         }
 
         private string GetInterfaceMemberDeclaration(ParameterInfo parameter)
