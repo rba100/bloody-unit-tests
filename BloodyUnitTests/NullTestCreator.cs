@@ -155,13 +155,13 @@ namespace BloodyUnitTests
             return lines.ToArray();
         }
 
-        private string[] GetMethodArguments(MethodBase methodBase, bool useVariables)
+        private string[] GetMethodArguments(MethodBase methodBase, bool useDummyVariables)
         {
             var parameters = methodBase.GetParameters();
 
-            var arguments = useVariables
-                ? parameters.Select(p => p.ParameterType).Select(m_TypeDescriber.GetDummyVariableName).ToArray()
-                : parameters.Select(p => p.ParameterType).Select(m_TypeDescriber.GetDummyInstantiation).ToArray();
+            var arguments = useDummyVariables
+                ? parameters.Select(p => p.ParameterType).Select(t => m_TypeDescriber.GetVariableName(t, Scope.LocalDummy)).ToArray()
+                : parameters.Select(p => p.ParameterType).Select(m_TypeDescriber.GetInstance).ToArray();
 
             for (var index = 0; index < parameters.Length; index++)
             {
@@ -174,7 +174,7 @@ namespace BloodyUnitTests
                 }
                 else if (m_TypeDescriber.IsImmediateValueTolerable(type))
                 {
-                    arguments[index] = m_TypeDescriber.GetDummyInstantiation(type);
+                    arguments[index] = m_TypeDescriber.GetInstance(type);
                 }
             }
 
@@ -183,8 +183,8 @@ namespace BloodyUnitTests
 
         private string[] GetVariableDeclarations(IEnumerable<ParameterInfo> parameters)
         {
-            string asDeclaration(Type type) => $"var {m_TypeDescriber.GetDummyVariableName(type)}"
-                                             + $" = {m_TypeDescriber.GetDummyInstantiation(type)};";
+            string asDeclaration(Type type) => $"var {m_TypeDescriber.GetVariableName(type, Scope.LocalDummy)}"
+                                             + $" = {m_TypeDescriber.GetInstance(type)};";
 
             return parameters.Where(p => !p.ParameterType.IsValueType || m_TypeDescriber.HasParamKeyword(p))
                              .Where(p => !m_TypeDescriber.IsImmediateValueTolerable(p.ParameterType) || m_TypeDescriber.HasParamKeyword(p))

@@ -1,10 +1,7 @@
 ﻿using System;
-using System.CodeDom;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace BloodyUnitTests
 {
@@ -76,9 +73,9 @@ namespace BloodyUnitTests
 
             foreach (var simpleClass in simpleClasses)
             {
-                var delcaration = GetObjectCreator(simpleClass);
-                if (!delcaration.Any()) continue;
-                lines.AddRange(delcaration);
+                var declaration = GetObjectCreator(simpleClass);
+                if (!declaration.Any()) continue;
+                lines.AddRange(declaration);
                 lines.Add("");
             }
 
@@ -95,7 +92,7 @@ namespace BloodyUnitTests
 
             if (parameters.Length == 0) return lines.ToArray();
 
-            var arguments = parameters.Select(p => m_TypeDescriber.GetDummyInstantiation(p.ParameterType)).ToArray();
+            var arguments = parameters.Select(p => m_TypeDescriber.GetInstance(p.ParameterType)).ToArray();
 
             for (var i = 0; i < arguments.Length; i++)
             {

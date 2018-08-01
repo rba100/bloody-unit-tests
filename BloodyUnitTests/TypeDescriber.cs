@@ -21,40 +21,23 @@ namespace BloodyUnitTests
 
         public string GetVariableName(Type type, Scope scope)
         {
-            return scope == Scope.Local
-                ? ToLowerInitial(GetTypeNameForIdentifier(type))
-                : GetTypeNameForIdentifier(type);
+            switch (scope)
+            {
+                case Scope.Local:
+                    return GetVariableName(type, dummyPrefix: false);
+                case Scope.LocalDummy:
+                    return GetVariableName(type, dummyPrefix: true);
+                case Scope.Member:
+                    return GetTypeNameForMemberIdentifier(type);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(scope), scope, null);
+            }
         }
 
-        public string GetDummyVariableName(Type type)
-        {
-            if (type == null) throw new ArgumentNullException(nameof(type));
-
-            var unRefType = type.IsByRef ? type.GetElementType() : type;
-
-            // ReSharper disable once AssignNullToNotNullAttribute
-            var nullableType = Nullable.GetUnderlyingType(unRefType);
-
-            var name = unRefType.Name;
-            if (unRefType.IsGenericType)
-            {
-                var genericParams = unRefType.GetGenericArguments();
-                int index = name.IndexOf('`');
-                name = index == -1 ? name : name.Substring(0, index);
-                name = name + string.Join("", genericParams.Select(p => p.Name));
-            }
-
-            if (nullableType != null) return $"{GetDummyVariableName(nullableType)}Nullable";
-            if (type.IsInterface)
-            {
-                if (type.Name.StartsWith("I")) return $"stub{GetTypeNameForIdentifier(type)}";
-                return $"stub{GetTypeNameForIdentifier(type)}";
-            }
-            if (type.IsClass && type.Namespace != "System") return ToLowerInitial(name);
-            if (unRefType == typeof(DateTime)) return "dummyDateTimeUtc";
-            return $"dummy{name}";
-        }
-
+        /// <summary>
+        /// When a value is needed as an argument to a function, can we just use
+        /// a literal or in-line instantiation for the supplied type or should we create a variable first?
+        /// </summary>
         public bool IsImmediateValueTolerable(Type type)
         {
             return type == typeof(char)
@@ -70,7 +53,7 @@ namespace BloodyUnitTests
                    || IsArrayAssignable(type);
         }
 
-        public string GetDummyInstantiation(Type possibleReftype)
+        public string GetInstance(Type possibleReftype)
         {
             if (possibleReftype == null) throw new ArgumentNullException(nameof(possibleReftype));
 
@@ -80,6 +63,7 @@ namespace BloodyUnitTests
 
             if (IsArrayAssignable(type))
             {
+                // ReSharper disable once PossibleNullReferenceException
                 var gArgs = type.GetGenericArguments();
                 var elementType = gArgs.SingleOrDefault() ?? type.GetElementType();
                 return $"new {GetTypeNameForCSharp(elementType)}[0]";
@@ -109,12 +93,14 @@ namespace BloodyUnitTests
 
             if (type.IsClass)
             {
+                // If it's a POCO type then we will assume there is a helper method called 'CreateThing()'
                 if (IsPoco(type)) return $"Create{GetTypeNameForCSharp(type)}()";
+                // Otherwise prepare an instantiation but let the user fill out the arguments later
                 return $"new {GetTypeNameForCSharp(type)}(/* ... */)";
             }
 
             var nullableType = Nullable.GetUnderlyingType(type);
-            if (nullableType != null) return $"({nullableType.Name}?) {GetDummyInstantiation(nullableType)}";
+            if (nullableType != null) return $"({nullableType.Name}?) {GetInstance(nullableType)}";
 
             if (type == typeof(DateTime)) return "DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc)";
 
@@ -143,12 +129,11 @@ namespace BloodyUnitTests
             return typeDisplayName;
         }
 
-
         public bool IsPoco(Type type)
         {
-            var name = type.Name;
             if (!type.IsClass || type.IsAbstract) return false;
 
+            // Recurses all dependencies, allowing value types and array types to count as 'POCO'
             return IsPocoOrValueType(type, new List<Type>());
         }
 
@@ -174,7 +159,7 @@ namespace BloodyUnitTests
                        .All(p => !p.IsOut && IsPocoOrValueType(p.ParameterType, typeHistory));
         }
 
-        public static bool IsArrayAssignable(Type type)
+        private static bool IsArrayAssignable(Type type)
         {
             var gArgs = type.GetGenericArguments();
             if (!type.HasElementType && gArgs.Length != 1) return false;
@@ -183,7 +168,7 @@ namespace BloodyUnitTests
             return type.IsAssignableFrom(elementType.MakeArrayType());
         }
 
-        private string GetTypeNameForIdentifier(Type type)
+        private string GetTypeNameForMemberIdentifier(Type type)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
 
@@ -199,7 +184,7 @@ namespace BloodyUnitTests
                 var genericParams = unRefType.GetGenericArguments();
                 int index = typeDisplayName.IndexOf('`');
                 typeDisplayName = index == -1 ? typeDisplayName : typeDisplayName.Substring(0, index);
-                typeDisplayName = typeDisplayName + string.Join("", genericParams.Select(GetTypeNameForIdentifier));
+                typeDisplayName = typeDisplayName + string.Join("", genericParams.Select(GetTypeNameForMemberIdentifier));
             }
 
             if (unRefType.IsInterface && typeDisplayName.StartsWith("I"))
@@ -210,6 +195,38 @@ namespace BloodyUnitTests
             return typeDisplayName;
         }
 
+        private string GetVariableName(Type type, bool dummyPrefix)
+        {
+            if (type == null) throw new ArgumentNullException(nameof(type));
+
+            var unRefType = type.IsByRef ? type.GetElementType() : type;
+
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var nullableType = Nullable.GetUnderlyingType(unRefType);
+
+            var name = unRefType.Name;
+            if (unRefType.IsGenericType)
+            {
+                var genericParams = unRefType.GetGenericArguments();
+                int index = name.IndexOf('`');
+                name = index == -1 ? name : name.Substring(0, index);
+                name = name + string.Join("", genericParams.Select(p => p.Name));
+            }
+            if (nullableType != null)
+            {
+                return $"{GetVariableName(nullableType, dummyPrefix)}Nullable";
+            }
+            if (type.IsInterface)
+            {
+                var prefix = dummyPrefix ? "stub" : string.Empty;
+                if (type.Name.StartsWith("I")) return $"{prefix}{GetTypeNameForMemberIdentifier(type)}";
+                return $"{prefix}{GetTypeNameForMemberIdentifier(type)}";
+            }
+            if (type.IsClass && type.Namespace != "System") return ToLowerInitial(name);
+            if (unRefType == typeof(DateTime)) return dummyPrefix ? "dummyDateTimeUtc" : "dateTimeUtc";
+            return ToLowerInitial($"{(dummyPrefix ? "dummy" : string.Empty)}{name}");
+        }
+
         private string ToLowerInitial(string str)
         {
             return str[0].ToString().ToLower() + new string(str.Skip(1).ToArray());
@@ -217,5 +234,5 @@ namespace BloodyUnitTests
 
     }
 
-    enum Scope { Local, Member }
+    enum Scope { Local, LocalDummy, Member }
 }
