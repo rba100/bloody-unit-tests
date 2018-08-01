@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -69,15 +70,6 @@ namespace BloodyUnitTests
                    || IsArrayAssignable(type);
         }
 
-        internal static bool IsArrayAssignable(Type type)
-        {
-            var gArgs = type.GetGenericArguments();
-            if (!type.HasElementType && gArgs.Length != 1) return false;
-            var elementType = gArgs.SingleOrDefault() ?? type.GetElementType();
-            // ReSharper disable once PossibleNullReferenceException
-            return type.IsAssignableFrom(elementType.MakeArrayType());
-        }
-
         public string GetDummyInstantiation(Type possibleReftype)
         {
             if (possibleReftype == null) throw new ArgumentNullException(nameof(possibleReftype));
@@ -114,7 +106,12 @@ namespace BloodyUnitTests
             // ReSharper disable once PossibleNullReferenceException
             if (type.IsInterface)
                 return $"MockRespository.GenerateStub<{GetTypeNameForCSharp(type)}>()";
-            if (type.IsClass) return $"new {GetTypeNameForCSharp(type)}()";
+
+            if (type.IsClass)
+            {
+                if (IsPoco(type)) return $"Create{GetTypeNameForCSharp(type)}()";
+                return $"new {GetTypeNameForCSharp(type)}(/* ... */)";
+            }
 
             var nullableType = Nullable.GetUnderlyingType(type);
             if (nullableType != null) return $"({nullableType.Name}?) {GetDummyInstantiation(nullableType)}";
@@ -144,6 +141,46 @@ namespace BloodyUnitTests
             }
 
             return typeDisplayName;
+        }
+
+
+        public bool IsPoco(Type type)
+        {
+            var name = type.Name;
+            if (!type.IsClass || type.IsAbstract) return false;
+
+            return IsPocoOrValueType(type, new List<Type>());
+        }
+
+        private bool IsPocoOrValueType(Type type, IList<Type> typeHistory)
+        {
+            if (type.IsValueType) return true;
+            if (type == typeof(string)) return true;
+            if (!type.IsClass) return false;
+            if (IsArrayAssignable(type)) return true;
+
+            if (typeHistory.Contains(type)) return false;
+            typeHistory.Add(type);
+
+            if (type.IsArray && IsPocoOrValueType(type.GetElementType(), typeHistory)) return true;
+
+            var ctor = type.GetConstructors()
+                           .OrderByDescending(c => c.GetParameters().Length)
+                           .FirstOrDefault();
+
+            if (ctor == null) return false;
+
+            return ctor.GetParameters()
+                       .All(p => !p.IsOut && IsPocoOrValueType(p.ParameterType, typeHistory));
+        }
+
+        public static bool IsArrayAssignable(Type type)
+        {
+            var gArgs = type.GetGenericArguments();
+            if (!type.HasElementType && gArgs.Length != 1) return false;
+            var elementType = gArgs.SingleOrDefault() ?? type.GetElementType();
+            // ReSharper disable once PossibleNullReferenceException
+            return type.IsAssignableFrom(elementType.MakeArrayType());
         }
 
         private string GetTypeNameForIdentifier(Type type)
