@@ -1,6 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 
+// ReSharper disable ArrangeTypeModifiers
+// ReSharper disable UnusedParameter.Local
+// ReSharper disable UnusedParameter.Global
+// ReSharper disable UnusedMember.Global
+// ReSharper disable InconsistentNaming
+
 namespace BloodyUnitTests
 {
     class _TestClass

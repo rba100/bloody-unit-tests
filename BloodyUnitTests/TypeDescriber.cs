@@ -132,9 +132,13 @@ namespace BloodyUnitTests
                     if (type.IsAssignableFrom(actionType)) return $"(_) => {{}}";
                 }
 
+                // If it has a parameterless constructor then we have an easy way out.
+                if(type.GetConstructor(Type.EmptyTypes) != null) return $"new {GetTypeNameForCSharp(type)}()";
+
                 // If it's a POCO type then we will assume there is a helper method called 'CreateThing()'
                 if (IsPoco(type)) return $"Create{GetVariableName(type, Scope.Member)}()";
-                // Otherwise prepare an instantiation but let the user fill out the arguments later
+
+                // Fallback: prepare an non-compiling instantiation and let the user fix it
                 return $"new {GetTypeNameForCSharp(type)}(/* ... */)";
             }
 
