@@ -36,7 +36,7 @@ namespace BloodyUnitTests
             // Create
             lines.Add($"{indent}public {typeName} Create()");
             lines.Add($"{indent}{{");
-            lines.Add($"{indent}{indent} return new {typeName}({string.Join(", ", interfaces.Select(i => m_TypeDescriber.GetVariableName(i.ParameterType, Scope.Member)))})");
+            lines.Add($"{indent}{indent} return new {typeName}({string.Join(", ", interfaces.Select(i => m_TypeDescriber.GetVariableName(i, Scope.Member)))})");
             lines.Add($"{indent}}}");
 
             lines.Add(String.Empty);
@@ -44,11 +44,10 @@ namespace BloodyUnitTests
             // Verify all
             lines.Add($"{indent}public void VerifyAllExpectations()");
             lines.Add($"{indent}{{");
-            foreach (var parameter in interfaces)
+            foreach (var i in interfaces)
             {
-                var t = parameter.ParameterType;
-                if (!t.IsInterface) continue;
-                lines.Add($"{indent}{indent}{m_TypeDescriber.GetVariableName(t, Scope.Member)}.VerifyAllExpectations();");
+                if (!i.ParameterType.IsInterface) continue;
+                lines.Add($"{indent}{indent}{m_TypeDescriber.GetVariableName(i, Scope.Member)}.VerifyAllExpectations();");
             }
             lines.Add($"{indent}}}");
             lines.Add("}");
@@ -127,7 +126,7 @@ namespace BloodyUnitTests
         {
             var t = parameter.ParameterType;
             var typeName = m_TypeDescriber.GetTypeNameForCSharp(t);
-            return $"public {typeName} {m_TypeDescriber.GetVariableName(t, Scope.Member)}" +
+            return $"public {typeName} {m_TypeDescriber.GetVariableName(parameter, Scope.Member)}" +
                    $" = MockRepository.GenerateMock<{typeName}>();";
         }
     }

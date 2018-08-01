@@ -19,16 +19,31 @@ namespace BloodyUnitTests
             throw new InvalidOperationException("Parameter is neither 'out' or 'ref'");
         }
 
+        public string GetVariableName(ParameterInfo info, Scope scope)
+        {
+            switch (scope)
+            {
+                case Scope.Local:
+                    return ToLowerInitial(info.Name);
+                case Scope.LocalDummy:
+                    return ToLowerInitial(info.Name);
+                case Scope.Member:
+                    return ToUpperInitial(info.Name);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(scope), scope, null);
+            }
+        }
+
         public string GetVariableName(Type type, Scope scope)
         {
             switch (scope)
             {
                 case Scope.Local:
-                    return GetVariableName(type, dummyPrefix: false);
+                    return GetLocalVariableName(type, dummyPrefix: false);
                 case Scope.LocalDummy:
-                    return GetVariableName(type, dummyPrefix: true);
+                    return GetLocalVariableName(type, dummyPrefix: true);
                 case Scope.Member:
-                    return GetTypeNameForMemberIdentifier(type);
+                    return GetVariableName(type);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(scope), scope, null);
             }
@@ -168,7 +183,7 @@ namespace BloodyUnitTests
             return type.IsAssignableFrom(elementType.MakeArrayType());
         }
 
-        private string GetTypeNameForMemberIdentifier(Type type)
+        private string GetVariableName(Type type)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
 
@@ -176,7 +191,7 @@ namespace BloodyUnitTests
 
             // ReSharper disable once AssignNullToNotNullAttribute
             var nullableType = Nullable.GetUnderlyingType(unRefType);
-            if (nullableType != null) return $"{nullableType.Name}?";
+            if (nullableType != null) return $"{GetVariableName(nullableType)}Nullable";
 
             var typeDisplayName = unRefType.Name;
             if (unRefType.IsGenericType)
@@ -184,7 +199,7 @@ namespace BloodyUnitTests
                 var genericParams = unRefType.GetGenericArguments();
                 int index = typeDisplayName.IndexOf('`');
                 typeDisplayName = index == -1 ? typeDisplayName : typeDisplayName.Substring(0, index);
-                typeDisplayName = typeDisplayName + string.Join("", genericParams.Select(GetTypeNameForMemberIdentifier));
+                typeDisplayName = typeDisplayName + string.Join("", genericParams.Select(GetVariableName));
             }
 
             if (unRefType.IsInterface && typeDisplayName.StartsWith("I"))
@@ -195,36 +210,14 @@ namespace BloodyUnitTests
             return typeDisplayName;
         }
 
-        private string GetVariableName(Type type, bool dummyPrefix)
+        private string GetLocalVariableName(Type type, bool dummyPrefix)
         {
-            if (type == null) throw new ArgumentNullException(nameof(type));
-
+            var varName = GetVariableName(type);
+            var prefix = dummyPrefix ? type.IsInterface ? "stub" : "dummy" : string.Empty;
             var unRefType = type.IsByRef ? type.GetElementType() : type;
-
-            // ReSharper disable once AssignNullToNotNullAttribute
-            var nullableType = Nullable.GetUnderlyingType(unRefType);
-
-            var name = unRefType.Name;
-            if (unRefType.IsGenericType)
-            {
-                var genericParams = unRefType.GetGenericArguments();
-                int index = name.IndexOf('`');
-                name = index == -1 ? name : name.Substring(0, index);
-                name = name + string.Join("", genericParams.Select(p => p.Name));
-            }
-            if (nullableType != null)
-            {
-                return $"{GetVariableName(nullableType, dummyPrefix)}Nullable";
-            }
-            if (type.IsInterface)
-            {
-                var prefix = dummyPrefix ? "stub" : string.Empty;
-                if (type.Name.StartsWith("I")) return $"{prefix}{GetTypeNameForMemberIdentifier(type)}";
-                return $"{prefix}{GetTypeNameForMemberIdentifier(type)}";
-            }
-            if (type.IsClass && type.Namespace != "System") return ToLowerInitial(name);
+            if (type.IsClass && type.Namespace != "System") return ToLowerInitial(varName);
             if (unRefType == typeof(DateTime)) return dummyPrefix ? "dummyDateTimeUtc" : "dateTimeUtc";
-            return ToLowerInitial($"{(dummyPrefix ? "dummy" : string.Empty)}{name}");
+            return ToLowerInitial($"{prefix}{varName}");
         }
 
         private string ToLowerInitial(string str)
@@ -232,6 +225,10 @@ namespace BloodyUnitTests
             return str[0].ToString().ToLower() + new string(str.Skip(1).ToArray());
         }
 
+        private string ToUpperInitial(string str)
+        {
+            return str[0].ToString().ToUpper() + new string(str.Skip(1).ToArray());
+        }
     }
 
     enum Scope { Local, LocalDummy, Member }
