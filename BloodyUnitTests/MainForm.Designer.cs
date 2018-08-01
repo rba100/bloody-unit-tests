@@ -59,7 +59,7 @@
             // 
             this.m_NullTestButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_NullTestButton.Enabled = false;
-            this.m_NullTestButton.Location = new System.Drawing.Point(687, 14);
+            this.m_NullTestButton.Location = new System.Drawing.Point(687, 12);
             this.m_NullTestButton.Name = "m_NullTestButton";
             this.m_NullTestButton.Size = new System.Drawing.Size(101, 23);
             this.m_NullTestButton.TabIndex = 1;
@@ -73,12 +73,12 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(123, 14);
+            this.comboBox1.Location = new System.Drawing.Point(123, 13);
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(558, 21);
             this.comboBox1.TabIndex = 2;
             // 
-            // Form1
+            // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -88,6 +88,7 @@
             this.Controls.Add(this.m_Do1);
             this.Controls.Add(this.m_TabContainer);
             this.Name = "MainForm";
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.Text = "Bloody Unit Tests";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);

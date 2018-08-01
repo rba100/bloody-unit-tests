@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -108,6 +107,7 @@ namespace BloodyUnitTests
 
             if (type.IsClass)
             {
+                // If a List<> will do, supply a list
                 if (type.IsGenericType)
                 {
                     var genArgs = type.GetGenericArguments();
