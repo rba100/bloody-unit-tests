@@ -155,11 +155,11 @@ namespace BloodyUnitTests
             return lines.ToArray();
         }
 
-        private string[] GetMethodArguments(MethodBase methodBase, bool useDummyVariables)
+        private string[] GetMethodArguments(MethodBase methodBase, bool assumeDummyVariablesExist)
         {
             var parameters = methodBase.GetParameters();
 
-            var arguments = useDummyVariables
+            var arguments = assumeDummyVariablesExist
                 ? parameters.Select(p => p.ParameterType).Select(t => m_TypeDescriber.GetVariableName(t, Scope.LocalDummy)).ToArray()
                 : parameters.Select(p => p.ParameterType).Select(m_TypeDescriber.GetInstance).ToArray();
 
@@ -167,11 +167,13 @@ namespace BloodyUnitTests
             {
                 var pInfo = parameters[index];
                 var type = pInfo.ParameterType;
+                // Add ref/out keywords where needed
                 if (m_TypeDescriber.HasParamKeyword(pInfo))
                 {
                     var argument = arguments[index];
                     arguments[index] = $"{m_TypeDescriber.ParamKeyword(pInfo)} {argument}";
                 }
+                // If not a ref then check if we can use a literal / immediate value instead of variable
                 else if (m_TypeDescriber.IsImmediateValueTolerable(type))
                 {
                     arguments[index] = m_TypeDescriber.GetInstance(type);
@@ -218,7 +220,7 @@ namespace BloodyUnitTests
                     sb.Append(offset);
                 }
             }
-            sb.AppendLine(")");
+            sb.AppendLine(");");
 
             return sb.ToString().Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
         }

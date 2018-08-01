@@ -44,7 +44,7 @@ namespace BloodyUnitTests
             // Verify all
             lines.Add($"{indent}public void VerifyAllExpectations()");
             lines.Add($"{indent}{{");
-            foreach (var i in interfaces)
+            foreach (var i in interfaces.Where(i=>!i.ParameterType.Namespace.StartsWith(nameof(System))))
             {
                 if (!i.ParameterType.IsInterface) continue;
                 lines.Add($"{indent}{indent}{m_TypeDescriber.GetVariableName(i, Scope.Member)}.VerifyAllExpectations();");
@@ -66,7 +66,7 @@ namespace BloodyUnitTests
                                     .SelectMany(m => m.GetParameters())
                                     .Select(p => p.ParameterType)
                                     .Distinct()
-                                    .Where(t => t.Namespace != nameof(System))
+                                    .Where(t => t.Namespace?.StartsWith(nameof(System)) != true)
                                     .Where(m_TypeDescriber.IsPoco)
                                     .ToArray();
 
@@ -113,7 +113,7 @@ namespace BloodyUnitTests
             var indent = new string(' ', 4);
             lines.Add($"private {m_TypeDescriber.GetTypeNameForCSharp(type)} Create{m_TypeDescriber.GetVariableName(type, Scope.Member)}()");
             lines.Add($"{{");
-            lines.Add($"{indent}return new {m_TypeDescriber.GetTypeNameForCSharp(type)}({string.Join(", ", arguments)})");
+            lines.Add($"{indent}return new {m_TypeDescriber.GetTypeNameForCSharp(type)}({string.Join(", ", arguments)});");
             lines.Add($"}}");
             return lines.ToArray();
         }
@@ -123,7 +123,7 @@ namespace BloodyUnitTests
             var t = parameter.ParameterType;
             var typeName = m_TypeDescriber.GetTypeNameForCSharp(t);
             return $"public {typeName} {m_TypeDescriber.GetVariableName(parameter, Scope.Member)}" +
-                   $" = MockRepository.GenerateMock<{typeName}>();";
+                   $" = {m_TypeDescriber.GetInstance(t)};";
         }
     }
 }

@@ -67,6 +67,17 @@ namespace BloodyUnitTests
                    || IsArrayAssignable(type);
         }
 
+        /// <summary>
+        /// Returns a string that instantiates the given type. Value types may use default literals.
+        /// </summary>
+        /// <remarks>
+        /// For complex types that do not have simple invocations it is assumed a helper method exists 
+        /// e.g. GetInstance(typeof(MyType)) => "CreateMyType()"
+        /// </remarks>
+        /// <example>
+        /// GetInstance(typeof(Int32)) => "0"
+        /// GetInstance(typeof(IDisposable)) => "GenerateStub[IDisposable]()"
+        /// </example>
         public string GetInstance(Type possibleReftype)
         {
             if (possibleReftype == null) throw new ArgumentNullException(nameof(possibleReftype));
@@ -111,9 +122,8 @@ namespace BloodyUnitTests
                 if (type.IsGenericType)
                 {
                     var genArgs = type.GetGenericArguments();
-                    var genArgNamess = genArgs.Select(a=>a.Name);
                     var listType = typeof(List<>).MakeGenericType(genArgs);
-                    if(type.IsAssignableFrom(listType)) return $"new List<{string.Join(", ", genArgNamess)}>()";
+                    if(type.IsAssignableFrom(listType)) return $"new {GetTypeNameForCSharp(listType)}()";
                 }
 
                 // If it's a POCO type then we will assume there is a helper method called 'CreateThing()'
