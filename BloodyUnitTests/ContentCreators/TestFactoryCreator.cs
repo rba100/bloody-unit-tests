@@ -60,7 +60,7 @@ namespace BloodyUnitTests.ContentCreators
             // Verify all
             lines.Add($"{indent}public void VerifyAllExpectations()");
             lines.Add($"{indent}{{");
-            foreach (var i in interfaces.Where(i => !i.ParameterType.Namespace.StartsWith(nameof(System))))
+            foreach (var i in interfaces.Where(i => i.ParameterType.Namespace?.StartsWith(nameof(System)) != true))
             {
                 if (!i.ParameterType.IsInterface) continue;
                 lines.Add($"{indent}{indent}{m_TypeDescriber.GetVariableName(i.Name, Scope.Member)}.VerifyAllExpectations();");
