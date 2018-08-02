@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace BloodyUnitTests.ContentCreators
@@ -113,7 +114,7 @@ namespace BloodyUnitTests.ContentCreators
             {
                 var methodName = info.Name;
                 var parameters = info.GetParameters();
-                var arguments = GetMethodArguments(info, true);
+                var arguments = m_TypeDescriber.GetMethodArguments(info, true, false);
 
                 for (var i = 0; i < parameters.Length; i++)
                 {
@@ -158,7 +159,7 @@ namespace BloodyUnitTests.ContentCreators
             {
                 var typeName = ctor.DeclaringType?.Name;
                 var parameterTypes = ctor.GetParameters();
-                var arguments = GetMethodArguments(ctor, true);
+                var arguments = m_TypeDescriber.GetMethodArguments(ctor, true, false);
 
                 for (int i = 0; i < parameterTypes.Length; i++)
                 {
@@ -175,33 +176,33 @@ namespace BloodyUnitTests.ContentCreators
             return lines.ToArray();
         }
 
-        private string[] GetMethodArguments(MethodBase methodBase, bool assumeDummyVariablesExist)
-        {
-            var parameters = methodBase.GetParameters();
+        //private string[] GetMethodArguments(MethodBase methodBase, bool assumeDummyVariablesExist)
+        //{
+        //    var parameters = methodBase.GetParameters();
 
-            var arguments = assumeDummyVariablesExist
-                ? parameters.Select(p => p.ParameterType).Select(t => m_TypeDescriber.GetVariableName(t, Scope.Local)).ToArray()
-                : parameters.Select(p => p.ParameterType).Select(m_TypeDescriber.GetInstance).ToArray();
+        //    var arguments = assumeDummyVariablesExist
+        //        ? parameters.Select(p => p.ParameterType).Select(t => m_TypeDescriber.GetVariableName(t, Scope.Local)).ToArray()
+        //        : parameters.Select(p => p.ParameterType).Select(m_TypeDescriber.GetInstance).ToArray();
 
-            for (var index = 0; index < parameters.Length; index++)
-            {
-                var pInfo = parameters[index];
-                var type = pInfo.ParameterType;
-                // Add ref/out keywords where needed
-                if (m_TypeDescriber.HasParamKeyword(pInfo))
-                {
-                    var argument = arguments[index];
-                    arguments[index] = $"{m_TypeDescriber.ParamKeyword(pInfo)} {argument}";
-                }
-                // If not a ref then check if we can use a literal / immediate value instead of variable
-                else if (m_TypeDescriber.IsImmediateValueTolerable(type))
-                {
-                    arguments[index] = m_TypeDescriber.GetInstance(type);
-                }
-            }
+        //    for (var index = 0; index < parameters.Length; index++)
+        //    {
+        //        var pInfo = parameters[index];
+        //        var type = pInfo.ParameterType;
+        //        // Add ref/out keywords where needed
+        //        if (m_TypeDescriber.HasParamKeyword(pInfo))
+        //        {
+        //            var argument = arguments[index];
+        //            arguments[index] = $"{m_TypeDescriber.ParamKeyword(pInfo)} {argument}";
+        //        }
+        //        // If not a ref then check if we can use a literal / immediate value instead of variable
+        //        else if (m_TypeDescriber.IsImmediateValueTolerable(type))
+        //        {
+        //            arguments[index] = m_TypeDescriber.GetInstance(type);
+        //        }
+        //    }
 
-            return arguments;
-        }
+        //    return arguments;
+        //}
 
         private string[] GetVariableDeclarations(IEnumerable<ParameterInfo> parameters, bool setToNull)
         {
@@ -221,7 +222,7 @@ namespace BloodyUnitTests.ContentCreators
             var nameForCSharp = m_TypeDescriber.GetTypeNameForCSharp(type);
             var ctor = type.GetConstructors().First();
 
-            var arguments = GetMethodArguments(ctor, assumeDummyVariablesExist: false);
+            var arguments = m_TypeDescriber.GetMethodArguments(ctor, useVariables: false, nonDefault: false);
 
             var declarationStart = $"var {variableName} = new {nameForCSharp}(";
 

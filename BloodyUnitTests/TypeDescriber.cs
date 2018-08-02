@@ -103,7 +103,7 @@ namespace BloodyUnitTests
                 || type == typeof(double)
                 || type == typeof(decimal)) return nonDefault ? "7" : "0";
 
-            if (type == typeof(bool)) return nonDefault.ToString();
+            if (type == typeof(bool)) return nonDefault.ToString().ToLower();
 
             if (type == typeof(IntPtr)) return nonDefault ? "new IntPtr(1)" : "IntPtr.Zero";
 
@@ -260,6 +260,13 @@ namespace BloodyUnitTests
             }
 
             return arguments;
+        }
+
+        public bool ShouldUseVariableForParameter(ParameterInfo parameter)
+        {
+            return !parameter.IsOut
+                && !parameter.ParameterType.IsByRef
+                && !IsImmediateValueTolerable(parameter.ParameterType);
         }
 
         private static bool IsArrayAssignable(Type type)

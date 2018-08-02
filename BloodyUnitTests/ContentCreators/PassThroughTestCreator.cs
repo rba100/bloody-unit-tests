@@ -46,6 +46,12 @@ namespace BloodyUnitTests.ContentCreators
             var mockVarNameOffset = new string(' ', mockVarName.Length);
             var resultDeclaration = isVoid ? string.Empty : "var result = ";
             var sutVarName = m_TypeDescriber.GetVariableName(classToTest.Name, Scope.Local);
+
+            var methodVariables = method.GetParameters()
+                                        .Where(m_TypeDescriber.ShouldUseVariableForParameter)
+                                        .Where(p => p.ParameterType != interfaceType)
+                                        .Select(p=> m_TypeDescriber.GetLocalVariableDeclaration(p.ParameterType, false));
+
             var rootType = constructor.DeclaringType;
 
             var ctorArgs = m_TypeDescriber.GetMethodArguments(constructor, useVariables: false, nonDefault: true);
@@ -63,6 +69,7 @@ namespace BloodyUnitTests.ContentCreators
             lines.Add("[Test]");
             lines.Add($"public void {method.Name}_passthrough_test()");
             lines.Add("{");
+            lines.AddRange(methodVariables.Select(v=>$"    {v}"));
             if (!isVoid)
             {
                 lines.Add($"    var expectedResult = {m_TypeDescriber.GetInstance(method.ReturnType, true)};");
