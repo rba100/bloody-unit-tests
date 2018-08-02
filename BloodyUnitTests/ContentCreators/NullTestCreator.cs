@@ -45,7 +45,7 @@ namespace BloodyUnitTests.ContentCreators
             return lines.ToArray();
         }
 
-        public string[] GetNullMethodArgsTestInner(Type type)
+        private string[] GetNullMethodArgsTestInner(Type type)
         {
             var typeName = type.Name;
             List<string> lines = new List<string>();
@@ -90,9 +90,16 @@ namespace BloodyUnitTests.ContentCreators
 
             if (!infos.Any()) return lines.ToArray();
 
-            var variableDeclarations = GetVariableDeclarations(infos.SelectMany(i => i.GetParameters()));
+            var parameterTypes = infos.SelectMany(i => i.GetParameters()).ToArray();
+
+            var variablesNeeded = parameterTypes.Where(p => !p.IsOut).ToArray();
+            var outVariablesNeeded = parameterTypes.Where(p => p.IsOut).Except(variablesNeeded).ToArray();
+
+            var variableDeclarations = GetVariableDeclarations(variablesNeeded, setToNull: false);
+            var outVariableDeclarations = GetVariableDeclarations(outVariablesNeeded, setToNull: true);
             lines.AddRange(variableDeclarations);
-            if (variableDeclarations.Any()) lines.Add(string.Empty);
+            lines.AddRange(outVariableDeclarations);
+            if (variablesNeeded.Union(outVariablesNeeded).Any()) lines.Add(string.Empty);
 
             var instanceName = m_TypeDescriber.GetVariableName(type, Scope.Local);
 
@@ -134,7 +141,7 @@ namespace BloodyUnitTests.ContentCreators
             var lines = new List<string>();
 
             var variableDeclarations = constructors.SelectMany(i => i.GetParameters())
-                                                   .Into(GetVariableDeclarations);
+                                                   .Into(c=> GetVariableDeclarations(c, false));
 
             foreach (var declaration in variableDeclarations)
             {
@@ -193,10 +200,19 @@ namespace BloodyUnitTests.ContentCreators
             return arguments;
         }
 
-        private string[] GetVariableDeclarations(IEnumerable<ParameterInfo> parameters)
+        private string[] GetVariableDeclarations(IEnumerable<ParameterInfo> parameters, bool setToNull)
         {
-            string asDeclaration(Type type) => $"var {m_TypeDescriber.GetVariableName(type, Scope.Local)}"
-                                             + $" = {m_TypeDescriber.GetInstance(type)};";
+            string asDeclaration(Type rawType)
+            {
+                var type = rawType.IsByRef ? rawType.GetElementType() : rawType;
+                var declaredType = $"{(setToNull ? m_TypeDescriber.GetTypeNameForCSharp(type) : "var")}";
+                var identifier = m_TypeDescriber.GetVariableName(type, Scope.Local);
+
+                // ReSharper disable once PossibleNullReferenceException
+                if (setToNull && type.IsValueType) return $"{declaredType} {identifier};";
+                if (setToNull) return $"{declaredType} {identifier} = null;";
+                return $"{declaredType} {identifier} = {m_TypeDescriber.GetInstance(type)};";
+            }
 
             return parameters.Where(p => !p.ParameterType.IsValueType || m_TypeDescriber.HasParamKeyword(p) || p.ParameterType.IsEnum)
                              .Where(p => !m_TypeDescriber.IsImmediateValueTolerable(p.ParameterType) || m_TypeDescriber.HasParamKeyword(p))
