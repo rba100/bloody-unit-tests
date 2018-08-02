@@ -67,6 +67,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClassContent.cs" />
+    <Compile Include="ContentCreators\HelperMethodContentCreator.cs" />
+    <Compile Include="IContentCreator.cs" />
+    <Compile Include="ContentCreators\MethodNullArgsTestCreator.cs" />
     <Compile Include="ContentCreators\PassThroughTestCreator.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="MainForm.cs">
@@ -79,8 +82,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestClasses.cs" />
     <Compile Include="TestFixtureCreator.cs" />
-    <Compile Include="ContentCreators\TestObjectCreator.cs" />
-    <Compile Include="ContentCreators\NullTestCreator.cs" />
+    <Compile Include="ContentCreators\TestFactoryCreator.cs" />
+    <Compile Include="ContentCreators\ConstructorNullArgsTestCreator.cs" />
     <Compile Include="TypeDescriber.cs" />
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>

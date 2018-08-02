@@ -5,11 +5,11 @@ using System.Reflection;
 
 namespace BloodyUnitTests.ContentCreators
 {
-    public class PassThroughTestCreator
+    public class PassThroughTestCreator : IContentCreator
     {
         private readonly TypeDescriber m_TypeDescriber = new TypeDescriber();
 
-        public ClassContent CreatePassthroughTests(Type type)
+        public ClassContent Create(Type type)
         {
             return new ClassContent(CreatePassthroughTestsInner(type), new string[0]);
         }

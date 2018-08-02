@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace BloodyUnitTests
 {
@@ -205,6 +206,45 @@ namespace BloodyUnitTests
             if (!type.IsClass || type.IsAbstract) return false;
 
             return IsSimpleType(type, new List<Type>());
+        }
+
+        public string[] GetStubbedInstantiation(Type type)
+        {
+            var sb = new StringBuilder();
+
+            var variableName = GetVariableName(type, Scope.Local);
+            var nameForCSharp = GetTypeNameForCSharp(type);
+            var ctor = type.GetConstructors().First();
+
+            var arguments = GetMethodArguments(ctor, useVariables: false, nonDefault: false);
+
+            var declarationStart = $"var {variableName} = new {nameForCSharp}(";
+
+            var offset = new string(' ', declarationStart.Length);
+
+            sb.Append(declarationStart);
+            for (int i = 0; i < arguments.Length; i++)
+            {
+                sb.Append(arguments[i]);
+                if (i < arguments.Length - 1)
+                {
+                    sb.AppendLine(",");
+                    sb.Append(offset);
+                }
+            }
+            sb.AppendLine(");");
+
+            return sb.ToString().Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        public string[] GetNeededVariableDeclarations(IEnumerable<ParameterInfo> parameters, bool setToNull)
+        {
+            return parameters.Where(p => !p.ParameterType.IsValueType || HasParamKeyword(p) || p.ParameterType.IsEnum)
+                             .Where(p => !IsImmediateValueTolerable(p.ParameterType) || HasParamKeyword(p))
+                             .Select(p => p.ParameterType)
+                             .Distinct()
+                             .Select(t => GetLocalVariableDeclaration(t, setToNull))
+                             .ToArray();
         }
 
         /// <summary>

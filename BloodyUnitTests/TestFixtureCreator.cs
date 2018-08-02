@@ -15,22 +15,20 @@ namespace BloodyUnitTests
         {
             var sb = new StringBuilder();
 
-            var testObjectCreator = new TestObjectCreator();
-            var nullTestCreator = new NullTestCreator();
-            var passThroughTestCreator = new PassThroughTestCreator();
+            var contentCreators = new IContentCreator[]
+            {
+                new ConstructorNullArgsTestCreator(),
+                new MethodNullArgsTestCreator(),
+                new PassThroughTestCreator(),
+                new HelperMethodContentCreator(),
+                new TestFactoryCreator()
+            };
 
-            var testFactoryContent = testObjectCreator.TestFactoryDeclaration(classToTest);
-            var helperMethodContent = testObjectCreator.HelperMethodContent(classToTest);
-            var ctorNullArgsContent = nullTestCreator.GetNullConstructorArgTestContent(classToTest);
-            var methodNullArgsContent = nullTestCreator.GetNullMethodArgTestContent(classToTest);
-            var passThroughTests = passThroughTestCreator.CreatePassthroughTests(classToTest);
+            var contents = contentCreators.Select(c => c.Create(classToTest)).ToArray();
+            var namesSpaces = contents.SelectMany(c => c.NamesSpaces);
 
             // Start with namespace declarations
-            var namesspaces = s_DefaultNamesSpaces.Union(testFactoryContent.NamesSpaces)
-                                                  .Union(ctorNullArgsContent.NamesSpaces)
-                                                  .Union(passThroughTests.NamesSpaces)
-                                                  .Union(methodNullArgsContent.NamesSpaces)
-                                                  .Union(helperMethodContent.NamesSpaces)
+            var namesspaces = s_DefaultNamesSpaces.Union(namesSpaces)
                                                   .Distinct().ToList();
 
             var systemNamespaces = namesspaces.Where(ns => ns.StartsWith("System")).OrderBy(ns=>ns).ToList();
@@ -45,19 +43,12 @@ namespace BloodyUnitTests
             sb.AppendLine($"public class {classToTest.Name}Tests");
             sb.AppendLine("{");
 
-            AddContentWithIdentation(sb, ctorNullArgsContent, 4);
-
-            if (methodNullArgsContent.LinesOfCode.Any()) sb.AppendLine();
-            AddContentWithIdentation(sb, methodNullArgsContent, 4);
-
-            if (testFactoryContent.LinesOfCode.Any()) sb.AppendLine();
-            AddContentWithIdentation(sb, testFactoryContent, 4);
-
-            if (passThroughTests.LinesOfCode.Any()) sb.AppendLine();
-            AddContentWithIdentation(sb, passThroughTests, 4);
-
-            if (helperMethodContent.LinesOfCode.Any()) sb.AppendLine();
-            AddContentWithIdentation(sb, helperMethodContent, 4);
+            for (var i = 0; i < contents.Length; i++)
+            {
+                var content = contents[i];
+                if (i>0 && content.LinesOfCode.Any()) sb.AppendLine();
+                AddContentWithIdentation(sb, content, 4);
+            }
 
             sb.AppendLine("}");
 
