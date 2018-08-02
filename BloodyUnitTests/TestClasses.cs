@@ -9,27 +9,20 @@ using System.Collections.Generic;
 
 namespace BloodyUnitTests
 {
-    class _TestClass
-    {
-        public _TestClass(InnerObject innerObject,
-                          IList<string> strings,
-                          IDisposable dependency,
-                          Func<DateTime> getDate,
-                          Action<string> logger)
-        {
-        }
-
-        public void TestMethod(InnerObject innerObject, List<string> strings)
-        {
-
-        }
-    }
-
-    class _TestDecorator : ITestDecorator
+    class _TestClass : ITestDecorator
     {
         private readonly ITestDecorator m_InnerTestDecorator;
 
-        public _TestDecorator(ITestDecorator innerTestDecorator)
+        public _TestClass(ITestDecorator innerTestDecorator,
+                          InnerObject dependency,
+                          IList<string> names)
+        {
+            m_InnerTestDecorator = innerTestDecorator;
+        }
+
+        public _TestClass(ITestDecorator innerTestDecorator,
+                          Func<DateTime> getDate,
+                          Action<string> logger)
         {
             m_InnerTestDecorator = innerTestDecorator;
         }
@@ -39,16 +32,17 @@ namespace BloodyUnitTests
             return m_InnerTestDecorator.Process(argument);
         }
 
-        public int Process(int[] arguments)
+        public int Aggregate(int[] arguments)
         {
-            return m_InnerTestDecorator.Process(arguments);
+            return m_InnerTestDecorator.Aggregate(arguments);
         }
     }
 
     internal interface ITestDecorator
     {
         string Process(string argument);
-        int Process(int[] argument);
+
+        int Aggregate(int[] argument);
     }
 
     class InnerObject
