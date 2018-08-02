@@ -214,7 +214,10 @@ namespace BloodyUnitTests
 
             var variableName = GetVariableName(type, Scope.Local);
             var nameForCSharp = GetTypeNameForCSharp(type);
-            var ctor = type.GetConstructors().First();
+            var ctor = type.GetConstructors()
+                           .FirstOrDefault() ??
+                       type.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
+                           .First();
 
             var arguments = GetMethodArguments(ctor, useVariables: false, nonDefault: false);
 
