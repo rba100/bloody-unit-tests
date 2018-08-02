@@ -44,7 +44,7 @@ namespace BloodyUnitTests.ContentCreators
             if (interfaces.Any()) lines.Add(String.Empty);
             var args = parameters.Select(p =>
             {
-                if (p.ParameterType.IsInterface) return m_TypeDescriber.GetVariableName(p, Scope.Member);
+                if (p.ParameterType.IsInterface) return m_TypeDescriber.GetVariableName(p.Name, Scope.Member);
                 return m_TypeDescriber.GetInstance(p.ParameterType);
             });
 
@@ -62,7 +62,7 @@ namespace BloodyUnitTests.ContentCreators
             foreach (var i in interfaces.Where(i => !i.ParameterType.Namespace.StartsWith(nameof(System))))
             {
                 if (!i.ParameterType.IsInterface) continue;
-                lines.Add($"{indent}{indent}{m_TypeDescriber.GetVariableName(i, Scope.Member)}.VerifyAllExpectations();");
+                lines.Add($"{indent}{indent}{m_TypeDescriber.GetVariableName(i.Name, Scope.Member)}.VerifyAllExpectations();");
             }
             lines.Add($"{indent}}}");
             lines.Add("}");
@@ -146,7 +146,7 @@ namespace BloodyUnitTests.ContentCreators
         {
             var t = parameter.ParameterType;
             var typeName = m_TypeDescriber.GetTypeNameForCSharp(t);
-            return $"public {typeName} {m_TypeDescriber.GetVariableName(parameter, Scope.Member)}" +
+            return $"public {typeName} {m_TypeDescriber.GetVariableName(parameter.Name, Scope.Member)}" +
                    $" = {m_TypeDescriber.GetInstance(t)};";
         }
     }

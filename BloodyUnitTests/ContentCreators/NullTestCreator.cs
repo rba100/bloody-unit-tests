@@ -205,23 +205,11 @@ namespace BloodyUnitTests.ContentCreators
 
         private string[] GetVariableDeclarations(IEnumerable<ParameterInfo> parameters, bool setToNull)
         {
-            string asDeclaration(Type rawType)
-            {
-                var type = rawType.IsByRef ? rawType.GetElementType() : rawType;
-                var declaredType = $"{(setToNull ? m_TypeDescriber.GetTypeNameForCSharp(type) : "var")}";
-                var identifier = m_TypeDescriber.GetVariableName(type, Scope.Local);
-
-                // ReSharper disable once PossibleNullReferenceException
-                if (setToNull && type.IsValueType) return $"{declaredType} {identifier};";
-                if (setToNull) return $"{declaredType} {identifier} = null;";
-                return $"{declaredType} {identifier} = {m_TypeDescriber.GetInstance(type)};";
-            }
-
             return parameters.Where(p => !p.ParameterType.IsValueType || m_TypeDescriber.HasParamKeyword(p) || p.ParameterType.IsEnum)
                              .Where(p => !m_TypeDescriber.IsImmediateValueTolerable(p.ParameterType) || m_TypeDescriber.HasParamKeyword(p))
                              .Select(p => p.ParameterType)
                              .Distinct()
-                             .Select(asDeclaration)
+                             .Select(t => m_TypeDescriber.GetLocalVariableDeclaration(t, setToNull))
                              .ToArray();
         }
 

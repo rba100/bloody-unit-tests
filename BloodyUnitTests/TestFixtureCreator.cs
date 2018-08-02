@@ -17,15 +17,18 @@ namespace BloodyUnitTests
 
             var testObjectCreator = new TestObjectCreator();
             var nullTestCreator = new NullTestCreator();
+            var passThroughTestCreator = new PassThroughTestCreator();
 
             var testFactoryContent = testObjectCreator.TestFactoryDeclaration(classToTest);
             var helperMethodContent = testObjectCreator.HelperMethodContent(classToTest);
             var ctorNullArgsContent = nullTestCreator.GetNullConstructorArgTestContent(classToTest);
             var methodNullArgsContent = nullTestCreator.GetNullMethodArgTestContent(classToTest);
+            var passThroughTests = passThroughTestCreator.CreatePassthroughTests(classToTest);
 
             // Start with namespace declarations
             var namesspaces = s_DefaultNamesSpaces.Union(testFactoryContent.NamesSpaces)
                                                   .Union(ctorNullArgsContent.NamesSpaces)
+                                                  .Union(passThroughTests.NamesSpaces)
                                                   .Union(methodNullArgsContent.NamesSpaces)
                                                   .Union(helperMethodContent.NamesSpaces)
                                                   .Distinct().ToList();
@@ -50,7 +53,10 @@ namespace BloodyUnitTests
             if (testFactoryContent.LinesOfCode.Any()) sb.AppendLine();
             AddContentWithIdentation(sb, testFactoryContent, 4);
 
-            if(helperMethodContent.LinesOfCode.Any()) sb.AppendLine();
+            if (passThroughTests.LinesOfCode.Any()) sb.AppendLine();
+            AddContentWithIdentation(sb, passThroughTests, 4);
+
+            if (helperMethodContent.LinesOfCode.Any()) sb.AppendLine();
             AddContentWithIdentation(sb, helperMethodContent, 4);
 
             sb.AppendLine("}");

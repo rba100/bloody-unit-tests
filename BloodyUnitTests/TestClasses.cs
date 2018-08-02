@@ -25,6 +25,32 @@ namespace BloodyUnitTests
         }
     }
 
+    class _TestDecorator : ITestDecorator
+    {
+        private readonly ITestDecorator m_InnerTestDecorator;
+
+        public _TestDecorator(ITestDecorator innerTestDecorator)
+        {
+            m_InnerTestDecorator = innerTestDecorator;
+        }
+
+        public string Process(string argument)
+        {
+            return m_InnerTestDecorator.Process(argument);
+        }
+
+        public int Process(int[] arguments)
+        {
+            return m_InnerTestDecorator.Process(arguments);
+        }
+    }
+
+    internal interface ITestDecorator
+    {
+        string Process(string argument);
+        int Process(int[] argument);
+    }
+
     class InnerObject
     {
         public InnerObject(IReadOnlyCollection<int> ints)

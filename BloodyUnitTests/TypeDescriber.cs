@@ -19,14 +19,14 @@ namespace BloodyUnitTests
             throw new InvalidOperationException("Parameter is neither 'out' or 'ref'");
         }
 
-        public string GetVariableName(ParameterInfo info, Scope scope)
+        public string GetVariableName(string typeName, Scope scope)
         {
             switch (scope)
             {
                 case Scope.Local:
-                    return ToLowerInitial(info.Name);
+                    return ToLowerInitial(typeName);
                 case Scope.Member:
-                    return ToUpperInitial(info.Name);
+                    return ToUpperInitial(typeName);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(scope), scope, null);
             }
@@ -134,7 +134,7 @@ namespace BloodyUnitTests
                 }
 
                 // If it has a parameterless constructor then we have an easy way out.
-                if(type.GetConstructor(Type.EmptyTypes) != null) return $"new {GetTypeNameForCSharp(type)}()";
+                if (type.GetConstructor(Type.EmptyTypes) != null) return $"new {GetTypeNameForCSharp(type)}()";
 
                 // If it's a POCO type then we will assume there is a helper method called 'CreateThing()'
                 if (IsPoco(type)) return $"Create{GetVariableName(type, Scope.Member)}()";
@@ -149,6 +149,28 @@ namespace BloodyUnitTests
             if (type == typeof(DateTime)) return "DateTime.UtcNow";
 
             return $"default({GetTypeNameForCSharp(type)})";
+        }
+
+        public string GetLocalVariableDeclaration(Type rawType, bool setToNull)
+        {
+            var type = rawType.IsByRef ? rawType.GetElementType() : rawType;
+            var declaredType = $"{(setToNull ? GetTypeNameForCSharp(type) : "var")}";
+            var identifier = GetVariableName(type, Scope.Local);
+
+            // ReSharper disable once PossibleNullReferenceException
+            if (setToNull && type.IsValueType) return $"{declaredType} {identifier};";
+            if (setToNull) return $"{declaredType} {identifier} = null;";
+            return $"{declaredType} {identifier} = {GetInstance(type)};";
+        }
+
+        public string GetMockVariableDeclaration(Type interfaceType)
+        {
+            return $"var mock{GetVariableName(interfaceType, Scope.Member)} = {GetMockInstance(interfaceType)}";
+        }
+
+        private string GetMockInstance(Type interfaceType)
+        {
+            return $"MockRepository.GenerateMock<{GetTypeNameForCSharp(interfaceType)}>();";
         }
 
         public string GetTypeNameForCSharp(Type type)
@@ -205,6 +227,34 @@ namespace BloodyUnitTests
 
             return ctor.GetParameters()
                        .All(p => !p.IsOut && IsSimpleType(p.ParameterType, typeHistory));
+        }
+
+        public string[] GetMethodArguments(MethodBase methodBase, bool assumeDummyVariablesExist)
+        {
+            var parameters = methodBase.GetParameters();
+
+            var arguments = assumeDummyVariablesExist
+                ? parameters.Select(p => p.ParameterType).Select(t => GetVariableName(t, Scope.Local)).ToArray()
+                : parameters.Select(p => p.ParameterType).Select(GetInstance).ToArray();
+
+            for (var index = 0; index < parameters.Length; index++)
+            {
+                var pInfo = parameters[index];
+                var type = pInfo.ParameterType;
+                // Add ref/out keywords where needed
+                if (HasParamKeyword(pInfo))
+                {
+                    var argument = arguments[index];
+                    arguments[index] = $"{ParamKeyword(pInfo)} {argument}";
+                }
+                // If not a ref then check if we can use a literal / immediate value instead of variable
+                else if (IsImmediateValueTolerable(type))
+                {
+                    arguments[index] = GetInstance(type);
+                }
+            }
+
+            return arguments;
         }
 
         private static bool IsArrayAssignable(Type type)
