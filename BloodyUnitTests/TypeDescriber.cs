@@ -148,7 +148,7 @@ namespace BloodyUnitTests
 
             if (type == typeof(DateTime)) return "DateTime.UtcNow";
 
-            return $"default(typeof({GetTypeNameForCSharp(type)}))";
+            return $"default({GetTypeNameForCSharp(type)})";
         }
 
         public string GetTypeNameForCSharp(Type type)

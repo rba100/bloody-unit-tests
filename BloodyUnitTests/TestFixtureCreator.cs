@@ -42,30 +42,33 @@ namespace BloodyUnitTests
             sb.AppendLine($"public class {classToTest.Name}Tests");
             sb.AppendLine("{");
 
-            AddContentWithIdent(sb, ctorNullArgsContent, 4);
-            sb.AppendLine();
-            AddContentWithIdent(sb, methodNullArgsContent, 4);
-            sb.AppendLine();
-            AddContentWithIdent(sb, testFactoryContent, 4);
-            sb.AppendLine();
-            AddContentWithIdent(sb, helperMethodContent, 4);
+            AddContentWithIdentation(sb, ctorNullArgsContent, 4);
+
+            if (methodNullArgsContent.LinesOfCode.Any()) sb.AppendLine();
+            AddContentWithIdentation(sb, methodNullArgsContent, 4);
+
+            if (testFactoryContent.LinesOfCode.Any()) sb.AppendLine();
+            AddContentWithIdentation(sb, testFactoryContent, 4);
+
+            if(helperMethodContent.LinesOfCode.Any()) sb.AppendLine();
+            AddContentWithIdentation(sb, helperMethodContent, 4);
 
             sb.AppendLine("}");
 
             return sb.ToString();
         }
 
-        private static void AddContentWithIdent(StringBuilder builder, ClassContent content, int indentationAmount)
+        private static void AddContentWithIdentation(StringBuilder builder, ClassContent content, int identation)
         {
-            foreach (var loc in Indent(content.LinesOfCode, indentationAmount))
+            foreach (var loc in Indent(content.LinesOfCode, identation))
             {
                 builder.AppendLine(loc);
             }
         }
 
-        private static IEnumerable<string> Indent(IEnumerable<string> strings, int indentationAmount)
+        private static IEnumerable<string> Indent(IEnumerable<string> strings, int identation)
         {
-            var indent = new string(' ', indentationAmount);
+            var indent = new string(' ', identation);
             foreach (var s in strings)
             {
                 yield return indent + s;

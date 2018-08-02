@@ -48,6 +48,7 @@
             // 
             // m_Do1
             // 
+            this.m_Do1.AllowDrop = true;
             this.m_Do1.Location = new System.Drawing.Point(12, 12);
             this.m_Do1.Name = "m_Do1";
             this.m_Do1.Size = new System.Drawing.Size(105, 23);
@@ -55,6 +56,8 @@
             this.m_Do1.Text = "Load Assembly";
             this.m_Do1.UseVisualStyleBackColor = true;
             this.m_Do1.Click += new System.EventHandler(this._loadAssembly_click);
+            this.m_Do1.DragDrop += new System.Windows.Forms.DragEventHandler(this.m_Do1_DragDrop);
+            this.m_Do1.DragEnter += new System.Windows.Forms.DragEventHandler(this.m_Do1_DragEnter);
             // 
             // m_NullTestButton
             // 

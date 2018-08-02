@@ -90,7 +90,10 @@ namespace BloodyUnitTests.ContentCreators
 
             if (!infos.Any()) return lines.ToArray();
 
-            var parameterTypes = infos.SelectMany(i => i.GetParameters()).ToArray();
+            var parameterTypes = infos.Select(i => i.GetParameters())
+                                      .Where(p => p.Count(t => !t.ParameterType.IsValueType) > 1)
+                                      .SelectMany(p => p)
+                                      .ToArray();
 
             var variablesNeeded = parameterTypes.Where(p => !p.IsOut).ToArray();
             var outVariablesNeeded = parameterTypes.Where(p => p.IsOut).Except(variablesNeeded).ToArray();
@@ -99,7 +102,7 @@ namespace BloodyUnitTests.ContentCreators
             var outVariableDeclarations = GetVariableDeclarations(outVariablesNeeded, setToNull: true);
             lines.AddRange(variableDeclarations);
             lines.AddRange(outVariableDeclarations);
-            if (variablesNeeded.Union(outVariablesNeeded).Any()) lines.Add(string.Empty);
+            if (variableDeclarations.Union(outVariableDeclarations).Any()) lines.Add(string.Empty);
 
             var instanceName = m_TypeDescriber.GetVariableName(type, Scope.Local);
 
@@ -141,7 +144,7 @@ namespace BloodyUnitTests.ContentCreators
             var lines = new List<string>();
 
             var variableDeclarations = constructors.SelectMany(i => i.GetParameters())
-                                                   .Into(c=> GetVariableDeclarations(c, false));
+                                                   .Into(c => GetVariableDeclarations(c, false));
 
             foreach (var declaration in variableDeclarations)
             {

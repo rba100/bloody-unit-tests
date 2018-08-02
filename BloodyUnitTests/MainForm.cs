@@ -135,5 +135,22 @@ namespace BloodyUnitTests
         }
 
         private Assembly m_Assembly;
+
+        private void m_Do1_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] data = e.Data.GetData(DataFormats.FileDrop) as string[];
+            if (data != null && data.Length == 1 && File.Exists(data[0]))
+            {
+                LoadAssembly(data[0]);
+            }
+        }
+
+        private void m_Do1_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effect = DragDropEffects.All;
+            }
+        }
     }
 }
