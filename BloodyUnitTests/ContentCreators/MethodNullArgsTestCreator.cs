@@ -93,7 +93,7 @@ namespace BloodyUnitTests.ContentCreators
 
                     lines.Add($"yield return new TestCaseData(new TestDelegate(() => " +
                               $"{instanceName}.{methodName}({string.Join(", ", copyOfArguments)})))" +
-                              $".SetName(\"{methodName} null {parameters[i].Name}\");");
+                              $".SetName(\"{methodName} with null {parameters[i].Name}\");");
                 }
             }
 

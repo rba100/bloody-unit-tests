@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -80,7 +81,9 @@ namespace BloodyUnitTests
 
             if (IsArrayAssignable(type))
             {
+                if (type == typeof(byte[])) return nonDefault ? "Encoding.UTF8.GetBytes(\"{}\")" : "new byte[0]";
                 if (type == typeof(Type[])) return nonDefault ? "new Type[] { typeof(string) }" : "Type.EmptyTypes";
+
                 // ReSharper disable once PossibleNullReferenceException
                 var gArgs = type.GetGenericArguments();
                 var elementType = gArgs.SingleOrDefault() ?? type.GetElementType();
@@ -182,6 +185,21 @@ namespace BloodyUnitTests
         public string GetTypeNameForCSharp(Type type)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
+
+            // C# simplified type names
+            if (type == typeof(string)) return "string";
+            if (type == typeof(object)) return "object";
+            if (type == typeof(int)) return "int";
+            if (type == typeof(uint)) return "uint";
+            if (type == typeof(long)) return "long";
+            if (type == typeof(ulong)) return "ulong";
+            if (type == typeof(short)) return "short";
+            if (type == typeof(ushort)) return "ushort";
+            if (type == typeof(bool)) return "bool";
+            if (type == typeof(decimal)) return "decimal";
+            if (type == typeof(float)) return "float";
+            if (type == typeof(double)) return "double";
+            if (type == typeof(byte)) return "byte";
 
             var unRefType = type.IsByRef ? type.GetElementType() : type;
 
