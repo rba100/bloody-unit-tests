@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace BloodyUnitTests.ContentCreators
 {
@@ -13,20 +11,27 @@ namespace BloodyUnitTests.ContentCreators
 
         public ClassContent Create(Type type)
         {
-            return new ClassContent(GetNullConstructorArgsTestInner(type), new string[0]);
+            return new ClassContent(GetNullConstructorArgsTestInner(type), new []{ type.Namespace });
         }
 
         private string[] GetNullConstructorArgsTestInner(Type type)
         {
             var typeName = type.Name;
             List<string> lines = new List<string>();
+
+            var testCases = GetConstructorNullTestCaseSource(type);
+            if(!testCases.Any()) return lines.ToArray();
+
             var testCaseSource = $"{typeName}_constructor_null_argument_testcases";
             lines.Add($"public static IEnumerable<TestCaseData> {testCaseSource}()");
             lines.Add("{");
-            foreach (var line in GetConstructorNullTestCaseSource(type))
+
+            lines.Add("    // ReSharper disable ObjectCreationAsStatement");
+            foreach (var line in testCases)
             {
                 lines.Add(new String(' ', 4) + line);
             }
+            lines.Add("    // ReSharper restore ObjectCreationAsStatement");
 
             lines.Add("}");
 
@@ -63,7 +68,7 @@ namespace BloodyUnitTests.ContentCreators
 
             if (variableDeclarations.Any()) lines.Add(string.Empty);
 
-            lines.Add("// ReSharper disable ObjectCreationAsStatement");
+            
             foreach (var ctor in constructors)
             {
                 var typeName = ctor.DeclaringType?.Name;
@@ -80,7 +85,6 @@ namespace BloodyUnitTests.ContentCreators
                               $"{typeName}({string.Join(", ", copyOfArguments)}))).SetName(\"null {name}\");");
                 }
             }
-            lines.Add("// ReSharper restore ObjectCreationAsStatement");
 
             return lines.ToArray();
         }

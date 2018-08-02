@@ -18,10 +18,14 @@ namespace BloodyUnitTests.ContentCreators
         {
             var typeName = type.Name;
             List<string> lines = new List<string>();
+
+            var testCases = GetMethodNullTestCaseSource(type);
+            if (!testCases.Any()) return lines.ToArray();
+
             var testCaseSource = $"{typeName}_method_null_argument_testcases";
             lines.Add($"public static IEnumerable<TestCaseData> {testCaseSource}()");
             lines.Add("{");
-            foreach (var line in GetMethodNullTestCaseSource(type))
+            foreach (var line in testCases)
             {
                 lines.Add(new String(' ', 4) + line);
             }

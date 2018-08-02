@@ -24,17 +24,20 @@ namespace BloodyUnitTests
                 new TestFactoryCreator()
             };
 
-             var contents = contentCreators.Select(c => c.Create(classToTest)).ToArray();
+            var contents = contentCreators.Select(c => c.Create(classToTest))
+                                          .Where(c => c.LinesOfCode.Any())
+                                          .ToArray();
+
             var namesSpaces = contents.SelectMany(c => c.NamesSpaces);
 
             // Start with namespace declarations
             var namesspaces = s_DefaultNamesSpaces.Union(namesSpaces)
                                                   .Distinct().ToList();
 
-            var systemNamespaces = namesspaces.Where(ns => ns.StartsWith("System")).OrderBy(ns=>ns).ToList();
+            var systemNamespaces = namesspaces.Where(ns => ns.StartsWith("System")).OrderBy(ns => ns).ToList();
             var customNamespaces = namesspaces.Except(systemNamespaces).OrderBy(ns => ns).ToList();
 
-            systemNamespaces.ForEach(ns=> sb.AppendLine($"using {ns};"));
+            systemNamespaces.ForEach(ns => sb.AppendLine($"using {ns};"));
             sb.AppendLine();
             customNamespaces.ForEach(ns => sb.AppendLine($"using {ns};"));
 
@@ -45,9 +48,8 @@ namespace BloodyUnitTests
 
             for (var i = 0; i < contents.Length; i++)
             {
-                var content = contents[i];
-                if (i>0 && content.LinesOfCode.Any()) sb.AppendLine();
-                AddContentWithIdentation(sb, content, 4);
+                if (i > 0) sb.AppendLine();
+                AddContentWithIdentation(sb, contents[i], 4);
             }
 
             sb.AppendLine("}");

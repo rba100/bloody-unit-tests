@@ -134,11 +134,18 @@ namespace BloodyUnitTests
                     if (type.IsAssignableFrom(actionType)) return $"(_) => {{}}";
                 }
 
+                // If it has a parameterless constructor but no others then use it
+                var gotParameterless = type.GetConstructor(Type.EmptyTypes) != null;
+                var onlyParameterless = gotParameterless && type.GetConstructors().Length == 1;
+
+                // If the only ctor is parameterless then that's what we do
+                if (onlyParameterless) return $"new {GetTypeNameForCSharp(type)}()";
+
                 // If it's a POCO type then we will assume there is a helper method called 'CreateThing()'
                 if (IsPoco(type)) return $"Create{GetVariableName(type, Scope.Member)}()";
 
-                // If it has a parameterless constructor then we have an easy way out.
-                if (type.GetConstructor(Type.EmptyTypes) != null) return $"new {GetTypeNameForCSharp(type)}()";
+                // If there's a parameterless then we will use it if we can't use a CreateX helper.
+                if (gotParameterless) return $"new {GetTypeNameForCSharp(type)}()";
 
                 // Fallback: prepare an non-compiling instantiation and let the user fix it
                 return $"new {GetTypeNameForCSharp(type)}(/* ... */)";

@@ -27,6 +27,8 @@ namespace BloodyUnitTests.ContentCreators
             var parameters = ctor.GetParameters();
             var interfaces = parameters.Where(p => p.ParameterType.IsInterface).ToArray();
 
+            if (!interfaces.Any()) return lines.ToArray();
+
             var typeName = m_TypeDescriber.GetTypeNameForCSharp(type);
 
             var indent = new string(' ', 4);

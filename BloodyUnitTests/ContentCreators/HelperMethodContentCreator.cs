@@ -27,7 +27,7 @@ namespace BloodyUnitTests.ContentCreators
                                     .SelectMany(m => m.GetParameters())
                                     .Select(p => p.ParameterType)
                                     .Distinct()
-                                    .Where(t => t.Namespace?.StartsWith(nameof(System)) != true)
+                                    .Where(t => t.Namespace?.StartsWith(nameof(System)) != true && !t.IsArray)
                                     .Where(m_TypeDescriber.IsPoco)
                                     .ToArray();
 

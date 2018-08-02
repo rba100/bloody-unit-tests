@@ -127,4 +127,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>$(SolutionDir)\packages\ILMerge.2.14.1208\tools\ILMerge.exe /ndebug /t:winexe /out:$(ProjectDir)$(OutDir)\BloodyUnitTests.exe $(ProjectDir)$(OutDir)\BloodyUnitTests.exe $(ProjectDir)$(OutDir)\ScintillaNET.dll</PostBuildEvent>
+  </PropertyGroup>
 </Project>
