@@ -9,12 +9,12 @@ namespace BloodyUnitTests
         {
             LinesOfCode = linesOfCode
                           ?? throw new ArgumentNullException(nameof(linesOfCode));
-            UsingNamesSpaces = usingNamesSpaces
+            NamesSpaces = usingNamesSpaces
                                ?? throw new ArgumentNullException(nameof(usingNamesSpaces));
         }
 
         public string[] LinesOfCode { get; }
 
-        public string[] UsingNamesSpaces { get; }
+        public string[] NamesSpaces { get; }
     }
 }

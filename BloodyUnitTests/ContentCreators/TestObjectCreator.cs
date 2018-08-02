@@ -16,7 +16,7 @@ namespace BloodyUnitTests.ContentCreators
 
         public ClassContent HelperMethodContent(Type type)
         {
-            return new ClassContent(GetHelperObjectCreatorsForType(type), new string[0]);
+            return GetHelperObjectCreatorsForType(type);
         }
 
         private string[] TestFactoryDeclarationInner(Type type)
@@ -70,7 +70,7 @@ namespace BloodyUnitTests.ContentCreators
             return lines.ToArray();
         }
 
-        private string[] GetHelperObjectCreatorsForType(Type type)
+        private ClassContent GetHelperObjectCreatorsForType(Type type)
         {
             var lines = new List<string>();
 
@@ -85,6 +85,14 @@ namespace BloodyUnitTests.ContentCreators
                                     .Where(m_TypeDescriber.IsPoco)
                                     .ToArray();
 
+            var namesSpaces = simpleClasses
+                .SelectMany(c => c.GetConstructors())
+                .SelectMany(c => c.GetParameters())
+                .Select(p => p.ParameterType).Select(t=>t.Namespace)
+                .Append(type.Namespace)
+                .Distinct()
+                .ToArray();
+
             for (var i = 0; i < simpleClasses.Length; i++)
             {
                 if (i > 0) lines.Add(string.Empty);
@@ -94,7 +102,7 @@ namespace BloodyUnitTests.ContentCreators
                 lines.AddRange(declaration);
             }
 
-            return lines.ToArray();
+            return new ClassContent(lines.ToArray(), namesSpaces);
         }
 
         private string[] GetObjectCreator(Type type)
