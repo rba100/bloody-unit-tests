@@ -48,8 +48,8 @@ namespace BloodyUnitTests.ContentCreators
             var sutVarName = m_TypeDescriber.GetVariableName(classToTest.Name, Scope.Local);
             var rootType = constructor.DeclaringType;
 
-            var ctorArgs = m_TypeDescriber.GetMethodArguments(constructor, assumeDummyVariablesExist: false);
-            var methodArgs = m_TypeDescriber.GetMethodArguments(method, assumeDummyVariablesExist: true);
+            var ctorArgs = m_TypeDescriber.GetMethodArguments(constructor, useVariables: false, nonDefault: true);
+            var methodArgs = m_TypeDescriber.GetMethodArguments(method, useVariables: true, nonDefault: true);
             var ifIndex = constructor.GetParameters()
                                      .Select((p, i) => new { p, i })
                                      .Single(o => o.p.ParameterType == interfaceType).i;
@@ -65,7 +65,7 @@ namespace BloodyUnitTests.ContentCreators
             lines.Add("{");
             if (!isVoid)
             {
-                lines.Add($"    var expectedResult = {m_TypeDescriber.GetInstance(method.ReturnType)};");
+                lines.Add($"    var expectedResult = {m_TypeDescriber.GetInstance(method.ReturnType, true)};");
             }
             lines.Add($"    {m_TypeDescriber.GetMockVariableDeclaration(interfaceType)}");
             lines.Add($"    {mockVarName}.Expect(m=>m.{method.Name}({methodArgumentsFlat}))");

@@ -64,18 +64,12 @@ namespace BloodyUnitTests
                 || IsArrayAssignable(type);
         }
 
-        /// <summary>
-        /// Returns a string that instantiates the given type. Value types may use default literals.
-        /// </summary>
-        /// <remarks>
-        /// For complex types that do not have simple invocations it is assumed a helper method exists 
-        /// e.g. GetInstance(typeof(MyType)) => "CreateMyType()"
-        /// </remarks>
-        /// <example>
-        /// GetInstance(typeof(Int32)) => "0"
-        /// GetInstance(typeof(IDisposable)) => "GenerateStub[IDisposable]()"
-        /// </example>
         public string GetInstance(Type possibleReftype)
+        {
+            return GetInstance(possibleReftype, false);
+        }
+
+        public string GetInstance(Type possibleReftype, bool nonDefault)
         {
             if (possibleReftype == null) throw new ArgumentNullException(nameof(possibleReftype));
 
@@ -85,18 +79,21 @@ namespace BloodyUnitTests
 
             if (IsArrayAssignable(type))
             {
-                if (type == typeof(Type[])) return "Type.EmptyTypes";
+                if (type == typeof(Type[])) return nonDefault ? "new Type[] { typeof(string) }" : "Type.EmptyTypes";
                 // ReSharper disable once PossibleNullReferenceException
                 var gArgs = type.GetGenericArguments();
                 var elementType = gArgs.SingleOrDefault() ?? type.GetElementType();
-                return $"new {GetTypeNameForCSharp(elementType)}[0]";
+
+                return nonDefault
+                    ? $"new {GetTypeNameForCSharp(elementType)}[] {{ {GetInstance(elementType, true)} }}"
+                    : $"new {GetTypeNameForCSharp(elementType)}[0]";
             }
 
             if (type == typeof(string))
-                return "\"\"";
+                return nonDefault ? "\"value\"" : "\"\"";
 
             if (type == typeof(char))
-                return "' '";
+                return nonDefault ? "X" : "' '";
 
             if (type == typeof(int)
                 || type == typeof(uint)
@@ -104,11 +101,11 @@ namespace BloodyUnitTests
                 || type == typeof(UInt64)
                 || type == typeof(float)
                 || type == typeof(double)
-                || type == typeof(decimal)) return "0";
+                || type == typeof(decimal)) return nonDefault ? "7" : "0";
 
-            if (type == typeof(bool)) return "false";
+            if (type == typeof(bool)) return nonDefault.ToString();
 
-            if (type == typeof(IntPtr)) return "IntPtr.Zero";
+            if (type == typeof(IntPtr)) return nonDefault ? "new IntPtr(1)" : "IntPtr.Zero";
 
             if (type == typeof(Type)) return "typeof(object)";
 
@@ -133,11 +130,11 @@ namespace BloodyUnitTests
                     if (type.IsAssignableFrom(actionType)) return $"(_) => {{}}";
                 }
 
-                // If it has a parameterless constructor then we have an easy way out.
-                if (type.GetConstructor(Type.EmptyTypes) != null) return $"new {GetTypeNameForCSharp(type)}()";
-
                 // If it's a POCO type then we will assume there is a helper method called 'CreateThing()'
                 if (IsPoco(type)) return $"Create{GetVariableName(type, Scope.Member)}()";
+
+                // If it has a parameterless constructor then we have an easy way out.
+                if (type.GetConstructor(Type.EmptyTypes) != null) return $"new {GetTypeNameForCSharp(type)}()";
 
                 // Fallback: prepare an non-compiling instantiation and let the user fix it
                 return $"new {GetTypeNameForCSharp(type)}(/* ... */)";
@@ -146,7 +143,15 @@ namespace BloodyUnitTests
             var nullableType = Nullable.GetUnderlyingType(type);
             if (nullableType != null) return $"({nullableType.Name}?) {GetInstance(nullableType)}";
 
-            if (type == typeof(DateTime)) return "DateTime.UtcNow";
+            if (type == typeof(DateTime)) return nonDefault
+                ? "DateTime.SpecifyKind(DateTime.MaxValue, DateTimeKind.Utc)"
+                : "DateTime.UtcNow";
+
+            if (type.IsEnum)
+            {
+                var names = Enum.GetNames(type);
+                return nonDefault && names.Length > 1 ? $"{type.Name}.{names[1]}" : $"{type.Name}.{names[0]}";
+            }
 
             return $"default({GetTypeNameForCSharp(type)})";
         }
@@ -181,7 +186,7 @@ namespace BloodyUnitTests
 
             // ReSharper disable once AssignNullToNotNullAttribute
             var nullableType = Nullable.GetUnderlyingType(unRefType);
-            if (nullableType != null) return $"{nullableType.Name}?";
+            if (nullableType != null) return $"{GetTypeNameForCSharp(nullableType)}?";
 
             var typeDisplayName = unRefType.Name;
             if (unRefType.IsGenericType)
@@ -229,13 +234,13 @@ namespace BloodyUnitTests
                        .All(p => !p.IsOut && IsSimpleType(p.ParameterType, typeHistory));
         }
 
-        public string[] GetMethodArguments(MethodBase methodBase, bool assumeDummyVariablesExist)
+        public string[] GetMethodArguments(MethodBase methodBase, bool useVariables, bool nonDefault)
         {
             var parameters = methodBase.GetParameters();
 
-            var arguments = assumeDummyVariablesExist
+            var arguments = useVariables
                 ? parameters.Select(p => p.ParameterType).Select(t => GetVariableName(t, Scope.Local)).ToArray()
-                : parameters.Select(p => p.ParameterType).Select(GetInstance).ToArray();
+                : parameters.Select(p => p.ParameterType).Select(t => GetInstance(t, nonDefault)).ToArray();
 
             for (var index = 0; index < parameters.Length; index++)
             {
@@ -250,7 +255,7 @@ namespace BloodyUnitTests
                 // If not a ref then check if we can use a literal / immediate value instead of variable
                 else if (IsImmediateValueTolerable(type))
                 {
-                    arguments[index] = GetInstance(type);
+                    arguments[index] = GetInstance(type, nonDefault);
                 }
             }
 
