@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.m_TabContainer = new System.Windows.Forms.TabControl();
             this.m_Do1 = new System.Windows.Forms.Button();
             this.m_NullTestButton = new System.Windows.Forms.Button();
@@ -87,6 +88,7 @@
             this.Controls.Add(this.m_NullTestButton);
             this.Controls.Add(this.m_Do1);
             this.Controls.Add(this.m_TabContainer);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MainForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.Text = "Bloody Unit Tests";

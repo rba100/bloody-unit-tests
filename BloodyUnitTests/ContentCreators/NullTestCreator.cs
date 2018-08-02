@@ -4,71 +4,81 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace BloodyUnitTests
+namespace BloodyUnitTests.ContentCreators
 {
     public class NullTestCreator
     {
         private readonly TypeDescriber m_TypeDescriber = new TypeDescriber();
 
-        public string GetNullConstructorArgsTest(Type type)
+        public ClassContent GetNullConstructorArgTestContent(Type type)
         {
-            var typeName = type.Name;
-            StringBuilder sb = new StringBuilder();
-            var testCaseSource = $"{typeName}_constructor_null_argument_testcases";
-            sb.AppendLine($"public static IEnumerable<TestCaseData> {testCaseSource}()");
-            sb.AppendLine("{");
-            foreach (var line in GetConstructorNullTestCaseSource(type))
-            {
-                sb.AppendLine(new String(' ', 4) + line);
-            }
-
-            sb.AppendLine("}");
-
-            sb.AppendLine();
-
-            sb.AppendLine($"[TestCaseSource(nameof({testCaseSource}))]");
-            sb.AppendLine($"public void {typeName}_constructor_null_argument_test(TestDelegate testDelegate)");
-            sb.AppendLine("{");
-
-            sb.AppendLine("    Assert.Throws<ArgumentNullException>(testDelegate);");
-            sb.AppendLine("}");
-            return sb.ToString();
+            return new ClassContent(GetNullConstructorArgsTestInner(type), new string[0]);
         }
 
-        public string GetNullMethodArgsTest(Type type)
+        public ClassContent GetNullMethodArgTestContent(Type type)
+        {
+            return new ClassContent(GetNullMethodArgsTestInner(type), new string[0]);
+        }
+
+        private string[] GetNullConstructorArgsTestInner(Type type)
         {
             var typeName = type.Name;
-            StringBuilder sb = new StringBuilder();
-            var testCaseSource = $"{typeName}_method_null_argument_testcases";
-            sb.AppendLine($"public static IEnumerable<TestCaseData> {testCaseSource}()");
-            sb.AppendLine("{");
-            foreach (var line in GetMethodNullTestCaseSource(type))
+            List<string> lines = new List<string>();
+            var testCaseSource = $"{typeName}_constructor_null_argument_testcases";
+            lines.Add($"public static IEnumerable<TestCaseData> {testCaseSource}()");
+            lines.Add("{");
+            foreach (var line in GetConstructorNullTestCaseSource(type))
             {
-                sb.AppendLine(new String(' ', 4) + line);
+                lines.Add(new String(' ', 4) + line);
             }
 
-            sb.AppendLine("}");
+            lines.Add("}");
 
-            sb.AppendLine();
+            lines.Add(string.Empty);
 
-            sb.AppendLine($"[TestCaseSource(nameof({testCaseSource}))]");
-            sb.AppendLine($"public void {typeName}_method_null_argument_test(TestDelegate testDelegate)");
-            sb.AppendLine("{");
+            lines.Add($"[TestCaseSource(nameof({testCaseSource}))]");
+            lines.Add($"public void {typeName}_constructor_null_argument_test(TestDelegate testDelegate)");
+            lines.Add("{");
 
-            sb.AppendLine("    Assert.Throws<ArgumentNullException>(testDelegate);");
-            sb.AppendLine("}");
-            return sb.ToString();
+            lines.Add("    Assert.Throws<ArgumentNullException>(testDelegate);");
+            lines.Add("}");
+            return lines.ToArray();
+        }
+
+        public string[] GetNullMethodArgsTestInner(Type type)
+        {
+            var typeName = type.Name;
+            List<string> lines = new List<string>();
+            var testCaseSource = $"{typeName}_method_null_argument_testcases";
+            lines.Add($"public static IEnumerable<TestCaseData> {testCaseSource}()");
+            lines.Add("{");
+            foreach (var line in GetMethodNullTestCaseSource(type))
+            {
+                lines.Add(new String(' ', 4) + line);
+            }
+
+            lines.Add("}");
+
+            lines.Add(string.Empty);
+
+            lines.Add($"[TestCaseSource(nameof({testCaseSource}))]");
+            lines.Add($"public void {typeName}_method_null_argument_test(TestDelegate testDelegate)");
+            lines.Add("{");
+
+            lines.Add("    Assert.Throws<ArgumentNullException>(testDelegate);");
+            lines.Add("}");
+            return lines.ToArray();
         }
 
         private string[] GetMethodNullTestCaseSource(Type type)
         {
             var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                              .Where(m => AssemblyHelper.IsTestableMethod(type, m))
+                              .Where(type.IsMethodTestable)
                               .ToArray();
 
             if (!methods.Any())
                 methods = type.GetMethods(BindingFlags.Public | BindingFlags.Static)
-                              .Where(m => AssemblyHelper.IsTestableMethod(type, m))
+                              .Where(type.IsMethodTestable)
                               .ToArray();
 
             return ToMethodNullArgsTestCaseSourceImp(methods, type);

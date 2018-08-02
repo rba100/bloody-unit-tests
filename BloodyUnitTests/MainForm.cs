@@ -73,8 +73,8 @@ namespace BloodyUnitTests
             try
             {
                 if (!File.Exists(filePath)) return;
-                m_Assembly = AssemblyHelper.GetAssembly(filePath);
-                comboBox1.DataSource = AssemblyHelper.Classes(m_Assembly);
+                m_Assembly = Assembly.LoadFrom(filePath);
+                comboBox1.DataSource = m_Assembly.GetTestableClasses();
                 comboBox1.SelectedIndex = 0;
                 m_NullTestButton.Enabled = true;
             }
@@ -106,23 +106,24 @@ namespace BloodyUnitTests
         {
             try
             {
-                var nullTestCreator = new NullTestCreator();
-                var testObjectCreator = new TestObjectCreator();
+                var type = m_Assembly.GetLoadableTypes().First(t => t.Name == comboBox1.SelectedItem as string);
 
-                var type = AssemblyHelper.GetLoadableTypes(m_Assembly).First(t => t.Name == comboBox1.SelectedItem as string);
-
-                var nullCtorTest = nullTestCreator.GetNullConstructorArgsTest(type);
-                var nullMethodTest = nullTestCreator.GetNullMethodArgsTest(type);
-                var testFactory = string.Join(Environment.NewLine, testObjectCreator.TestFactoryDeclaration(type));
-                var helperMethods = string.Join(Environment.NewLine, testObjectCreator.GetHelperObjectCreatorsForType(type));
+                //var nullTestCreator = new NullTestCreator();
+                //var testObjectCreator = new TestObjectCreator();
+                //var nullCtorTest = nullTestCreator.GetNullConstructorArgsTest(type);
+                //var nullMethodTest = nullTestCreator.GetNullMethodArgsTest(type);
+                //var testFactory = string.Join(Environment.NewLine, testObjectCreator.TestFactoryDeclaration(type));
+                //var helperMethods = string.Join(Environment.NewLine, testObjectCreator.GetHelperObjectCreatorsForType(type));
 
                 var editor = GetDefaultEditor();
                 var tab = new TabPage(comboBox1.SelectedItem as string);
                 tab.Controls.Add(editor);
-                editor.Text = nullCtorTest 
-                              + Environment.NewLine + Environment.NewLine + nullMethodTest
-                              + Environment.NewLine + Environment.NewLine + testFactory
-                              + Environment.NewLine + Environment.NewLine + helperMethods;
+                //editor.Text = nullCtorTest 
+                //              + Environment.NewLine + Environment.NewLine + nullMethodTest
+                //              + Environment.NewLine + Environment.NewLine + testFactory
+                //              + Environment.NewLine + Environment.NewLine + helperMethods;
+
+                editor.Text = TestFixtureCreator.CreateTestFixture(type);
 
                 m_TabContainer.Controls.Add(tab);
                 m_TabContainer.SelectedTab = tab;

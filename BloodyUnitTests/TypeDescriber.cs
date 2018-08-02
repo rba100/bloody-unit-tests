@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace BloodyUnitTests
 {
-    class TypeDescriber
+    internal class TypeDescriber
     {
         public bool HasParamKeyword(ParameterInfo arg)
         {
@@ -52,16 +52,16 @@ namespace BloodyUnitTests
         public bool IsImmediateValueTolerable(Type type)
         {
             return type == typeof(char)
-                   || type == typeof(string)
-                   || type == typeof(int)
-                   || type == typeof(uint)
-                   || type == typeof(Int64)
-                   || type == typeof(UInt64)
-                   || type == typeof(float)
-                   || type == typeof(double)
-                   || type == typeof(decimal)
-                   || type == typeof(bool)
-                   || IsArrayAssignable(type);
+                || type == typeof(string)
+                || type == typeof(int)
+                || type == typeof(uint)
+                || type == typeof(Int64)
+                || type == typeof(UInt64)
+                || type == typeof(float)
+                || type == typeof(double)
+                || type == typeof(decimal)
+                || type == typeof(bool)
+                || IsArrayAssignable(type);
         }
 
         /// <summary>
@@ -85,6 +85,7 @@ namespace BloodyUnitTests
 
             if (IsArrayAssignable(type))
             {
+                if (type == typeof(Type[])) return "Type.EmptyTypes";
                 // ReSharper disable once PossibleNullReferenceException
                 var gArgs = type.GetGenericArguments();
                 var elementType = gArgs.SingleOrDefault() ?? type.GetElementType();
@@ -176,11 +177,15 @@ namespace BloodyUnitTests
         {
             if (!type.IsClass || type.IsAbstract) return false;
 
-            // Recurses all dependencies, allowing value types and array types to count as 'POCO'
-            return IsPocoOrValueType(type, new List<Type>());
+            return IsSimpleType(type, new List<Type>());
         }
 
-        private bool IsPocoOrValueType(Type type, IList<Type> typeHistory)
+        /// <summary>
+        /// Returns true for 'simple types', which are defined as
+        /// value types, arrays, and classes which only
+        /// require simple types for their most argumentative constructor.
+        /// </summary>
+        private bool IsSimpleType(Type type, IList<Type> typeHistory)
         {
             if (type.IsValueType) return true;
             if (type == typeof(string)) return true;
@@ -190,7 +195,7 @@ namespace BloodyUnitTests
             if (typeHistory.Contains(type)) return false;
             typeHistory.Add(type);
 
-            if (type.IsArray && IsPocoOrValueType(type.GetElementType(), typeHistory)) return true;
+            if (type.IsArray && IsSimpleType(type.GetElementType(), typeHistory)) return true;
 
             var ctor = type.GetConstructors()
                            .OrderByDescending(c => c.GetParameters().Length)
@@ -199,7 +204,7 @@ namespace BloodyUnitTests
             if (ctor == null) return false;
 
             return ctor.GetParameters()
-                       .All(p => !p.IsOut && IsPocoOrValueType(p.ParameterType, typeHistory));
+                       .All(p => !p.IsOut && IsSimpleType(p.ParameterType, typeHistory));
         }
 
         private static bool IsArrayAssignable(Type type)

@@ -3,18 +3,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace BloodyUnitTests
+namespace BloodyUnitTests.ContentCreators
 {
     public class TestObjectCreator
     {
         private readonly TypeDescriber m_TypeDescriber = new TypeDescriber();
 
-        public string[] TestFactoryDeclaration(Type type, ConstructorInfo constructor = null)
+        public ClassContent TestFactoryDeclaration(Type type)
+        {
+            return new ClassContent(TestFactoryDeclarationInner(type), new string[0]);
+        }
+
+        public ClassContent HelperMethodContent(Type type)
+        {
+            return new ClassContent(GetHelperObjectCreatorsForType(type), new string[0]);
+        }
+
+        private string[] TestFactoryDeclarationInner(Type type)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
             var lines = new List<string>();
 
-            var ctor = constructor ?? type.GetConstructors().First();
+            var ctor = type.GetConstructors().First();
             var parameters = ctor.GetParameters();
             var interfaces = parameters.Where(p => p.ParameterType.IsInterface).ToArray();
 
@@ -49,7 +59,7 @@ namespace BloodyUnitTests
             // Verify all
             lines.Add($"{indent}public void VerifyAllExpectations()");
             lines.Add($"{indent}{{");
-            foreach (var i in interfaces.Where(i=>!i.ParameterType.Namespace.StartsWith(nameof(System))))
+            foreach (var i in interfaces.Where(i => !i.ParameterType.Namespace.StartsWith(nameof(System))))
             {
                 if (!i.ParameterType.IsInterface) continue;
                 lines.Add($"{indent}{indent}{m_TypeDescriber.GetVariableName(i, Scope.Member)}.VerifyAllExpectations();");
@@ -60,7 +70,7 @@ namespace BloodyUnitTests
             return lines.ToArray();
         }
 
-        public string[] GetHelperObjectCreatorsForType(Type type)
+        private string[] GetHelperObjectCreatorsForType(Type type)
         {
             var lines = new List<string>();
 
@@ -75,12 +85,13 @@ namespace BloodyUnitTests
                                     .Where(m_TypeDescriber.IsPoco)
                                     .ToArray();
 
-            foreach (var simpleClass in simpleClasses)
+            for (var i = 0; i < simpleClasses.Length; i++)
             {
+                if (i > 0) lines.Add(string.Empty);
+                var simpleClass = simpleClasses[i];
                 var declaration = GetObjectCreator(simpleClass);
                 if (!declaration.Any()) continue;
                 lines.AddRange(declaration);
-                lines.Add("");
             }
 
             return lines.ToArray();
