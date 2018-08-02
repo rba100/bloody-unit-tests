@@ -365,6 +365,11 @@ namespace BloodyUnitTests
                 typeDisplayName = typeDisplayName + string.Join("", genericParams.Select(GetVariableName));
             }
 
+            if (unRefType.IsArray)
+            {
+                typeDisplayName = typeDisplayName.Replace("[]", "Array");
+            }
+
             if (unRefType.IsInterface && typeDisplayName.StartsWith("I"))
             {
                 return new string(typeDisplayName.Skip(1).ToArray());
