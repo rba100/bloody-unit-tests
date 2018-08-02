@@ -76,7 +76,7 @@ namespace BloodyUnitTests
                 m_Assembly = Assembly.LoadFrom(filePath);
                 comboBox1.DataSource = m_Assembly.GetTestableClasses();
                 comboBox1.SelectedIndex = 0;
-                m_NullTestButton.Enabled = true;
+                btCreateTests.Enabled = true;
             }
             catch (Exception ex)
             {
@@ -84,7 +84,7 @@ namespace BloodyUnitTests
             }
         }
 
-        private void _loadAssembly_click(object sender, EventArgs e)
+        private void btLoadAssembly_Click(object sender, EventArgs e)
         {
             try
             {
@@ -102,28 +102,17 @@ namespace BloodyUnitTests
             }
         }
 
-        private void _createTests_click(object sender, EventArgs e)
+        private void btCreateTests_Click(object sender, EventArgs e)
         {
             try
             {
                 var type = m_Assembly.GetLoadableTypes().First(t => t.Name == comboBox1.SelectedItem as string);
 
-                //var nullTestCreator = new NullTestCreator();
-                //var testObjectCreator = new TestObjectCreator();
-                //var nullCtorTest = nullTestCreator.GetNullConstructorArgsTest(type);
-                //var nullMethodTest = nullTestCreator.GetNullMethodArgsTest(type);
-                //var testFactory = string.Join(Environment.NewLine, testObjectCreator.TestFactoryDeclaration(type));
-                //var helperMethods = string.Join(Environment.NewLine, testObjectCreator.GetHelperObjectCreatorsForType(type));
-
                 var editor = GetDefaultEditor();
+                editor.Text = TestFixtureCreator.CreateTestFixture(type);
+
                 var tab = new TabPage(comboBox1.SelectedItem as string);
                 tab.Controls.Add(editor);
-                //editor.Text = nullCtorTest 
-                //              + Environment.NewLine + Environment.NewLine + nullMethodTest
-                //              + Environment.NewLine + Environment.NewLine + testFactory
-                //              + Environment.NewLine + Environment.NewLine + helperMethods;
-
-                editor.Text = TestFixtureCreator.CreateTestFixture(type);
 
                 m_TabContainer.Controls.Add(tab);
                 m_TabContainer.SelectedTab = tab;
@@ -136,20 +125,21 @@ namespace BloodyUnitTests
 
         private Assembly m_Assembly;
 
-        private void m_Do1_DragDrop(object sender, DragEventArgs e)
+        private void btLoadAssembly_DragDrop(object sender, DragEventArgs e)
         {
-            string[] data = e.Data.GetData(DataFormats.FileDrop) as string[];
-            if (data != null && data.Length == 1 && File.Exists(data[0]))
+            if (e.Data.GetData(DataFormats.FileDrop) is string[] data 
+                && data.Length == 1 
+                && File.Exists(data[0]))
             {
                 LoadAssembly(data[0]);
             }
         }
 
-        private void m_Do1_DragEnter(object sender, DragEventArgs e)
+        private void btLoadAssembly_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
-                e.Effect = DragDropEffects.All;
+                e.Effect = DragDropEffects.Copy;
             }
         }
     }
