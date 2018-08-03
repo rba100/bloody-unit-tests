@@ -11,18 +11,12 @@ namespace BloodyUnitTests.ContentCreators
 
         public ClassContent Create(Type type)
         {
-            return new ClassContent(GetNullMethodArgsTestInner(type), new string[0]);
-        }
-
-        private string[] GetNullMethodArgsTestInner(Type type)
-        {
-            var typeName = type.Name;
-            List<string> lines = new List<string>();
+            var lines = new List<string>();
 
             var testCases = GetMethodNullTestCaseSource(type);
-            if (!testCases.Any()) return lines.ToArray();
+            if (!testCases.Any()) return ClassContent.NoContent();
 
-            var testCaseSource = $"{typeName}_method_null_argument_testcases";
+            var testCaseSource = $"{type.Name}_method_null_argument_testcases";
             lines.Add($"public static IEnumerable<TestCaseData> {testCaseSource}()");
             lines.Add("{");
             foreach (var line in testCases)
@@ -35,22 +29,17 @@ namespace BloodyUnitTests.ContentCreators
             lines.Add(string.Empty);
 
             lines.Add($"[TestCaseSource(nameof({testCaseSource}))]");
-            lines.Add($"public void {typeName}_method_null_argument_test(TestDelegate testDelegate)");
+            lines.Add($"public void {type.Name}_method_null_argument_test(TestDelegate testDelegate)");
             lines.Add("{");
 
             lines.Add("    Assert.Throws<ArgumentNullException>(testDelegate);");
             lines.Add("}");
-            return lines.ToArray();
+            return new ClassContent(lines.ToArray(), new string[0]);
         }
 
         private string[] GetMethodNullTestCaseSource(Type type)
         {
             var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                              .Where(type.IsMethodTestable)
-                              .ToArray();
-
-            if (!methods.Any())
-                methods = type.GetMethods(BindingFlags.Public | BindingFlags.Static)
                               .Where(type.IsMethodTestable)
                               .ToArray();
 

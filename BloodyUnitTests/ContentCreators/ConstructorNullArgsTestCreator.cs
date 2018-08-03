@@ -20,19 +20,12 @@ namespace BloodyUnitTests.ContentCreators
             List<string> lines = new List<string>();
 
             var testCases = GetConstructorNullTestCaseSource(type);
-            if (!testCases.Any()) return lines.ToArray();
-
+            if (!testCases.Any()) return new string[0];
+            var indent = new string(' ', 4);
             var testCaseSource = $"{typeName}_constructor_null_argument_testcases";
             lines.Add($"public static IEnumerable<TestCaseData> {testCaseSource}()");
             lines.Add("{");
-
-            lines.Add("    // ReSharper disable ObjectCreationAsStatement");
-            foreach (var line in testCases)
-            {
-                lines.Add(new string(' ', 4) + line);
-            }
-            lines.Add("    // ReSharper restore ObjectCreationAsStatement");
-
+            lines.AddRange(testCases.Select(line => $"{indent}{line}"));
             lines.Add("}");
 
             lines.Add(string.Empty);
@@ -40,8 +33,7 @@ namespace BloodyUnitTests.ContentCreators
             lines.Add($"[TestCaseSource(nameof({testCaseSource}))]");
             lines.Add($"public void {typeName}_constructor_null_argument_test(TestDelegate testDelegate)");
             lines.Add("{");
-
-            lines.Add("    Assert.Throws<ArgumentNullException>(testDelegate);");
+            lines.Add($"{indent}Assert.Throws<ArgumentNullException>(testDelegate);");
             lines.Add("}");
             return lines.ToArray();
         }
@@ -68,7 +60,8 @@ namespace BloodyUnitTests.ContentCreators
 
             if (variableDeclarations.Any()) lines.Add(string.Empty);
 
-
+            bool testCasesExist = false;
+            int preTestLineCount = lines.Count;
             foreach (var ctor in constructors)
             {
                 var typeName = ctor.DeclaringType?.Name;
@@ -78,12 +71,19 @@ namespace BloodyUnitTests.ContentCreators
                 for (int i = 0; i < parameterTypes.Length; i++)
                 {
                     if (parameterTypes[i].ParameterType.IsValueType) continue;
+                    testCasesExist = true;
                     var name = parameterTypes[i].Name;
-                    var copyOfArguments = new List<string>(arguments) { [i] = "null" };
+                    var argumentsWithNulledParameter = new List<string>(arguments) { [i] = "null" };
 
                     lines.Add($"yield return new TestCaseData(new TestDelegate(() => new " +
-                              $"{typeName}({string.Join(", ", copyOfArguments)}))).SetName(\"null {name}\");");
+                              $"{typeName}({string.Join(", ", argumentsWithNulledParameter)}))).SetName(\"null {name}\");");
                 }
+            }
+
+            if (testCasesExist)
+            {
+                lines.Insert(preTestLineCount, "// ReSharper disable ObjectCreationAsStatement");
+                lines.Add("// ReSharper restore ObjectCreationAsStatement");
             }
 
             return lines.ToArray();

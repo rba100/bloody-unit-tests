@@ -11,14 +11,9 @@ namespace BloodyUnitTests.ContentCreators
 
         public ClassContent Create(Type type)
         {
-            return new ClassContent(CreatePassthroughTestsInner(type), new string[0]);
-        }
-
-        private string[] CreatePassthroughTestsInner(Type type)
-        {
             var (ctor, ifType) = GetPassthroughConstructor(type);
-            if (ctor == null) return new string[0];
-            return GenerateTestMethods(type, ctor, ifType);
+            if (ctor == null) return ClassContent.NoContent();
+            return new ClassContent(GenerateTestMethods(type, ctor, ifType), new[] { ifType.Namespace });
         }
 
         private string[] GenerateTestMethods(Type classToTest, ConstructorInfo constructor, Type interfaceType)
@@ -29,7 +24,7 @@ namespace BloodyUnitTests.ContentCreators
 
             for (var i = 0; i < methods.Length; i++)
             {
-                if(i>0) lines.Add(string.Empty);
+                if (i > 0) lines.Add(string.Empty);
                 lines.AddRange(GenerateTestMethod(classToTest, constructor, interfaceType, methods[i]));
             }
 
@@ -48,7 +43,7 @@ namespace BloodyUnitTests.ContentCreators
             var methodVariables = method.GetParameters()
                                         .Where(m_TypeDescriber.ShouldUseVariableForParameter)
                                         .Where(p => p.ParameterType != interfaceType)
-                                        .Select(p=> m_TypeDescriber.GetLocalVariableDeclaration(p.ParameterType, false));
+                                        .Select(p => m_TypeDescriber.GetLocalVariableDeclaration(p.ParameterType, false));
 
             var rootType = constructor.DeclaringType;
 
@@ -67,7 +62,7 @@ namespace BloodyUnitTests.ContentCreators
             lines.Add("[Test]");
             lines.Add($"public void {method.Name}_passthrough_test()");
             lines.Add("{");
-            lines.AddRange(methodVariables.Select(v=>$"    {v}"));
+            lines.AddRange(methodVariables.Select(v => $"    {v}"));
             if (!isVoid)
             {
                 lines.Add($"    var expectedResult = {m_TypeDescriber.GetInstance(method.ReturnType, true)};");
@@ -90,12 +85,10 @@ namespace BloodyUnitTests.ContentCreators
             return lines.ToArray();
         }
 
-        private (ConstructorInfo,Type) GetPassthroughConstructor(Type type)
+        private (ConstructorInfo, Type) GetPassthroughConstructor(Type type)
         {
             var interfaces = type.GetInterfaces();
-            if (!interfaces.Any()) return (null,null);
-
-            //var passthroughConstructor = interfaces.Select(i => type.GetConstructor(new[] {i})).SingleOrDefault();
+            if (!interfaces.Any()) return (null, null);
 
             bool isPotentialPassthoughCtor(ConstructorInfo constructor)
             {

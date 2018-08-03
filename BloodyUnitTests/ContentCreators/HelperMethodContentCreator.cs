@@ -41,7 +41,7 @@ namespace BloodyUnitTests.ContentCreators
             {
                 if (i > 0) lines.Add(string.Empty);
                 var simpleClass = simpleClasses[i];
-                var declaration = GetObjectCreator(simpleClass);
+                var declaration = GetBuilderMethod(simpleClass);
                 if (!declaration.Any()) continue;
                 lines.AddRange(declaration);
             }
@@ -49,7 +49,7 @@ namespace BloodyUnitTests.ContentCreators
             return new ClassContent(lines.ToArray(), namesSpaces);
         }
 
-        private string[] GetObjectCreator(Type type)
+        private string[] GetBuilderMethod(Type type)
         {
             var lines = new List<string>();
             var parameters = type.GetConstructors()
@@ -57,7 +57,7 @@ namespace BloodyUnitTests.ContentCreators
                                  .First()
                                  .GetParameters();
 
-            if (parameters.Length == 0) return lines.ToArray();
+            if (parameters.Length == 0) return new string[0];
 
             var arguments = parameters.Select(p => m_TypeDescriber.GetInstance(p.ParameterType)).ToArray();
 
