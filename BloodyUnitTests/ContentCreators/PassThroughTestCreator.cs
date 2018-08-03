@@ -49,9 +49,12 @@ namespace BloodyUnitTests.ContentCreators
 
             var ctorArgs = m_TypeDescriber.GetMethodArguments(constructor, useVariables: false, nonDefault: true);
             var methodArgs = m_TypeDescriber.GetMethodArguments(method, useVariables: true, nonDefault: true);
-            var ifIndex = constructor.GetParameters()
+            var ifParam = constructor.GetParameters()
                                      .Select((p, i) => new { p, i })
-                                     .Single(o => o.p.ParameterType == interfaceType).i;
+                                     .Single(o => o.p.ParameterType == interfaceType);
+
+            var ifParamName = ifParam.p.Name;
+            var ifIndex = ifParam.i;
 
             ctorArgs[ifIndex] = mockVarName;
 
@@ -60,7 +63,7 @@ namespace BloodyUnitTests.ContentCreators
 
             var lines = new List<string>();
             lines.Add("[Test]");
-            lines.Add($"public void {method.Name}_passthrough_test()");
+            lines.Add($"public void {method.Name}_delegates_to_{ifParamName}()");
             lines.Add("{");
             lines.AddRange(methodVariables.Select(v => $"    {v}"));
             if (!isVoid)
