@@ -170,7 +170,7 @@ namespace BloodyUnitTests
             if (type.IsEnum)
             {
                 var names = Enum.GetNames(type);
-                if(names.Any()) return nonDefault && names.Length > 1 ? $"{type.Name}.{names[1]}" : $"{type.Name}.{names[0]}";
+                if (names.Any()) return nonDefault && names.Length > 1 ? $"{type.Name}.{names[1]}" : $"{type.Name}.{names[0]}";
             }
 
             return $"default({GetTypeNameForCSharp(type)})";
@@ -399,7 +399,8 @@ namespace BloodyUnitTests
             var unRefType = type.IsByRef ? type.GetElementType() : type;
             if (type.IsClass && type.Namespace != "System") return ToLowerInitial(varName);
             if (unRefType == typeof(DateTime)) return "dateTimeUtc";
-            var output = ToLowerInitial($"{prefix}{varName}");
+            var output = ToLowerInitial(varName);
+            if (s_Keywords.Contains(output)) return $"{prefix}{varName}";
             return output == type.Name ? output + "1" : output;
         }
 
@@ -412,7 +413,38 @@ namespace BloodyUnitTests
         {
             return str[0].ToString().ToUpper() + new string(str.Skip(1).ToArray());
         }
+
+        private static string[] s_Keywords = {
+            "abstract", "add", "as", "ascending",
+            "async", "await", "base", "bool",
+            "break", "by", "byte", "case",
+            "catch", "char", "checked", "class",
+            "const", "continue", "decimal", "default",
+            "delegate", "descending", "do", "double",
+            "dynamic", "else", "enum", "equals",
+            "explicit", "extern", "false", "finally",
+            "fixed", "float", "for", "foreach",
+            "from", "get", "global", "goto",
+            "group", "if", "implicit", "in",
+            "int", "interface", "internal", "into",
+            "is", "join", "let", "lock",
+            "long", "namespace", "new", "null",
+            "object", "on", "operator", "orderby",
+            "out", "override", "params", "partial",
+            "private", "protected", "public", "readonly",
+            "ref", "remove", "return", "sbyte",
+            "sealed", "select", "set", "short",
+            "sizeof", "stackalloc", "static", "string",
+            "struct", "switch", "this", "throw",
+            "true", "try", "typeof", "uint",
+            "ulong", "unchecked", "unsafe", "ushort",
+            "using", "value", "var", "virtual",
+            "void", "volatile", "where", "while",
+            "yield"
+        };
     }
 
     enum Scope { Local, Member }
+
+
 }
