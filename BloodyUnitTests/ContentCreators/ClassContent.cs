@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BloodyUnitTests
+namespace BloodyUnitTests.ContentCreators
 {
     public sealed class ClassContent
     {

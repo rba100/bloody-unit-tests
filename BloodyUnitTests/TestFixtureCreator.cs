@@ -11,8 +11,8 @@ namespace BloodyUnitTests
     {
         private static readonly string[] s_DefaultNamesSpaces =
         {
-            "System", "System.Text", "NUnit.Framework",
-            "Rhino.Mocks", "static Rhino.Mocks.MockRepository"
+            "System", "System.Text",
+            "NUnit.Framework", "Rhino.Mocks"
         };
 
         public static string CreateTestFixture(Type classToTest)
@@ -44,6 +44,8 @@ namespace BloodyUnitTests
             systemNamespaces.ForEach(ns => sb.AppendLine($"using {ns};"));
             sb.AppendLine();
             customNamespaces.ForEach(ns => sb.AppendLine($"using {ns};"));
+            sb.AppendLine();
+            sb.AppendLine("using static Rhino.Mocks.MockRepository;");
 
             sb.AppendLine();
             sb.AppendLine("[TestFixture]");

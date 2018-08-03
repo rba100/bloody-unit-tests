@@ -66,7 +66,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ClassContent.cs" />
+    <Compile Include="ContentCreators\ClassContent.cs" />
     <Compile Include="ContentCreators\HelperMethodContentCreator.cs" />
     <Compile Include="IContentCreator.cs" />
     <Compile Include="ContentCreators\MethodNullArgsTestCreator.cs" />
@@ -84,7 +84,7 @@
     <Compile Include="TestFixtureCreator.cs" />
     <Compile Include="ContentCreators\TestFactoryCreator.cs" />
     <Compile Include="ContentCreators\ConstructorNullArgsTestCreator.cs" />
-    <Compile Include="TypeDescriber.cs" />
+    <Compile Include="CSharpWriter.cs" />
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>

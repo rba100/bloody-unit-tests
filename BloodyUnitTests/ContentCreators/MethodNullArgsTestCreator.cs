@@ -7,7 +7,7 @@ namespace BloodyUnitTests.ContentCreators
 {
     class MethodNullArgsTestCreator : IContentCreator
     {
-        private readonly TypeDescriber m_TypeDescriber = new TypeDescriber();
+        private readonly CSharpWriter m_CSharpWriter = new CSharpWriter();
 
         public ClassContent Create(Type type)
         {
@@ -60,27 +60,27 @@ namespace BloodyUnitTests.ContentCreators
             var variablesNeeded = parameterTypes.Where(p => !p.IsOut).ToArray();
             var outVariablesNeeded = parameterTypes.Where(p => p.IsOut).Except(variablesNeeded).ToArray();
 
-            var variableDeclarations = m_TypeDescriber.GetVariableDeclarationsForParameters(variablesNeeded, setToNull: false);
-            var outVariableDeclarations = m_TypeDescriber.GetVariableDeclarationsForParameters(outVariablesNeeded, setToNull: true);
+            var variableDeclarations = m_CSharpWriter.GetVariableDeclarationsForParameters(variablesNeeded, setToNull: false);
+            var outVariableDeclarations = m_CSharpWriter.GetVariableDeclarationsForParameters(outVariablesNeeded, setToNull: true);
             lines.AddRange(variableDeclarations);
             lines.AddRange(outVariableDeclarations);
             if (variableDeclarations.Union(outVariableDeclarations).Any()) lines.Add(string.Empty);
 
-            var instanceName = m_TypeDescriber.GetVariableName(type, Scope.Local);
+            var instanceName = m_CSharpWriter.GetVariableName(type, Scope.Local);
 
-            lines.AddRange(m_TypeDescriber.GetStubbedInstantiation(type));
+            lines.AddRange(m_CSharpWriter.GetStubbedInstantiation(type));
             lines.Add(string.Empty);
 
             foreach (var info in infos)
             {
                 var methodName = info.Name;
                 var parameters = info.GetParameters();
-                var arguments = m_TypeDescriber.GetMethodArguments(info, true, false);
+                var arguments = m_CSharpWriter.GetMethodArguments(info, true, false);
 
                 for (var i = 0; i < parameters.Length; i++)
                 {
                     if (parameters[i].ParameterType.IsValueType) continue;
-                    if (m_TypeDescriber.HasParamKeyword(parameters[i])) continue;
+                    if (m_CSharpWriter.HasParamKeyword(parameters[i])) continue;
 
                     var copyOfArguments = new List<string>(arguments) { [i] = "null" };
 

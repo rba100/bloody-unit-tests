@@ -7,7 +7,7 @@ namespace BloodyUnitTests.ContentCreators
 {
     class HelperMethodContentCreator : IContentCreator
     {
-        private readonly TypeDescriber m_TypeDescriber = new TypeDescriber();
+        private readonly CSharpWriter m_CSharpWriter = new CSharpWriter();
 
         public ClassContent Create(Type type)
         {
@@ -27,7 +27,7 @@ namespace BloodyUnitTests.ContentCreators
                                     .Where(p => p.IsClass)
                                     .Distinct()
                                     .Where(t => t.Namespace?.StartsWith(nameof(System)) != true && !t.IsArray)
-                                    .Where(m_TypeDescriber.CanInstantiate)
+                                    .Where(m_CSharpWriter.CanInstantiate)
                                     .ToArray();
 
             var namesSpaces = simpleClasses
@@ -60,7 +60,7 @@ namespace BloodyUnitTests.ContentCreators
 
             if (parameters.Length == 0) return new string[0];
 
-            var arguments = parameters.Select(p => m_TypeDescriber.GetInstance(p.ParameterType)).ToArray();
+            var arguments = parameters.Select(p => m_CSharpWriter.GetInstance(p.ParameterType)).ToArray();
 
             for (var i = 0; i < arguments.Length; i++)
             {
@@ -71,7 +71,7 @@ namespace BloodyUnitTests.ContentCreators
                 }
                 else if (t.IsArray)
                 {
-                    arguments[i] = $"new {m_TypeDescriber.GetTypeNameForCSharp(t.GetElementType())}[0]";
+                    arguments[i] = $"new {m_CSharpWriter.GetTypeNameForCSharp(t.GetElementType())}[0]";
                 }
                 else if (t == typeof(object))
                 {
@@ -80,9 +80,9 @@ namespace BloodyUnitTests.ContentCreators
             }
 
             var indent = new string(' ', 4);
-            lines.Add($"private {m_TypeDescriber.GetTypeNameForCSharp(type)} Create{m_TypeDescriber.GetVariableName(type, Scope.Member)}()");
+            lines.Add($"private {m_CSharpWriter.GetTypeNameForCSharp(type)} Create{m_CSharpWriter.GetVariableName(type, Scope.Member)}()");
             lines.Add($"{{");
-            lines.Add($"{indent}return new {m_TypeDescriber.GetTypeNameForCSharp(type)}({string.Join(", ", arguments)});");
+            lines.Add($"{indent}return new {m_CSharpWriter.GetTypeNameForCSharp(type)}({string.Join(", ", arguments)});");
             lines.Add($"}}");
             return lines.ToArray();
         }

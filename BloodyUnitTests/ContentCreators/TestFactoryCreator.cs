@@ -7,7 +7,7 @@ namespace BloodyUnitTests.ContentCreators
 {
     public class TestFactoryCreator : IContentCreator
     {
-        private readonly TypeDescriber m_TypeDescriber = new TypeDescriber();
+        private readonly CSharpWriter m_CSharpWriter = new CSharpWriter();
 
         public ClassContent Create(Type type)
         {
@@ -29,7 +29,7 @@ namespace BloodyUnitTests.ContentCreators
 
             if (!interfaces.Any()) return lines.ToArray();
 
-            var typeName = m_TypeDescriber.GetTypeNameForCSharp(type);
+            var typeName = m_CSharpWriter.GetTypeNameForCSharp(type);
 
             var indent = new string(' ', 4);
 
@@ -45,8 +45,8 @@ namespace BloodyUnitTests.ContentCreators
             if (interfaces.Any()) lines.Add(String.Empty);
             var args = parameters.Select(p =>
             {
-                if (p.ParameterType.IsInterface) return m_TypeDescriber.GetVariableName(p.Name, Scope.Member);
-                return m_TypeDescriber.GetInstance(p.ParameterType);
+                if (p.ParameterType.IsInterface) return m_CSharpWriter.GetVariableName(p.Name, Scope.Member);
+                return m_CSharpWriter.GetInstance(p.ParameterType);
             });
 
             // Create
@@ -63,7 +63,7 @@ namespace BloodyUnitTests.ContentCreators
             foreach (var i in interfaces.Where(i => i.ParameterType.Namespace?.StartsWith(nameof(System)) != true))
             {
                 if (!i.ParameterType.IsInterface) continue;
-                lines.Add($"{indent}{indent}{m_TypeDescriber.GetVariableName(i.Name, Scope.Member)}.VerifyAllExpectations();");
+                lines.Add($"{indent}{indent}{m_CSharpWriter.GetVariableName(i.Name, Scope.Member)}.VerifyAllExpectations();");
             }
             lines.Add($"{indent}}}");
             lines.Add("}");
@@ -74,9 +74,9 @@ namespace BloodyUnitTests.ContentCreators
         private string GetPublicFieldInterfaceMock(ParameterInfo parameter)
         {
             var t = parameter.ParameterType;
-            var typeName = m_TypeDescriber.GetTypeNameForCSharp(t);
-            return $"public {typeName} {m_TypeDescriber.GetVariableName(parameter.Name, Scope.Member)}" +
-                   $" = {m_TypeDescriber.GetMockInstance(t)};";
+            var typeName = m_CSharpWriter.GetTypeNameForCSharp(t);
+            return $"public {typeName} {m_CSharpWriter.GetVariableName(parameter.Name, Scope.Member)}" +
+                   $" = {m_CSharpWriter.GetMockInstance(t)};";
         }
     }
 }

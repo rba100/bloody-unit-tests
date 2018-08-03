@@ -6,14 +6,14 @@ using System.Text;
 
 namespace BloodyUnitTests
 {
-    internal class TypeDescriber
+    internal class CSharpWriter
     {
         public bool HasParamKeyword(ParameterInfo arg)
         {
             return arg.IsOut || arg.ParameterType.IsByRef;
         }
 
-        public string ParamKeyword(ParameterInfo arg)
+        private string ParamKeyword(ParameterInfo arg)
         {
             if (arg.IsOut) return "out";
             if (arg.ParameterType.IsByRef) return "ref";
@@ -50,7 +50,7 @@ namespace BloodyUnitTests
         /// When a value is needed as an argument to a function, can we just use
         /// a literal or in-line instantiation for the supplied type or should we create a variable first?
         /// </summary>
-        public bool IsImmediateValueTolerable(Type type)
+        private bool IsImmediateValueTolerable(Type type)
         {
             return type == typeof(char)
                 || type == typeof(string)
@@ -139,7 +139,7 @@ namespace BloodyUnitTests
                     if (type.IsAssignableFrom(funcType)) return $"() => {GetInstance(genArgs)}";
                     // Action<T>
                     var actionType = typeof(Action<>).MakeGenericType(genArgs);
-                    if (type.IsAssignableFrom(actionType)) return $"(_) => {{}}";
+                    if (type.IsAssignableFrom(actionType)) return $"(_) => {{ }}";
                 }
 
                 // If it has a parameterless constructor but no others then use it
@@ -149,7 +149,8 @@ namespace BloodyUnitTests
                 // If the only ctor is parameterless then that's what we do
                 if (onlyParameterless) return $"new {GetTypeNameForCSharp(type)}()";
 
-                // If it's a simple enough type then we will have a helper method called 'CreateThing()'
+                // If we've got this far but CanInstantiate thinks we can handle it then assume we have a
+                // a helper method elsewhere.
                 if (CanInstantiate(type)) return $"Create{GetVariableName(type, Scope.Member)}()";
 
                 // If there's a parameterless then we will use it if we can't use a CreateX helper.
@@ -169,7 +170,7 @@ namespace BloodyUnitTests
             if (type.IsEnum)
             {
                 var names = Enum.GetNames(type);
-                return nonDefault && names.Length > 1 ? $"{type.Name}.{names[1]}" : $"{type.Name}.{names[0]}";
+                if(names.Any()) return nonDefault && names.Length > 1 ? $"{type.Name}.{names[1]}" : $"{type.Name}.{names[0]}";
             }
 
             return $"default({GetTypeNameForCSharp(type)})";
@@ -185,11 +186,6 @@ namespace BloodyUnitTests
             if (setToNull && type.IsValueType) return $"{declaredType} {identifier};";
             if (setToNull) return $"{declaredType} {identifier} = null;";
             return $"{declaredType} {identifier} = {GetInstance(type)};";
-        }
-
-        public string GetMockVariableDeclaration(Type interfaceType)
-        {
-            return $"var mock{GetVariableName(interfaceType, Scope.Member)} = {GetMockInstance(interfaceType)}";
         }
 
         public string GetMockInstance(Type interfaceType)

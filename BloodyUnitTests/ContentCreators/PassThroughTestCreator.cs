@@ -7,7 +7,7 @@ namespace BloodyUnitTests.ContentCreators
 {
     public class PassThroughTestCreator : IContentCreator
     {
-        private readonly TypeDescriber m_TypeDescriber = new TypeDescriber();
+        private readonly CSharpWriter m_CSharpWriter = new CSharpWriter();
 
         public ClassContent Create(Type type)
         {
@@ -35,20 +35,20 @@ namespace BloodyUnitTests.ContentCreators
         {
             var isVoid = method.ReturnType == typeof(void);
 
-            var mockVarName = $"mock{m_TypeDescriber.GetVariableName(interfaceType, Scope.Member)}";
+            var mockVarName = $"mock{m_CSharpWriter.GetVariableName(interfaceType, Scope.Member)}";
             var mockVarNameOffset = new string(' ', mockVarName.Length);
             var resultDeclaration = isVoid ? string.Empty : "var result = ";
-            var sutVarName = m_TypeDescriber.GetVariableName(classToTest.Name, Scope.Local);
+            var sutVarName = m_CSharpWriter.GetVariableName(classToTest.Name, Scope.Local);
 
             var methodVariables = method.GetParameters()
-                                        .Where(m_TypeDescriber.ShouldUseVariableForParameter)
+                                        .Where(m_CSharpWriter.ShouldUseVariableForParameter)
                                         .Where(p => p.ParameterType != interfaceType)
-                                        .Select(p => m_TypeDescriber.GetLocalVariableDeclaration(p.ParameterType, false));
+                                        .Select(p => m_CSharpWriter.GetLocalVariableDeclaration(p.ParameterType, false));
 
             var rootType = constructor.DeclaringType;
 
-            var ctorArgs = m_TypeDescriber.GetMethodArguments(constructor, useVariables: false, nonDefault: true);
-            var methodArgs = m_TypeDescriber.GetMethodArguments(method, useVariables: true, nonDefault: true);
+            var ctorArgs = m_CSharpWriter.GetMethodArguments(constructor, useVariables: false, nonDefault: true);
+            var methodArgs = m_CSharpWriter.GetMethodArguments(method, useVariables: true, nonDefault: true);
             var ifParam = constructor.GetParameters()
                                      .Select((p, i) => new { p, i })
                                      .Single(o => o.p.ParameterType == interfaceType);
@@ -68,16 +68,16 @@ namespace BloodyUnitTests.ContentCreators
             lines.AddRange(methodVariables.Select(v => $"    {v}"));
             if (!isVoid)
             {
-                lines.Add($"    var expectedResult = {m_TypeDescriber.GetInstance(method.ReturnType, true)};");
+                lines.Add($"    var expectedResult = {m_CSharpWriter.GetInstance(method.ReturnType, true)};");
             }
-            lines.Add($"    {m_TypeDescriber.GetMockVariableDeclaration(interfaceType)}");
+            lines.Add($"    var {mockVarName} = {m_CSharpWriter.GetMockInstance(interfaceType)};");
             lines.Add($"    {mockVarName}.Expect(m=>m.{method.Name}({methodArgumentsFlat}))");
             lines.Add($"    {mockVarNameOffset}.Repeat.Once(){(isVoid ? ";" : "")}");
             if (!isVoid)
             {
                 lines.Add($"    {mockVarNameOffset}.Return(expectedResult);");
             }
-            lines.Add($"    var {sutVarName} = new {m_TypeDescriber.GetTypeNameForCSharp(rootType)}({ctorArgumentsFlat});");
+            lines.Add($"    var {sutVarName} = new {m_CSharpWriter.GetTypeNameForCSharp(rootType)}({ctorArgumentsFlat});");
             lines.Add($"    {resultDeclaration}{sutVarName}.{method.Name}({methodArgumentsFlat})");
             lines.Add($"    {mockVarName}.VerifyAllExpectations();");
             if (!isVoid)
@@ -99,7 +99,7 @@ namespace BloodyUnitTests.ContentCreators
                 if (!parameters.Any()) return false;
                 var ifParameters = parameters.Where(p => interfaces.Contains(p.ParameterType)).ToArray();
                 if (ifParameters.Length != 1) return false;
-                return parameters.Except(ifParameters).All(p => m_TypeDescriber.CanInstantiate(p.ParameterType));
+                return parameters.Except(ifParameters).All(p => m_CSharpWriter.CanInstantiate(p.ParameterType));
             }
 
             var ctor = type.GetConstructors()

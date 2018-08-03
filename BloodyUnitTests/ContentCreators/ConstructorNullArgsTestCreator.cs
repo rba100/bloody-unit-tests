@@ -7,7 +7,7 @@ namespace BloodyUnitTests.ContentCreators
 {
     public class ConstructorNullArgsTestCreator : IContentCreator
     {
-        private readonly TypeDescriber m_TypeDescriber = new TypeDescriber();
+        private readonly CSharpWriter m_CSharpWriter = new CSharpWriter();
 
         public ClassContent Create(Type type)
         {
@@ -51,7 +51,7 @@ namespace BloodyUnitTests.ContentCreators
             var lines = new List<string>();
 
             var variableDeclarations = constructors.SelectMany(i => i.GetParameters())
-                                                   .Into(c => m_TypeDescriber.GetVariableDeclarationsForParameters(c, false));
+                                                   .Into(c => m_CSharpWriter.GetVariableDeclarationsForParameters(c, false));
 
             foreach (var declaration in variableDeclarations)
             {
@@ -66,7 +66,7 @@ namespace BloodyUnitTests.ContentCreators
             {
                 var typeName = ctor.DeclaringType?.Name;
                 var parameterTypes = ctor.GetParameters();
-                var arguments = m_TypeDescriber.GetMethodArguments(ctor, true, false);
+                var arguments = m_CSharpWriter.GetMethodArguments(ctor, true, false);
 
                 for (int i = 0; i < parameterTypes.Length; i++)
                 {
