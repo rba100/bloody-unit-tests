@@ -71,6 +71,7 @@ namespace BloodyUnitTests.ContentCreators
             lines.AddRange(m_CSharpWriter.GetStubbedInstantiation(type));
             lines.Add(string.Empty);
 
+            bool testCasesExist = false;
             foreach (var info in infos)
             {
                 var methodName = info.Name;
@@ -81,7 +82,7 @@ namespace BloodyUnitTests.ContentCreators
                 {
                     if (parameters[i].ParameterType.IsValueType) continue;
                     if (m_CSharpWriter.HasParamKeyword(parameters[i])) continue;
-
+                    testCasesExist = true;
                     var copyOfArguments = new List<string>(arguments) { [i] = "null" };
 
                     lines.Add($"yield return new TestCaseData(new TestDelegate(() => " +
@@ -90,7 +91,7 @@ namespace BloodyUnitTests.ContentCreators
                 }
             }
 
-            return lines.ToArray();
+            return testCasesExist ? lines.ToArray() : new string[0];
         }
     }
 }
