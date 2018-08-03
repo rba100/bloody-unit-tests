@@ -33,8 +33,6 @@ namespace BloodyUnitTests.ContentCreators
                 lines.AddRange(GenerateTestMethod(classToTest, constructor, interfaceType, methods[i]));
             }
 
-            lines.Add("[Test]");
-
             return lines.ToArray();
         }
 

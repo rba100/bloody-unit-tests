@@ -183,7 +183,7 @@ namespace BloodyUnitTests
             return $"var mock{GetVariableName(interfaceType, Scope.Member)} = {GetMockInstance(interfaceType)}";
         }
 
-        private string GetMockInstance(Type interfaceType)
+        public string GetMockInstance(Type interfaceType)
         {
             return $"MockRepository.GenerateMock<{GetTypeNameForCSharp(interfaceType)}>();";
         }
@@ -192,7 +192,7 @@ namespace BloodyUnitTests
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
 
-            // C# simplified type names
+            // C# type keywords
             if (type == typeof(string)) return "string";
             if (type == typeof(object)) return "object";
             if (type == typeof(int)) return "int";
@@ -236,8 +236,6 @@ namespace BloodyUnitTests
         {
             var sb = new StringBuilder();
 
-            var variableName = GetVariableName(type, Scope.Local);
-            var nameForCSharp = GetTypeNameForCSharp(type);
             var ctor = type.GetConstructors()
                            .FirstOrDefault() ??
                        type.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
@@ -245,7 +243,7 @@ namespace BloodyUnitTests
 
             var arguments = GetMethodArguments(ctor, useVariables: false, nonDefault: false);
 
-            var declarationStart = $"var {variableName} = new {nameForCSharp}(";
+            var declarationStart = $"var {GetVariableName(type, Scope.Local)} = new { GetTypeNameForCSharp(type)}(";
 
             var offset = new string(' ', declarationStart.Length);
 
@@ -255,8 +253,7 @@ namespace BloodyUnitTests
                 sb.Append(arguments[i]);
                 if (i < arguments.Length - 1)
                 {
-                    sb.AppendLine(",");
-                    sb.Append(offset);
+                    sb.Append($",{Environment.NewLine}{offset}");
                 }
             }
             sb.AppendLine(");");

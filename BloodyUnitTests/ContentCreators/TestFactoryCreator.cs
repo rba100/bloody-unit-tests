@@ -39,7 +39,7 @@ namespace BloodyUnitTests.ContentCreators
             // Mocked interface dependencies
             foreach (var parameter in interfaces)
             {
-                lines.Add(indent + GetInterfaceMemberDeclaration(parameter));
+                lines.Add(indent + GetPublicFieldInterfaceMock(parameter));
             }
 
             if (interfaces.Any()) lines.Add(String.Empty);
@@ -71,14 +71,12 @@ namespace BloodyUnitTests.ContentCreators
             return lines.ToArray();
         }
 
-        
-
-        private string GetInterfaceMemberDeclaration(ParameterInfo parameter)
+        private string GetPublicFieldInterfaceMock(ParameterInfo parameter)
         {
             var t = parameter.ParameterType;
             var typeName = m_TypeDescriber.GetTypeNameForCSharp(t);
             return $"public {typeName} {m_TypeDescriber.GetVariableName(parameter.Name, Scope.Member)}" +
-                   $" = {m_TypeDescriber.GetInstance(t)};";
+                   $" = {m_TypeDescriber.GetMockInstance(t)};";
         }
     }
 }
