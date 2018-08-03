@@ -9,7 +9,11 @@ namespace BloodyUnitTests
 {
     public static class TestFixtureCreator
     {
-        private static readonly string[] s_DefaultNamesSpaces = { "System", "System.Text", "NUnit.Framework", "Rhino.Mocks" };
+        private static readonly string[] s_DefaultNamesSpaces =
+        {
+            "System", "System.Text", "NUnit.Framework",
+            "Rhino.Mocks", "static Rhino.Mocks.MockRepository"
+        };
 
         public static string CreateTestFixture(Type classToTest)
         {

@@ -60,8 +60,8 @@ namespace BloodyUnitTests.ContentCreators
             var variablesNeeded = parameterTypes.Where(p => !p.IsOut).ToArray();
             var outVariablesNeeded = parameterTypes.Where(p => p.IsOut).Except(variablesNeeded).ToArray();
 
-            var variableDeclarations = m_TypeDescriber.GetNeededVariableDeclarations(variablesNeeded, setToNull: false);
-            var outVariableDeclarations = m_TypeDescriber.GetNeededVariableDeclarations(outVariablesNeeded, setToNull: true);
+            var variableDeclarations = m_TypeDescriber.GetVariableDeclarationsForParameters(variablesNeeded, setToNull: false);
+            var outVariableDeclarations = m_TypeDescriber.GetVariableDeclarationsForParameters(outVariablesNeeded, setToNull: true);
             lines.AddRange(variableDeclarations);
             lines.AddRange(outVariableDeclarations);
             if (variableDeclarations.Union(outVariableDeclarations).Any()) lines.Add(string.Empty);

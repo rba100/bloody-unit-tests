@@ -24,9 +24,10 @@ namespace BloodyUnitTests.ContentCreators
                                     .Union(type.GetConstructors())
                                     .SelectMany(m => m.GetParameters())
                                     .Select(p => p.ParameterType)
+                                    .Where(p => p.IsClass)
                                     .Distinct()
                                     .Where(t => t.Namespace?.StartsWith(nameof(System)) != true && !t.IsArray)
-                                    .Where(m_TypeDescriber.IsPoco)
+                                    .Where(m_TypeDescriber.CanInstantiate)
                                     .ToArray();
 
             var namesSpaces = simpleClasses

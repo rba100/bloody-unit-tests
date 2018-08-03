@@ -19,7 +19,7 @@ namespace BloodyUnitTests.ContentCreators
             if (type == null) throw new ArgumentNullException(nameof(type));
             var lines = new List<string>();
 
-            var ctor = type.GetConstructors().FirstOrDefault() 
+            var ctor = type.GetConstructors().FirstOrDefault()
                        ?? type.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
                               .FirstOrDefault();
             if (ctor == null) return lines.ToArray();

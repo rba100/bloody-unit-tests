@@ -99,7 +99,7 @@ namespace BloodyUnitTests.ContentCreators
                 if (!parameters.Any()) return false;
                 var ifParameters = parameters.Where(p => interfaces.Contains(p.ParameterType)).ToArray();
                 if (ifParameters.Length != 1) return false;
-                return parameters.Except(ifParameters).All(p => m_TypeDescriber.IsPoco(p.ParameterType));
+                return parameters.Except(ifParameters).All(p => m_TypeDescriber.CanInstantiate(p.ParameterType));
             }
 
             var ctor = type.GetConstructors()

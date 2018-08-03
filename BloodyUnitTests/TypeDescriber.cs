@@ -99,12 +99,12 @@ namespace BloodyUnitTests
                 return nonDefault ? "X" : "' '";
 
             if (type == typeof(int)
-                || type == typeof(uint)
-                || type == typeof(Int64)
-                || type == typeof(UInt64)
-                || type == typeof(float)
-                || type == typeof(double)
-                || type == typeof(decimal)) return nonDefault ? "7" : "0";
+             || type == typeof(uint)
+             || type == typeof(Int64)
+             || type == typeof(UInt64)
+             || type == typeof(float)
+             || type == typeof(double)
+             || type == typeof(decimal)) return nonDefault ? "7" : "0";
 
             if (type == typeof(bool)) return nonDefault.ToString().ToLower();
 
@@ -114,7 +114,16 @@ namespace BloodyUnitTests
 
             // ReSharper disable once PossibleNullReferenceException
             if (type.IsInterface)
-                return $"MockRespository.GenerateStub<{GetTypeNameForCSharp(type)}>()";
+            {
+                if (type.IsGenericType)
+                {
+                    var genArgs = type.GetGenericArguments().FirstOrDefault() ?? typeof(object);
+                    var listType = typeof(List<>).MakeGenericType(genArgs);
+                    if (type.IsAssignableFrom(listType)) return $"new {GetTypeNameForCSharp(listType)}()";
+                }
+
+                return $"GenerateStub<{GetTypeNameForCSharp(type)}>()";
+            }
 
             if (type.IsClass)
             {
@@ -140,8 +149,8 @@ namespace BloodyUnitTests
                 // If the only ctor is parameterless then that's what we do
                 if (onlyParameterless) return $"new {GetTypeNameForCSharp(type)}()";
 
-                // If it's a POCO type then we will assume there is a helper method called 'CreateThing()'
-                if (IsPoco(type)) return $"Create{GetVariableName(type, Scope.Member)}()";
+                // If it's a simple enough type then we will have a helper method called 'CreateThing()'
+                if (CanInstantiate(type)) return $"Create{GetVariableName(type, Scope.Member)}()";
 
                 // If there's a parameterless then we will use it if we can't use a CreateX helper.
                 if (gotParameterless) return $"new {GetTypeNameForCSharp(type)}()";
@@ -185,7 +194,7 @@ namespace BloodyUnitTests
 
         public string GetMockInstance(Type interfaceType)
         {
-            return $"MockRepository.GenerateMock<{GetTypeNameForCSharp(interfaceType)}>();";
+            return $"GenerateMock<{GetTypeNameForCSharp(interfaceType)}>()";
         }
 
         public string GetTypeNameForCSharp(Type type)
@@ -225,13 +234,6 @@ namespace BloodyUnitTests
             return typeDisplayName;
         }
 
-        public bool IsPoco(Type type)
-        {
-            if (!type.IsClass || type.IsAbstract) return false;
-
-            return IsSimpleType(type, new List<Type>());
-        }
-
         public string[] GetStubbedInstantiation(Type type)
         {
             var sb = new StringBuilder();
@@ -261,7 +263,7 @@ namespace BloodyUnitTests
             return sb.ToString().Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
         }
 
-        public string[] GetNeededVariableDeclarations(IEnumerable<ParameterInfo> parameters, bool setToNull)
+        public string[] GetVariableDeclarationsForParameters(IEnumerable<ParameterInfo> parameters, bool setToNull)
         {
             return parameters.Where(p => !p.ParameterType.IsValueType || HasParamKeyword(p) || p.ParameterType.IsEnum)
                              .Where(p => !IsImmediateValueTolerable(p.ParameterType) || HasParamKeyword(p))
@@ -271,31 +273,51 @@ namespace BloodyUnitTests
                              .ToArray();
         }
 
+        public bool CanInstantiate(Type type)
+        {
+            return CanInstantiate(type, new List<Type>());
+        }
+
         /// <summary>
-        /// Returns true for 'simple types', which are defined as
-        /// value types, arrays, and classes which only
-        /// require simple types for their most argumentative constructor.
+        /// Returns true for types which this class can construct.
         /// </summary>
-        private bool IsSimpleType(Type type, IList<Type> typeHistory)
+        private bool CanInstantiate(Type type, IList<Type> typeHistory)
         {
             if (type.IsValueType) return true;
             if (type == typeof(string)) return true;
             if (IsArrayAssignable(type)) return true;
-            if (!type.IsClass) return false;
+            if (type.IsInterface) return true;
+            if (type.IsAbstract) return false;
 
+            // No circular dependencies
             if (typeHistory.Contains(type)) return false;
             typeHistory.Add(type);
 
-            if (type.IsArray && IsSimpleType(type.GetElementType(), typeHistory)) return true;
+            if (type.IsArray && CanInstantiate(type.GetElementType(), typeHistory)) return true;
+
+            // Deal with classes
+            if (!type.IsClass) return false;
+            if (CanInstantiateSpecialClass(type)) return true;
 
             var ctor = type.GetConstructors()
                            .OrderByDescending(c => c.GetParameters().Length)
                            .FirstOrDefault();
-
             if (ctor == null) return false;
 
             return ctor.GetParameters()
-                       .All(p => !p.IsOut && IsSimpleType(p.ParameterType, typeHistory));
+                       .All(p => !p.IsOut && CanInstantiate(p.ParameterType, typeHistory));
+        }
+
+        private bool CanInstantiateSpecialClass(Type type)
+        {
+            var genArgs = type.GetGenericArguments();
+            if (genArgs.Length != 1) return false;
+            var handledTypes = new[] {
+                typeof(Func<>).MakeGenericType(genArgs),
+                typeof(Action<>).MakeGenericType(genArgs),
+                typeof(List<>).MakeGenericType(genArgs)
+            };
+            return handledTypes.Any(type.IsAssignableFrom);
         }
 
         public string[] GetMethodArguments(MethodBase methodBase, bool useVariables, bool nonDefault)
