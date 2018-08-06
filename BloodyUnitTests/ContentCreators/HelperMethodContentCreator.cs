@@ -80,7 +80,7 @@ namespace BloodyUnitTests.ContentCreators
             }
 
             var indent = new string(' ', 4);
-            lines.Add($"private {m_CSharpWriter.GetTypeNameForCSharp(type)} Create{m_CSharpWriter.GetVariableName(type, Scope.Member)}()");
+            lines.Add($"private static {m_CSharpWriter.GetTypeNameForCSharp(type)} Create{m_CSharpWriter.GetVariableName(type, Scope.Member)}()");
             lines.Add($"{{");
             lines.Add($"{indent}return new {m_CSharpWriter.GetTypeNameForCSharp(type)}({string.Join(", ", arguments)});");
             lines.Add($"}}");

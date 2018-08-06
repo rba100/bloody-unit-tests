@@ -33,7 +33,7 @@ namespace BloodyUnitTests.ContentCreators
 
             var indent = new string(' ', 4);
 
-            lines.Add($"internal class {typeName}Factory");
+            lines.Add($"private class {typeName}Factory");
             lines.Add("{");
 
             // Mocked interface dependencies
