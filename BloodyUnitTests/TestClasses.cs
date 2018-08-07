@@ -12,19 +12,24 @@ namespace BloodyUnitTests
     class _TestClass : ITestDecorator
     {
         private readonly ITestDecorator m_InnerTestDecorator;
+        private readonly IReadOnlyDictionary<int, string> m_Mappings;
 
         public _TestClass(ITestDecorator innerTestDecorator,
                           InnerObject dependency,
-                          IList<string> names)
+                          IList<string> names,
+                          IReadOnlyDictionary<int, string> mappings)
         {
             m_InnerTestDecorator = innerTestDecorator;
+            m_Mappings = mappings;
         }
 
         public _TestClass(ITestDecorator innerTestDecorator,
                           Func<DateTime> getDate,
-                          Action<string> logger)
+                          Action<string> logger, 
+                          IReadOnlyDictionary<int, string> mappings)
         {
             m_InnerTestDecorator = innerTestDecorator;
+            m_Mappings = mappings;
         }
 
         public string Process(string argument)

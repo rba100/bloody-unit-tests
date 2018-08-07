@@ -80,7 +80,7 @@ namespace BloodyUnitTests.ContentCreators
 
             if (variableDeclarations.Union(outVariableDeclarations).Any()) lines.Add(string.Empty);
 
-            var instanceName = m_CSharpWriter.GetVariableName(type, Scope.Local);
+            var instanceName = m_CSharpWriter.GetTypeNameForIdentifier(type, VarScope.Local);
 
             lines.AddRange(m_CSharpWriter.GetStubbedInstantiation(type));
             lines.Add(string.Empty);

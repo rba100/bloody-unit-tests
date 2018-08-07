@@ -45,7 +45,7 @@ namespace BloodyUnitTests.ContentCreators
             if (interfaces.Any()) lines.Add(String.Empty);
             var args = parameters.Select(p =>
             {
-                if (p.ParameterType.IsInterface) return m_CSharpWriter.GetVariableName(p.Name, Scope.Member);
+                if (p.ParameterType.IsInterface) return m_CSharpWriter.GetTypeNameForIdentifier(p.Name, VarScope.Member);
                 return m_CSharpWriter.GetInstance(p.ParameterType);
             });
 
@@ -63,7 +63,7 @@ namespace BloodyUnitTests.ContentCreators
             foreach (var i in interfaces.Where(i => i.ParameterType.Namespace?.StartsWith(nameof(System)) != true))
             {
                 if (!i.ParameterType.IsInterface) continue;
-                lines.Add($"{indent}{indent}{m_CSharpWriter.GetVariableName(i.Name, Scope.Member)}.VerifyAllExpectations();");
+                lines.Add($"{indent}{indent}{m_CSharpWriter.GetTypeNameForIdentifier(i.Name, VarScope.Member)}.VerifyAllExpectations();");
             }
             lines.Add($"{indent}}}");
             lines.Add("}");
@@ -75,7 +75,7 @@ namespace BloodyUnitTests.ContentCreators
         {
             var t = parameter.ParameterType;
             var typeName = m_CSharpWriter.GetTypeNameForCSharp(t);
-            return $"public {typeName} {m_CSharpWriter.GetVariableName(parameter.Name, Scope.Member)}" +
+            return $"public {typeName} {m_CSharpWriter.GetTypeNameForIdentifier(parameter.Name, VarScope.Member)}" +
                    $" = {m_CSharpWriter.GetMockInstance(t)};";
         }
     }

@@ -35,10 +35,10 @@ namespace BloodyUnitTests.ContentCreators
         {
             var isVoid = method.ReturnType == typeof(void);
 
-            var mockVarName = $"mock{m_CSharpWriter.GetVariableName(interfaceType, Scope.Member)}";
+            var mockVarName = $"mock{m_CSharpWriter.GetTypeNameForIdentifier(interfaceType, VarScope.Member)}";
             var mockVarNameOffset = new string(' ', mockVarName.Length);
             var resultDeclaration = isVoid ? string.Empty : "var result = ";
-            var sutVarName = m_CSharpWriter.GetVariableName(classToTest.Name, Scope.Local);
+            var sutVarName = m_CSharpWriter.GetTypeNameForIdentifier(classToTest.Name, VarScope.Local);
 
             var methodVariables = method.GetParameters()
                                         .Where(m_CSharpWriter.ShouldUseVariableForParameter)

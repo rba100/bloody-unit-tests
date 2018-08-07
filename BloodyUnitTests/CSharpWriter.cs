@@ -20,35 +20,35 @@ namespace BloodyUnitTests
             throw new InvalidOperationException("Parameter is neither 'out' or 'ref'");
         }
 
-        public string GetVariableName(string typeName, Scope scope)
+        public string GetTypeNameForIdentifier(string typeName, VarScope varScope)
         {
-            switch (scope)
+            switch (varScope)
             {
-                case Scope.Local:
+                case VarScope.Local:
                     return ToLowerInitial(typeName);
-                case Scope.Member:
+                case VarScope.Member:
                     return ToUpperInitial(typeName);
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(scope), scope, null);
+                    throw new ArgumentOutOfRangeException(nameof(varScope), varScope, null);
             }
         }
 
-        public string GetVariableName(Type type, Scope scope)
+        public string GetTypeNameForIdentifier(Type type, VarScope varScope)
         {
-            switch (scope)
+            switch (varScope)
             {
-                case Scope.Local:
+                case VarScope.Local:
                     return GetLocalVariableName(type);
-                case Scope.Member:
-                    return GetVariableName(type);
+                case VarScope.Member:
+                    return GetTypeNameForIdentifier(type);
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(scope), scope, null);
+                    throw new ArgumentOutOfRangeException(nameof(varScope), varScope, null);
             }
         }
 
         /// <summary>
-        /// When a value is needed as an argument to a function, can we just use
-        /// a literal or in-line instantiation for the supplied type or should we create a variable first?
+        /// Returns true if a literal or in-line instantiation for the supplied type
+        /// is likely to be terse when a method argument is needed.
         /// </summary>
         private bool IsImmediateValueTolerable(Type type)
         {
@@ -90,6 +90,14 @@ namespace BloodyUnitTests
                 return nonDefault
                     ? $"new {GetTypeNameForCSharp(elementType)}[] {{ {GetInstance(elementType, true)} }}"
                     : $"new {GetTypeNameForCSharp(elementType)}[0]";
+            }
+
+            if (IsDictionaryAssignable(type))
+            {
+                var dictionaryTypes = GetDictionaryType(type);
+                var keyType = GetTypeNameForCSharp(dictionaryTypes.key);
+                var valueType = GetTypeNameForCSharp(dictionaryTypes.value);
+                return $"new Dictionary<{keyType}, {valueType}>()";
             }
 
             if (type == typeof(string))
@@ -146,14 +154,14 @@ namespace BloodyUnitTests
                 var gotParameterless = type.GetConstructor(Type.EmptyTypes) != null;
                 var onlyParameterless = gotParameterless && type.GetConstructors().Length == 1;
 
-                // If the only ctor is parameterless then that's what we do
+                // If the *only* ctor is parameterless then that's what we've got to do
                 if (onlyParameterless) return $"new {GetTypeNameForCSharp(type)}()";
 
-                // If we've got this far but CanInstantiate thinks we can handle it then assume we have a
-                // a helper method elsewhere.
-                if (CanInstantiate(type)) return $"Create{GetVariableName(type, Scope.Member)}()";
+                // If we've got this far with no joy but CanInstantiate still thinks
+                // we can handle it then assume we have a helper method elsewhere.
+                if (CanInstantiate(type)) return $"Create{GetTypeNameForIdentifier(type, VarScope.Member)}()";
 
-                // If there's a parameterless then we will use it if we can't use a CreateX helper.
+                // OK, fine, we'll use the parameterless ctor if we have one.
                 if (gotParameterless) return $"new {GetTypeNameForCSharp(type)}()";
 
                 // Fallback: prepare an non-compiling instantiation and let the user fix it
@@ -170,7 +178,9 @@ namespace BloodyUnitTests
             if (type.IsEnum)
             {
                 var names = Enum.GetNames(type);
-                if (names.Any()) return nonDefault && names.Length > 1 ? $"{type.Name}.{names[1]}" : $"{type.Name}.{names[0]}";
+                if (names.Any()) return nonDefault && names.Length > 1 
+                    ? $"{type.Name}.{names[1]}" 
+                    : $"{type.Name}.{names[0]}";
             }
 
             return $"default({GetTypeNameForCSharp(type)})";
@@ -180,7 +190,7 @@ namespace BloodyUnitTests
         {
             var type = rawType.IsByRef ? rawType.GetElementType() : rawType;
             var declaredType = $"{(setToNull ? GetTypeNameForCSharp(type) : "var")}";
-            var identifier = GetVariableName(type, Scope.Local);
+            var identifier = GetTypeNameForIdentifier(type, VarScope.Local);
 
             // ReSharper disable once PossibleNullReferenceException
             if (setToNull && type.IsValueType) return $"{declaredType} {identifier};";
@@ -241,7 +251,7 @@ namespace BloodyUnitTests
 
             var arguments = GetMethodArguments(ctor, useVariables: false, nonDefault: false);
 
-            var declarationStart = $"var {GetVariableName(type, Scope.Local)} = new { GetTypeNameForCSharp(type)}(";
+            var declarationStart = $"var {GetTypeNameForIdentifier(type, VarScope.Local)} = new { GetTypeNameForCSharp(type)}(";
 
             var offset = new string(' ', declarationStart.Length);
 
@@ -325,23 +335,22 @@ namespace BloodyUnitTests
             var parameters = methodBase.GetParameters();
 
             var arguments = useVariables
-                ? parameters.Select(p => p.ParameterType).Select(t => GetVariableName(t, Scope.Local)).ToArray()
+                ? parameters.Select(p => p.ParameterType).Select(t => GetTypeNameForIdentifier(t, VarScope.Local)).ToArray()
                 : parameters.Select(p => p.ParameterType).Select(t => GetInstance(t, nonDefault)).ToArray();
 
             for (var index = 0; index < parameters.Length; index++)
             {
                 var pInfo = parameters[index];
-                var type = pInfo.ParameterType;
-                // Add ref/out keywords where needed
+                var pType = pInfo.ParameterType;
+                // MUST tie up with ShouldUseVariableForParameter()
                 if (HasParamKeyword(pInfo))
                 {
                     var argument = arguments[index];
                     arguments[index] = $"{ParamKeyword(pInfo)} {argument}";
                 }
-                // If not a ref then check if we can use a literal / immediate value instead of variable
-                else if (IsImmediateValueTolerable(type))
+                else if (IsImmediateValueTolerable(pType))
                 {
-                    arguments[index] = GetInstance(type, nonDefault);
+                    arguments[index] = GetInstance(pType, nonDefault);
                 }
             }
 
@@ -351,8 +360,7 @@ namespace BloodyUnitTests
         public bool ShouldUseVariableForParameter(ParameterInfo parameter)
         {
             return HasParamKeyword(parameter)
-                   || !IsImmediateValueTolerable(parameter.ParameterType)
-                   || IsDateTime(parameter.ParameterType);
+                   || !IsImmediateValueTolerable(parameter.ParameterType);
         }
 
         public bool IsArrayAssignable(Type type)
@@ -369,12 +377,28 @@ namespace BloodyUnitTests
             return type.IsAssignableFrom(elementType.MakeArrayType()) ? elementType : null;
         }
 
-        private bool IsDateTime(Type type)
+        private bool IsDictionaryAssignable(Type type)
         {
-            return type == typeof(DateTime) || type == typeof(DateTime?);
+            return GetDictionaryType(type).key != null;
         }
 
-        private string GetVariableName(Type type)
+        private Type GetDictionaryTypeForAssignment(Type type)
+        {
+            var gArgs = type.GetGenericArguments();
+            if (gArgs.Length != 2) return (null);
+            var dictType = typeof(Dictionary<,>).MakeGenericType(gArgs);
+            return type.IsAssignableFrom(dictType) ? dictType : null;
+        }
+
+        private (Type key, Type value) GetDictionaryType(Type type)
+        {
+            var gArgs = type.GetGenericArguments();
+            if (gArgs.Length != 2) return (null,null);
+            var dictType = typeof(Dictionary<,>).MakeGenericType(gArgs);
+            return type.IsAssignableFrom(dictType) ? (gArgs[0], gArgs[1]) : (null,null);
+        }
+
+        private string GetTypeNameForIdentifier(Type type)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
 
@@ -382,15 +406,21 @@ namespace BloodyUnitTests
 
             // ReSharper disable once AssignNullToNotNullAttribute
             var nullableType = Nullable.GetUnderlyingType(unRefType);
-            if (nullableType != null) return $"{GetVariableName(nullableType)}Nullable";
+            if (nullableType != null) return $"{GetTypeNameForIdentifier(nullableType)}Nullable";
 
             var typeDisplayName = unRefType.Name;
             if (unRefType.IsGenericType)
             {
+                // Handle types we can pretend are dictionaries
+                var dictionaryType = GetDictionaryTypeForAssignment(type);
+                if (dictionaryType != null && dictionaryType != type)
+                {
+                    return GetTypeNameForIdentifier(dictionaryType);
+                }
                 var genericParams = unRefType.GetGenericArguments();
                 int index = typeDisplayName.IndexOf('`');
                 typeDisplayName = index == -1 ? typeDisplayName : typeDisplayName.Substring(0, index);
-                typeDisplayName = typeDisplayName + string.Join("", genericParams.Select(GetVariableName));
+                typeDisplayName = typeDisplayName + string.Join("", genericParams.Select(GetTypeNameForIdentifier));
             }
 
             if (unRefType.IsArray)
@@ -408,12 +438,12 @@ namespace BloodyUnitTests
 
         private string GetLocalVariableName(Type type)
         {
-            var varName = GetVariableName(type);
-            var prefix = type.IsInterface ? "stub" : "dummy";
+            var varName = GetTypeNameForIdentifier(type);
             var unRefType = type.IsByRef ? type.GetElementType() : type;
             if (type.IsClass && type.Namespace != "System") return ToLowerInitial(varName);
             if (unRefType == typeof(DateTime)) return "dateTimeUtc";
             var output = ToLowerInitial(varName);
+            var prefix = type.IsInterface ? "stub" : "dummy";
             if (s_Keywords.Contains(output)) return $"{prefix}{varName}";
             return output == type.Name ? output + "1" : output;
         }
@@ -428,7 +458,7 @@ namespace BloodyUnitTests
             return str[0].ToString().ToUpper() + new string(str.Skip(1).ToArray());
         }
 
-        private static string[] s_Keywords = {
+        private static readonly string[] s_Keywords = {
             "abstract", "add", "as", "ascending",
             "async", "await", "base", "bool",
             "break", "by", "byte", "case",
@@ -458,7 +488,5 @@ namespace BloodyUnitTests
         };
     }
 
-    enum Scope { Local, Member }
-
-
+    enum VarScope { Local, Member }
 }
