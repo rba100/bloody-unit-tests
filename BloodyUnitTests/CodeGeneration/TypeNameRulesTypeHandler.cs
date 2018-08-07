@@ -35,7 +35,7 @@ namespace BloodyUnitTests.CodeGeneration
         public string GetNameForIdentifier(Type type)
         {
             var name = m_InnerHandler.GetNameForIdentifier(type);
-            if(type.IsInterface && name.StartsWith("I")) return new string(name.Skip(1).ToArray());
+            if(type.IsInterface && name.StartsWith("I")) name = new string(name.Skip(1).ToArray());
             return name;
         }
 

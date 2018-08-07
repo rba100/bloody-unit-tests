@@ -52,13 +52,13 @@ namespace BloodyUnitTests.ContentCreators
 
             if (!infos.Any()) return lines.ToArray();
 
-            var parameterTypes = infos.Select(i => i.GetParameters())
-                                      .Where(p => p.Count(t => !t.ParameterType.IsValueType) > 1)
-                                      .SelectMany(p => p)
-                                      .ToArray();
+            var parametersForVars = infos.Select(i => i.GetParameters())
+                                         .Where(p => p.Length > 1)
+                                         .SelectMany(p => p)
+                                         .ToArray();
 
-            var variablesNeeded = parameterTypes.Where(p => !p.IsOut).ToArray();
-            var outVariablesNeeded = parameterTypes.Where(p => p.IsOut).Except(variablesNeeded).ToArray();
+            var variablesNeeded = parametersForVars.Where(p => !p.IsOut).ToArray();
+            var outVariablesNeeded = parametersForVars.Where(p => p.IsOut).Except(variablesNeeded).ToArray();
 
             var variableDeclarations = m_CSharpWriter.GetVariableDeclarationsForParameters(variablesNeeded, setToNull: false);
             var outVariableDeclarations = m_CSharpWriter.GetVariableDeclarationsForParameters(outVariablesNeeded, setToNull: true);

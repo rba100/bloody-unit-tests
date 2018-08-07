@@ -67,11 +67,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeGeneration\ArrayTypeHandler.cs" />
+    <Compile Include="CodeGeneration\BuiltInTypesHandler.cs" />
     <Compile Include="CodeGeneration\CachingTypeHandler.cs" />
     <Compile Include="CodeGeneration\CSharpKeywordTypeNameHandler.cs" />
     <Compile Include="CodeGeneration\DateTimeTypeHandler.cs" />
+    <Compile Include="CodeGeneration\EnumTypeHandler.cs" />
     <Compile Include="CodeGeneration\FallbackRecursiveTypeHandler.cs" />
+    <Compile Include="CodeGeneration\GeneralDictionaryTypeHandler.cs" />
     <Compile Include="CodeGeneration\GenericTypeNameHandler.cs" />
+    <Compile Include="CodeGeneration\SimpleDelegateTypeHandler.cs" />
     <Compile Include="CodeGeneration\TypeNameRulesTypeHandler.cs" />
     <Compile Include="CodeGeneration\IRecursiveTypeHandler.cs" />
     <Compile Include="CodeGeneration\ITypeHandler.cs" />

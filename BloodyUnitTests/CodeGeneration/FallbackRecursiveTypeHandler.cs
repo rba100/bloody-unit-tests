@@ -42,7 +42,7 @@ namespace BloodyUnitTests.CodeGeneration
 
         public string GetNameForIdentifier(Type type)
         {
-            return type.Name;
+            return type.Name.Replace("&","");
         }
 
         public bool CanGetNameForCSharp(Type type)

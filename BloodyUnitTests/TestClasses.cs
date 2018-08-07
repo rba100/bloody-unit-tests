@@ -62,4 +62,12 @@ namespace BloodyUnitTests
 
         }
     }
+
+    class _TestClass2
+    {
+        public void Thing(DateTime? val, object o)
+        {
+
+        }
+    }
 }

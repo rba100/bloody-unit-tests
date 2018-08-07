@@ -65,7 +65,7 @@ namespace BloodyUnitTests
 
         public string GetInstance(Type possibleReftype, bool nonDefault)
         {
-            //return m_TypeHandler.GetInstantiation(possibleReftype, nonDefault);
+            return m_TypeHandler.GetInstantiation(possibleReftype, nonDefault);
             if (possibleReftype == null) throw new ArgumentNullException(nameof(possibleReftype));
 
             var type = possibleReftype.IsByRef

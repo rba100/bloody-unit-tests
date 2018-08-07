@@ -8,11 +8,7 @@ namespace BloodyUnitTests.CodeGeneration
 
         private Type GetNullableType(Type type)
         {
-            var nullType = type.IsByRef 
-                ? Nullable.GetUnderlyingType(type.GetElementType()) 
-                : null;
-            // ReSharper disable once AssignNullToNotNullAttribute
-            return nullType;
+            return Nullable.GetUnderlyingType(type);
         }
 
         public bool CanGetInstantiation(Type type)
@@ -23,7 +19,7 @@ namespace BloodyUnitTests.CodeGeneration
         public string GetInstantiation(Type type, bool interestingValue)
         {
             var innerType = GetNullableType(type);
-            return $"({GetNameForCSharp(innerType)}?) {m_RootHandler.GetInstantiation(innerType, interestingValue)}";
+            return $"({m_RootHandler.GetNameForCSharp(innerType)}?) {m_RootHandler.GetInstantiation(innerType, interestingValue)}";
         }
 
         public bool IsInstantiationTerse(Type type)

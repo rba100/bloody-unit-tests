@@ -9,13 +9,17 @@ namespace BloodyUnitTests.CodeGeneration
             {
                 // Specific handlers
                 new CSharpKeywordTypeNameHandler(),
-                new DateTimeTypeHandler(), 
+                new SimpleDelegateTypeHandler(),
+                new DateTimeTypeHandler(),
+                new BuiltInTypesHandler(),
+                new EnumTypeHandler(),
                 new NumericTypeHandler(),
                 new NullableTypeHandler(),
                 new StringAndCharTypeHandler(),
                 new ListTypeHandler(), 
 
                 // General handlers
+                new GeneralDictionaryTypeHandler(),
                 new ArrayTypeHandler(),
                 new GenericTypeNameHandler(),
 
