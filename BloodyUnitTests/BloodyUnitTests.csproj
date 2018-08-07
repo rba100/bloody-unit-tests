@@ -66,6 +66,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CodeGeneration\FallbackRecursiveTypeHandler.cs" />
+    <Compile Include="CodeGeneration\GenericTypeNameHandler.cs" />
+    <Compile Include="CodeGeneration\IRecursiveTypeHandler.cs" />
+    <Compile Include="CodeGeneration\ITypeHandler.cs" />
+    <Compile Include="CodeGeneration\NumericTypeHandler.cs" />
+    <Compile Include="CodeGeneration\RhinoMockingTypeHandler.cs" />
+    <Compile Include="CodeGeneration\CompositeRecursiveTypeHandler.cs" />
+    <Compile Include="CodeGeneration\TypeHandlerFactory.cs" />
     <Compile Include="ContentCreators\ClassContent.cs" />
     <Compile Include="ContentCreators\HelperMethodContentCreator.cs" />
     <Compile Include="ContentCreators\InvalidArgumentTestCreator.cs" />
@@ -81,6 +89,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StringUtils.cs" />
     <Compile Include="TestClasses.cs" />
     <Compile Include="TestFixtureCreator.cs" />
     <Compile Include="ContentCreators\TestFactoryCreator.cs" />

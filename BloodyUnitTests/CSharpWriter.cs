@@ -25,9 +25,9 @@ namespace BloodyUnitTests
             switch (varScope)
             {
                 case VarScope.Local:
-                    return ToLowerInitial(typeName);
+                    return StringUtils.ToLowerInitial(typeName);
                 case VarScope.Member:
-                    return ToUpperInitial(typeName);
+                    return StringUtils.ToUpperInitial(typeName);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(varScope), varScope, null);
             }
@@ -443,22 +443,12 @@ namespace BloodyUnitTests
         {
             var varName = GetTypeNameForIdentifier(type);
             var unRefType = type.IsByRef ? type.GetElementType() : type;
-            if (type.IsClass && type.Namespace != "System") return ToLowerInitial(varName);
+            if (type.IsClass && type.Namespace != "System") return StringUtils.ToLowerInitial(varName);
             if (unRefType == typeof(DateTime) || unRefType == typeof(DateTime?)) varName += "Utc";
-            var output = ToLowerInitial(varName);
+            var output = StringUtils.ToLowerInitial(varName);
             var prefix = type.IsInterface ? "stub" : "dummy";
             if (s_Keywords.Contains(output)) return $"{prefix}{varName}";
             return output == type.Name ? output + "1" : output;
-        }
-
-        private string ToLowerInitial(string str)
-        {
-            return str[0].ToString().ToLower() + new string(str.Skip(1).ToArray());
-        }
-
-        private string ToUpperInitial(string str)
-        {
-            return str[0].ToString().ToUpper() + new string(str.Skip(1).ToArray());
         }
 
         private static readonly string[] s_Keywords = {
