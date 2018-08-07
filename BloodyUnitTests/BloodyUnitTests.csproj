@@ -66,13 +66,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CodeGeneration\ArrayTypeHandler.cs" />
+    <Compile Include="CodeGeneration\CachingTypeHandler.cs" />
+    <Compile Include="CodeGeneration\CSharpKeywordTypeNameHandler.cs" />
+    <Compile Include="CodeGeneration\DateTimeTypeHandler.cs" />
     <Compile Include="CodeGeneration\FallbackRecursiveTypeHandler.cs" />
     <Compile Include="CodeGeneration\GenericTypeNameHandler.cs" />
+    <Compile Include="CodeGeneration\TypeNameRulesTypeHandler.cs" />
     <Compile Include="CodeGeneration\IRecursiveTypeHandler.cs" />
     <Compile Include="CodeGeneration\ITypeHandler.cs" />
+    <Compile Include="CodeGeneration\ListTypeHandler.cs" />
+    <Compile Include="CodeGeneration\NullableTypeHandler.cs" />
     <Compile Include="CodeGeneration\NumericTypeHandler.cs" />
     <Compile Include="CodeGeneration\RhinoMockingTypeHandler.cs" />
     <Compile Include="CodeGeneration\CompositeRecursiveTypeHandler.cs" />
+    <Compile Include="CodeGeneration\StringAndCharTypeHandler.cs" />
     <Compile Include="CodeGeneration\TypeHandlerFactory.cs" />
     <Compile Include="ContentCreators\ClassContent.cs" />
     <Compile Include="ContentCreators\HelperMethodContentCreator.cs" />

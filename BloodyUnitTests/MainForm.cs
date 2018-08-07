@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -117,7 +118,7 @@ namespace BloodyUnitTests
                 m_TabContainer.Controls.Add(tab);
                 m_TabContainer.SelectedTab = tab;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!Debugger.IsAttached)
             {
                 MessageBox.Show(ex.ToString());
             }

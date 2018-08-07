@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using BloodyUnitTests.CodeGeneration;
 
 namespace BloodyUnitTests
 {
     internal class CSharpWriter
     {
+        private ITypeHandler m_TypeHandler = TypeHandlerFactory.Create();
+
         public bool HasParamKeyword(ParameterInfo arg)
         {
             return arg.IsOut || arg.ParameterType.IsByRef;
@@ -52,26 +55,17 @@ namespace BloodyUnitTests
         /// </summary>
         private bool IsImmediateValueTolerable(Type type)
         {
-            return type == typeof(char)
-                || type == typeof(string)
-                || type == typeof(int)
-                || type == typeof(uint)
-                || type == typeof(Int64)
-                || type == typeof(UInt64)
-                || type == typeof(float)
-                || type == typeof(double)
-                || type == typeof(decimal)
-                || type == typeof(bool)
-                || IsArrayAssignable(type);
+            return m_TypeHandler.IsInstantiationTerse(type);
         }
 
-        public string GetInstance(Type possibleReftype)
+        public string GetInstance(Type type)
         {
-            return GetInstance(possibleReftype, false);
+            return m_TypeHandler.GetInstantiation(type, false);
         }
 
         public string GetInstance(Type possibleReftype, bool nonDefault)
         {
+            //return m_TypeHandler.GetInstantiation(possibleReftype, nonDefault);
             if (possibleReftype == null) throw new ArgumentNullException(nameof(possibleReftype));
 
             var type = possibleReftype.IsByRef
@@ -207,6 +201,7 @@ namespace BloodyUnitTests
         public string GetTypeNameForCSharp(Type type)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
+            return m_TypeHandler.GetNameForCSharp(type);
 
             // C# type keywords
             if (type == typeof(string)) return "string";
@@ -338,8 +333,8 @@ namespace BloodyUnitTests
             var parameters = methodBase.GetParameters();
 
             var arguments = useVariables
-                ? parameters.Select(p => p.ParameterType).Select(t => GetTypeNameForIdentifier(t, VarScope.Local)).ToArray()
-                : parameters.Select(p => p.ParameterType).Select(t => GetInstance(t, nonDefault)).ToArray();
+                ? parameters.Select(p => p.ParameterType).Select(t => StringUtils.ToLowerInitial(m_TypeHandler.GetNameForIdentifier(t))).ToArray()
+                : parameters.Select(p => p.ParameterType).Select(t => m_TypeHandler.GetInstantiation(t, nonDefault)).ToArray();
 
             for (var index = 0; index < parameters.Length; index++)
             {
@@ -404,7 +399,7 @@ namespace BloodyUnitTests
         private string GetTypeNameForIdentifier(Type type)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
-
+            return m_TypeHandler.GetNameForIdentifier(type);
             var unRefType = type.IsByRef ? type.GetElementType() : type;
 
             // ReSharper disable once AssignNullToNotNullAttribute

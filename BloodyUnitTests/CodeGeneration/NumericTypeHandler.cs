@@ -5,7 +5,7 @@ namespace BloodyUnitTests.CodeGeneration
 {
     class NumericTypeHandler : IRecursiveTypeHandler
     {
-        private IRecursiveTypeHandler m_RootHandler;
+        private ITypeHandler m_RootHandler;
 
         private static readonly Type[] s_SupportedTypes =
         {
@@ -20,7 +20,7 @@ namespace BloodyUnitTests.CodeGeneration
             typeof(decimal)
         };
 
-        public void SetRoot(IRecursiveTypeHandler handler)
+        public void SetRoot(ITypeHandler handler)
         {
             m_RootHandler = handler;
         }
@@ -45,7 +45,7 @@ namespace BloodyUnitTests.CodeGeneration
             return false;
         }
 
-        public string GetNameForIdentifier(Type type, VarScope scope)
+        public string GetNameForIdentifier(Type type)
         {
             throw new NotSupportedException();
         }

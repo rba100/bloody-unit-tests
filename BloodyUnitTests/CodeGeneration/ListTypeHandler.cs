@@ -1,33 +1,24 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace BloodyUnitTests.CodeGeneration
 {
-    class FallbackRecursiveTypeHandler : IRecursiveTypeHandler
+    class ListTypeHandler : IRecursiveTypeHandler
     {
         private ITypeHandler m_RootHandler;
 
-        public void SetRoot(ITypeHandler handler)
-        {
-            m_RootHandler = handler;
-        }
-
         public bool CanGetInstantiation(Type type)
         {
-            return true;
+            return type.IsGenericType
+                   && (type.GetGenericTypeDefinition() == typeof(List<>)
+                       || type.GetGenericTypeDefinition() == typeof(IList<>));
         }
 
         public string GetInstantiation(Type type, bool interestingValue)
         {
-            if (type.IsClass
-                && !type.IsAbstract
-                && type.GetConstructors().Any(ctor => ctor.GetParameters().Length == 0))
-            {
-                return $"new {m_RootHandler.GetNameForCSharp(type)}()";
-            }
-
-            // Assume a helper method exists
-            return $"Create{m_RootHandler.GetNameForIdentifier(type)}()";
+            var elementType = type.GetGenericArguments().First();
+            return $"new List<{m_RootHandler.GetNameForCSharp(elementType)}>()";
         }
 
         public bool IsInstantiationTerse(Type type)
@@ -37,22 +28,27 @@ namespace BloodyUnitTests.CodeGeneration
 
         public bool CanGetNameForIdentifier(Type type)
         {
-            return true;
+            return false;
         }
 
         public string GetNameForIdentifier(Type type)
         {
-            return type.Name;
+            throw new NotImplementedException();
         }
 
         public bool CanGetNameForCSharp(Type type)
         {
-            return true;
+            return false;
         }
 
         public string GetNameForCSharp(Type type)
         {
-            return type.Name;
+            throw new NotImplementedException();
+        }
+
+        public void SetRoot(ITypeHandler handler)
+        {
+            m_RootHandler = handler;
         }
     }
 }

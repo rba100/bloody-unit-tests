@@ -5,9 +5,9 @@ namespace BloodyUnitTests.CodeGeneration
 {
     class GenericTypeNameHandler : IRecursiveTypeHandler
     {
-        private IRecursiveTypeHandler m_RootHandler;
+        private ITypeHandler m_RootHandler;
 
-        public void SetRoot(IRecursiveTypeHandler handler)
+        public void SetRoot(ITypeHandler handler)
         {
             m_RootHandler = handler;
         }
@@ -32,14 +32,14 @@ namespace BloodyUnitTests.CodeGeneration
             return type.IsGenericType;
         }
 
-        public string GetNameForIdentifier(Type type, VarScope scope)
+        public string GetNameForIdentifier(Type type)
         {
             var typeDisplayName = type.Name;
             var genArgs = type.GetGenericArguments();
             int index = typeDisplayName.IndexOf('`');
             typeDisplayName = index == -1 ? typeDisplayName : typeDisplayName.Substring(0, index);
             typeDisplayName = typeDisplayName
-                              + string.Join("", genArgs.Select(p => m_RootHandler.GetNameForIdentifier(p, VarScope.Member)));
+                              + string.Join("", genArgs.Select(p => m_RootHandler.GetNameForIdentifier(p)));
             return typeDisplayName;
         }
 

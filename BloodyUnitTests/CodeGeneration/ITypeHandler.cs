@@ -9,7 +9,7 @@ namespace BloodyUnitTests.CodeGeneration
         bool IsInstantiationTerse(Type type);
 
         bool CanGetNameForIdentifier(Type type);
-        string GetNameForIdentifier(Type type, VarScope scope);
+        string GetNameForIdentifier(Type type);
 
         bool CanGetNameForCSharp(Type type);
         string GetNameForCSharp(Type type);

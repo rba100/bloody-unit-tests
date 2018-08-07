@@ -4,9 +4,9 @@ namespace BloodyUnitTests.CodeGeneration
 {
     class RhinoMockingTypeHandler : IRecursiveTypeHandler
     {
-        private IRecursiveTypeHandler m_RootHandler;
+        private ITypeHandler m_RootHandler;
 
-        public void SetRoot(IRecursiveTypeHandler handler)
+        public void SetRoot(ITypeHandler handler)
         {
             m_RootHandler = handler;
         }
@@ -19,6 +19,11 @@ namespace BloodyUnitTests.CodeGeneration
         public string GetInstantiation(Type type, bool interestingValue)
         {
             return $"GenerateStub<{m_RootHandler.GetNameForCSharp(type)}>()";
+        }
+
+        public string GetMock(Type type)
+        {
+            return $"GenerateMock<{m_RootHandler.GetNameForCSharp(type)}>()";
         }
 
         public bool IsInstantiationTerse(Type type)
@@ -36,7 +41,7 @@ namespace BloodyUnitTests.CodeGeneration
             return false;
         }
 
-        public string GetNameForIdentifier(Type type, VarScope scope)
+        public string GetNameForIdentifier(Type type)
         {
             throw new NotSupportedException();
         }

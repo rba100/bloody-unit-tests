@@ -20,7 +20,7 @@ namespace BloodyUnitTests.CodeGeneration
             foreach (var handler in innerHandlers) handler.SetRoot(this);
         }
 
-        public void SetRoot(IRecursiveTypeHandler handler)
+        public void SetRoot(ITypeHandler handler)
         {
             foreach (var innerHandler in m_InnerHandlers)
             {
@@ -41,7 +41,8 @@ namespace BloodyUnitTests.CodeGeneration
 
         public bool IsInstantiationTerse(Type type)
         {
-            return m_InnerHandlers.Any(h => h.IsInstantiationTerse(type));
+            return m_InnerHandlers.First(h => h.CanGetInstantiation(type))
+                                  .IsInstantiationTerse(type);
         }
 
         public bool CanGetNameForIdentifier(Type type)
@@ -49,10 +50,10 @@ namespace BloodyUnitTests.CodeGeneration
             return m_InnerHandlers.Any(h => h.CanGetNameForIdentifier(type));
         }
 
-        public string GetNameForIdentifier(Type type, VarScope scope)
+        public string GetNameForIdentifier(Type type)
         {
             return m_InnerHandlers.First(h => h.CanGetNameForIdentifier(type))
-                                  .GetNameForIdentifier(type, scope);
+                                  .GetNameForIdentifier(type);
         }
 
         public bool CanGetNameForCSharp(Type type)

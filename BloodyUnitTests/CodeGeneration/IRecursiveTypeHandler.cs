@@ -2,6 +2,6 @@
 {
     interface IRecursiveTypeHandler : ITypeHandler
     {
-        void SetRoot(IRecursiveTypeHandler handler);
+        void SetRoot(ITypeHandler handler);
     }
 }
