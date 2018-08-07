@@ -9,7 +9,7 @@ namespace BloodyUnitTests
 {
     internal class CSharpWriter
     {
-        private ITypeHandler m_TypeHandler = TypeHandlerFactory.Create();
+        private readonly ITypeHandler m_TypeHandler = TypeHandlerFactory.Create();
 
         public bool HasParamKeyword(ParameterInfo arg)
         {
@@ -49,11 +49,7 @@ namespace BloodyUnitTests
             }
         }
 
-        /// <summary>
-        /// Returns true if a literal or in-line instantiation for the supplied type
-        /// is likely to be terse when a method argument is needed.
-        /// </summary>
-        private bool IsImmediateValueTolerable(Type type)
+        private bool IsInstantiationTerse(Type type)
         {
             return m_TypeHandler.IsInstantiationTerse(type);
         }
@@ -66,119 +62,6 @@ namespace BloodyUnitTests
         public string GetInstance(Type possibleReftype, bool nonDefault)
         {
             return m_TypeHandler.GetInstantiation(possibleReftype, nonDefault);
-            if (possibleReftype == null) throw new ArgumentNullException(nameof(possibleReftype));
-
-            var type = possibleReftype.IsByRef
-                ? possibleReftype.GetElementType()
-                : possibleReftype;
-
-            if (IsArrayAssignable(type))
-            {
-                if (type == typeof(byte[])) return nonDefault ? "Encoding.UTF8.GetBytes(\"{}\")" : "new byte[0]";
-                if (type == typeof(Type[])) return nonDefault ? "new Type[] { typeof(string) }" : "Type.EmptyTypes";
-
-                // ReSharper disable once PossibleNullReferenceException
-                var gArgs = type.GetGenericArguments();
-                var elementType = gArgs.SingleOrDefault() ?? type.GetElementType();
-
-                return nonDefault
-                    ? $"new {GetTypeNameForCSharp(elementType)}[] {{ {GetInstance(elementType, true)} }}"
-                    : $"new {GetTypeNameForCSharp(elementType)}[0]";
-            }
-
-            if (IsDictionaryAssignable(type))
-            {
-                var dictionaryTypes = GetDictionaryType(type);
-                var keyType = GetTypeNameForCSharp(dictionaryTypes.key);
-                var valueType = GetTypeNameForCSharp(dictionaryTypes.value);
-                return $"new Dictionary<{keyType}, {valueType}>()";
-            }
-
-            if (type == typeof(string))
-                return nonDefault ? "\"value\"" : "\"\"";
-
-            if (type == typeof(char))
-                return nonDefault ? "X" : "' '";
-
-            if (type == typeof(int)
-             || type == typeof(uint)
-             || type == typeof(long)
-             || type == typeof(ulong)
-             || type == typeof(float)
-             || type == typeof(double)
-             || type == typeof(decimal)) return nonDefault ? "7" : "0";
-
-            if (type == typeof(bool)) return nonDefault.ToString().ToLower();
-
-            if (type == typeof(IntPtr)) return nonDefault ? "new IntPtr(1)" : "IntPtr.Zero";
-
-            if (type == typeof(Type)) return "typeof(object)";
-
-            // ReSharper disable once PossibleNullReferenceException
-            if (type.IsInterface)
-            {
-                if (type.IsGenericType)
-                {
-                    // Lists cover lots of collection-like interfaces
-                    var genArgs = type.GetGenericArguments().FirstOrDefault() ?? typeof(object);
-                    var listType = typeof(List<>).MakeGenericType(genArgs);
-                    if (type.IsAssignableFrom(listType)) return $"new {GetTypeNameForCSharp(listType)}()";
-                }
-
-                return $"GenerateStub<{GetTypeNameForCSharp(type)}>()";
-            }
-
-            if (type.IsClass)
-            {
-                if (type.IsGenericType)
-                {
-                    var genArgs = type.GetGenericArguments().FirstOrDefault() ?? typeof(object);
-
-                    // List<T>
-                    var listType = typeof(List<>).MakeGenericType(genArgs);
-                    if (type.IsAssignableFrom(listType)) return $"new {GetTypeNameForCSharp(listType)}()";
-                    // Func<T>
-                    var funcType = typeof(Func<>).MakeGenericType(genArgs);
-                    if (type.IsAssignableFrom(funcType)) return $"() => {GetInstance(genArgs)}";
-                    // Action<T>
-                    var actionType = typeof(Action<>).MakeGenericType(genArgs);
-                    if (type.IsAssignableFrom(actionType)) return $"(_) => {{ }}";
-                }
-
-                // If it has a parameterless constructor but no others then use it
-                var gotParameterless = type.GetConstructor(Type.EmptyTypes) != null;
-                var onlyParameterless = gotParameterless && type.GetConstructors().Length == 1;
-
-                // If the *only* ctor is parameterless then that's what we've got to do
-                if (onlyParameterless) return $"new {GetTypeNameForCSharp(type)}()";
-
-                // If we've got this far with no joy but CanInstantiate still thinks
-                // we can handle it then assume we have a helper method elsewhere.
-                if (CanInstantiate(type)) return $"Create{GetTypeNameForIdentifier(type, VarScope.Member)}()";
-
-                // OK, fine, we'll use the parameterless ctor if we have one.
-                if (gotParameterless) return $"new {GetTypeNameForCSharp(type)}()";
-
-                // Fallback: prepare an non-compiling instantiation and let the user fix it
-                return $"new {GetTypeNameForCSharp(type)}(/* ... */)";
-            }
-
-            var nullableType = Nullable.GetUnderlyingType(type);
-            if (nullableType != null) return $"({nullableType.Name}?) {GetInstance(nullableType)}";
-
-            if (type == typeof(DateTime)) return nonDefault
-                ? "DateTime.SpecifyKind(DateTime.MaxValue, DateTimeKind.Utc)"
-                : "DateTime.UtcNow";
-
-            if (type.IsEnum)
-            {
-                var names = Enum.GetNames(type);
-                if (names.Any()) return nonDefault && names.Length > 1 
-                    ? $"{type.Name}.{names[1]}" 
-                    : $"{type.Name}.{names[0]}";
-            }
-
-            return $"default({GetTypeNameForCSharp(type)})";
         }
 
         public string GetLocalVariableDeclaration(Type rawType, bool setToNull)
@@ -202,38 +85,6 @@ namespace BloodyUnitTests
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
             return m_TypeHandler.GetNameForCSharp(type);
-
-            // C# type keywords
-            if (type == typeof(string)) return "string";
-            if (type == typeof(object)) return "object";
-            if (type == typeof(int)) return "int";
-            if (type == typeof(uint)) return "uint";
-            if (type == typeof(long)) return "long";
-            if (type == typeof(ulong)) return "ulong";
-            if (type == typeof(short)) return "short";
-            if (type == typeof(ushort)) return "ushort";
-            if (type == typeof(bool)) return "bool";
-            if (type == typeof(decimal)) return "decimal";
-            if (type == typeof(float)) return "float";
-            if (type == typeof(double)) return "double";
-            if (type == typeof(byte)) return "byte";
-
-            var unRefType = type.IsByRef ? type.GetElementType() : type;
-
-            // ReSharper disable once AssignNullToNotNullAttribute
-            var nullableType = Nullable.GetUnderlyingType(unRefType);
-            if (nullableType != null) return $"{GetTypeNameForCSharp(nullableType)}?";
-
-            var typeDisplayName = unRefType.Name;
-            if (unRefType.IsGenericType)
-            {
-                var genericParams = unRefType.GetGenericArguments();
-                int index = typeDisplayName.IndexOf('`');
-                typeDisplayName = index == -1 ? typeDisplayName : typeDisplayName.Substring(0, index);
-                typeDisplayName = typeDisplayName + "<" + string.Join(", ", genericParams.Select(GetTypeNameForCSharp)) + ">";
-            }
-
-            return typeDisplayName;
         }
 
         public string[] GetStubbedInstantiation(Type type)
@@ -272,7 +123,7 @@ namespace BloodyUnitTests
                                          || p.ParameterType.IsEnum
                                          || p.ParameterType == typeof(DateTime)
                                          || p.ParameterType == typeof(DateTime?))
-                             .Where(p => !IsImmediateValueTolerable(p.ParameterType) || HasParamKeyword(p))
+                             .Where(p => !IsInstantiationTerse(p.ParameterType) || HasParamKeyword(p))
                              .Select(p => p.ParameterType)
                              .Distinct()
                              .Select(t => GetLocalVariableDeclaration(t, setToNull))
@@ -287,7 +138,7 @@ namespace BloodyUnitTests
         /// <summary>
         /// Returns true for types which this class can construct.
         /// </summary>
-        private bool CanInstantiate(Type type, IList<Type> typeHistory)
+        private bool CanInstantiate(Type type, ICollection<Type> typeHistory)
         {
             if (type.IsValueType) return true;
             if (type == typeof(string)) return true;
@@ -346,7 +197,7 @@ namespace BloodyUnitTests
                     var argument = arguments[index];
                     arguments[index] = $"{ParamKeyword(pInfo)} {argument}";
                 }
-                else if (IsImmediateValueTolerable(pType))
+                else if (IsInstantiationTerse(pType))
                 {
                     arguments[index] = GetInstance(pType, nonDefault);
                 }
@@ -358,7 +209,7 @@ namespace BloodyUnitTests
         public bool ShouldUseVariableForParameter(ParameterInfo parameter)
         {
             return HasParamKeyword(parameter)
-                   || !IsImmediateValueTolerable(parameter.ParameterType);
+                   || !IsInstantiationTerse(parameter.ParameterType);
         }
 
         public bool IsArrayAssignable(Type type)
@@ -400,38 +251,6 @@ namespace BloodyUnitTests
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
             return m_TypeHandler.GetNameForIdentifier(type);
-            var unRefType = type.IsByRef ? type.GetElementType() : type;
-
-            // ReSharper disable once AssignNullToNotNullAttribute
-            var nullableType = Nullable.GetUnderlyingType(unRefType);
-            if (nullableType != null) return $"{GetTypeNameForIdentifier(nullableType)}Nullable";
-
-            var typeDisplayName = unRefType.Name;
-            if (unRefType.IsGenericType)
-            {
-                // Handle types we can pretend are dictionaries
-                var dictionaryType = GetDictionaryTypeForAssignment(type);
-                if (dictionaryType != null && dictionaryType != type)
-                {
-                    return GetTypeNameForIdentifier(dictionaryType);
-                }
-                var genericParams = unRefType.GetGenericArguments();
-                int index = typeDisplayName.IndexOf('`');
-                typeDisplayName = index == -1 ? typeDisplayName : typeDisplayName.Substring(0, index);
-                typeDisplayName = typeDisplayName + string.Join("", genericParams.Select(GetTypeNameForIdentifier));
-            }
-
-            if (unRefType.IsArray)
-            {
-                typeDisplayName = typeDisplayName.Replace("[]", "Array");
-            }
-
-            if (unRefType.IsInterface && typeDisplayName.StartsWith("I"))
-            {
-                return new string(typeDisplayName.Skip(1).ToArray());
-            }
-
-            return typeDisplayName;
         }
 
         private string GetLocalVariableName(Type type)

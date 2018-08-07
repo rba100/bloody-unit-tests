@@ -57,7 +57,7 @@ namespace BloodyUnitTests
 
     class InnerObject
     {
-        public InnerObject(IReadOnlyCollection<int> ints)
+        public InnerObject(IReadOnlyCollection<int> ints, bool writeable)
         {
 
         }

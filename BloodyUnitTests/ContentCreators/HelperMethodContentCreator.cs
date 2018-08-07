@@ -18,17 +18,7 @@ namespace BloodyUnitTests.ContentCreators
         {
             var lines = new List<string>();
 
-            var simpleClasses = type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                                    .OfType<MethodBase>()
-                                    .Where(m => m.DeclaringType != typeof(object))
-                                    .Union(type.GetConstructors())
-                                    .SelectMany(m => m.GetParameters())
-                                    .Select(p => p.ParameterType)
-                                    .Where(p => p.IsClass)
-                                    .Distinct()
-                                    .Where(t => t.Namespace?.StartsWith(nameof(System)) != true && !t.IsArray)
-                                    .Where(m_CSharpWriter.CanInstantiate)
-                                    .ToArray();
+            var simpleClasses = GetSupportedDependencies(type);
 
             var namesSpaces = simpleClasses
                 .SelectMany(c => c.GetConstructors())
@@ -50,6 +40,21 @@ namespace BloodyUnitTests.ContentCreators
             return new ClassContent(lines.ToArray(), namesSpaces);
         }
 
+        private Type[] GetSupportedDependencies(Type type)
+        {
+            return type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                       .OfType<MethodBase>()
+                       .Where(m => m.DeclaringType != typeof(object))
+                       .Union(type.GetConstructors())
+                       .SelectMany(m => m.GetParameters())
+                       .Select(p => p.ParameterType)
+                       .Where(p => p.IsClass)
+                       .Distinct()
+                       .Where(t => t.Namespace?.StartsWith(nameof(System)) != true && !t.IsArray)
+                       .Where(m_CSharpWriter.CanInstantiate)
+                       .ToArray();
+        }
+
         private string[] GetBuilderMethod(Type type)
         {
             var lines = new List<string>();
@@ -62,6 +67,17 @@ namespace BloodyUnitTests.ContentCreators
 
             var arguments = parameters.Select(p => m_CSharpWriter.GetInstance(p.ParameterType)).ToArray();
 
+            int namedParameterStart = parameters.Length;
+            for (var i = parameters.Length-1; i >=0; i--)
+            {
+                var pType = parameters[i].ParameterType;
+                if (pType == typeof(bool) || pType == typeof(int))
+                {
+                    namedParameterStart = i;
+                }
+                else break;
+            }
+
             for (var i = 0; i < arguments.Length; i++)
             {
                 var t = parameters[i].ParameterType;
@@ -69,14 +85,19 @@ namespace BloodyUnitTests.ContentCreators
                 {
                     arguments[i] = $"\"{parameters[i].Name}\"";
                 }
-                else if (t.IsArray)
+
+                if (i >= namedParameterStart)
                 {
-                    arguments[i] = $"new {m_CSharpWriter.GetTypeNameForCSharp(t.GetElementType())}[0]";
+                    arguments[i] = $"{parameters[i].Name}: {arguments[i]}";
                 }
-                else if (t == typeof(object))
-                {
-                    arguments[i] = "new object()";
-                }
+                //else if (t.IsArray)
+                //{
+                //    arguments[i] = $"new {m_CSharpWriter.GetTypeNameForCSharp(t.GetElementType())}[0]";
+                //}
+                //else if (t == typeof(object))
+                //{
+                //    arguments[i] = "new object()";
+                //}
             }
 
             var indent = new string(' ', 4);
