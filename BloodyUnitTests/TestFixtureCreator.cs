@@ -23,6 +23,7 @@ namespace BloodyUnitTests
             {
                 new ConstructorNullArgsTestCreator(),
                 new MethodNullArgsTestCreator(),
+                new InvalidArgumentTestCreator(), 
                 new PassThroughTestCreator(),
                 new HelperMethodContentCreator(),
                 new TestFactoryCreator()

@@ -261,7 +261,11 @@ namespace BloodyUnitTests
 
         public string[] GetVariableDeclarationsForParameters(IEnumerable<ParameterInfo> parameters, bool setToNull)
         {
-            return parameters.Where(p => !p.ParameterType.IsValueType || HasParamKeyword(p) || p.ParameterType.IsEnum)
+            return parameters.Where(p => !p.ParameterType.IsValueType 
+                                         || HasParamKeyword(p) 
+                                         || p.ParameterType.IsEnum
+                                         || p.ParameterType == typeof(DateTime)
+                                         || p.ParameterType == typeof(DateTime?))
                              .Where(p => !IsImmediateValueTolerable(p.ParameterType) || HasParamKeyword(p))
                              .Select(p => p.ParameterType)
                              .Distinct()
@@ -346,18 +350,28 @@ namespace BloodyUnitTests
 
         public bool ShouldUseVariableForParameter(ParameterInfo parameter)
         {
-            return !parameter.IsOut
-                && !parameter.ParameterType.IsByRef
-                && !IsImmediateValueTolerable(parameter.ParameterType);
+            return HasParamKeyword(parameter)
+                   || !IsImmediateValueTolerable(parameter.ParameterType)
+                   || IsDateTime(parameter.ParameterType);
         }
 
-        private static bool IsArrayAssignable(Type type)
+        public bool IsArrayAssignable(Type type)
+        {
+            return GetArrayElementType(type) != null;
+        }
+
+        public Type GetArrayElementType(Type type)
         {
             var gArgs = type.GetGenericArguments();
-            if (!type.HasElementType && gArgs.Length != 1) return false;
+            if (!type.HasElementType && gArgs.Length != 1) return null;
             var elementType = gArgs.SingleOrDefault() ?? type.GetElementType();
             // ReSharper disable once PossibleNullReferenceException
-            return type.IsAssignableFrom(elementType.MakeArrayType());
+            return type.IsAssignableFrom(elementType.MakeArrayType()) ? elementType : null;
+        }
+
+        private bool IsDateTime(Type type)
+        {
+            return type == typeof(DateTime) || type == typeof(DateTime?);
         }
 
         private string GetVariableName(Type type)

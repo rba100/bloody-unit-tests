@@ -36,6 +36,11 @@ namespace BloodyUnitTests
         {
             return m_InnerTestDecorator.Aggregate(arguments);
         }
+
+        public void LogAll(string[] messages, DateTime time)
+        {
+            
+        }
     }
 
     internal interface ITestDecorator
