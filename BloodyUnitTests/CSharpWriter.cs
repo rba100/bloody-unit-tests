@@ -108,8 +108,8 @@ namespace BloodyUnitTests
 
             if (type == typeof(int)
              || type == typeof(uint)
-             || type == typeof(Int64)
-             || type == typeof(UInt64)
+             || type == typeof(long)
+             || type == typeof(ulong)
              || type == typeof(float)
              || type == typeof(double)
              || type == typeof(decimal)) return nonDefault ? "7" : "0";
@@ -125,6 +125,7 @@ namespace BloodyUnitTests
             {
                 if (type.IsGenericType)
                 {
+                    // Lists cover lots of collection-like interfaces
                     var genArgs = type.GetGenericArguments().FirstOrDefault() ?? typeof(object);
                     var listType = typeof(List<>).MakeGenericType(genArgs);
                     if (type.IsAssignableFrom(listType)) return $"new {GetTypeNameForCSharp(listType)}()";
@@ -251,7 +252,7 @@ namespace BloodyUnitTests
 
             var arguments = GetMethodArguments(ctor, useVariables: false, nonDefault: false);
 
-            var declarationStart = $"var {GetTypeNameForIdentifier(type, VarScope.Local)} = new { GetTypeNameForCSharp(type)}(";
+            var declarationStart = $"var {GetTypeNameForIdentifier(type, VarScope.Local)} = new {GetTypeNameForCSharp(type)}(";
 
             var offset = new string(' ', declarationStart.Length);
 
@@ -296,6 +297,7 @@ namespace BloodyUnitTests
             if (type.IsValueType) return true;
             if (type == typeof(string)) return true;
             if (IsArrayAssignable(type)) return true;
+            if (IsDictionaryAssignable(type)) return true;
             if (type.IsInterface) return true;
             if (type.IsAbstract) return false;
 
@@ -307,7 +309,8 @@ namespace BloodyUnitTests
 
             // Deal with classes
             if (!type.IsClass) return false;
-            if (CanInstantiateSpecialClass(type)) return true;
+            // Deal with certain types that we have specially handle
+            if (IsFuncActionOrList(type)) return true;
 
             var ctor = type.GetConstructors()
                            .OrderByDescending(c => c.GetParameters().Length)
@@ -318,7 +321,7 @@ namespace BloodyUnitTests
                        .All(p => !p.IsOut && CanInstantiate(p.ParameterType, typeHistory));
         }
 
-        private bool CanInstantiateSpecialClass(Type type)
+        private bool IsFuncActionOrList(Type type)
         {
             var genArgs = type.GetGenericArguments();
             if (genArgs.Length != 1) return false;
@@ -441,7 +444,7 @@ namespace BloodyUnitTests
             var varName = GetTypeNameForIdentifier(type);
             var unRefType = type.IsByRef ? type.GetElementType() : type;
             if (type.IsClass && type.Namespace != "System") return ToLowerInitial(varName);
-            if (unRefType == typeof(DateTime)) return "dateTimeUtc";
+            if (unRefType == typeof(DateTime) || unRefType == typeof(DateTime?)) varName += "Utc";
             var output = ToLowerInitial(varName);
             var prefix = type.IsInterface ? "stub" : "dummy";
             if (s_Keywords.Contains(output)) return $"{prefix}{varName}";
