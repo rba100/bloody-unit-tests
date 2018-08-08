@@ -23,7 +23,7 @@ namespace BloodyUnitTests
             throw new InvalidOperationException("Parameter is neither 'out' or 'ref'");
         }
 
-        public string GetTypeNameForIdentifier(string typeName, VarScope varScope)
+        public string GetIdentifier(string typeName, VarScope varScope)
         {
             switch (varScope)
             {
@@ -36,14 +36,14 @@ namespace BloodyUnitTests
             }
         }
 
-        public string GetTypeNameForIdentifier(Type type, VarScope varScope)
+        public string GetIdentifier(Type type, VarScope varScope)
         {
             switch (varScope)
             {
                 case VarScope.Local:
-                    return StringUtils.ToLowerInitial(GetTypeNameForIdentifier(type));
+                    return StringUtils.ToLowerInitial(GetIdentifier(type));
                 case VarScope.Member:
-                    return StringUtils.ToUpperInitial(GetTypeNameForIdentifier(type));
+                    return StringUtils.ToUpperInitial(GetIdentifier(type));
                 default:
                     throw new ArgumentOutOfRangeException(nameof(varScope), varScope, null);
             }
@@ -54,32 +54,32 @@ namespace BloodyUnitTests
             return m_TypeHandler.IsInstantiationTerse(type);
         }
 
-        public string GetInstance(Type type)
+        public string GetInstantiation(Type type)
         {
             return m_TypeHandler.GetInstantiation(type, false);
         }
 
-        public string GetInstance(Type possibleReftype, bool nonDefault)
+        public string GetInstantiation(Type possibleReftype, bool nonDefault)
         {
             return m_TypeHandler.GetInstantiation(possibleReftype, nonDefault);
         }
 
-        public string GetLocalVariableDeclaration(Type type, bool setToNull)
+        private string GetLocalVariableDeclaration(Type type, bool setToNull)
         {
-            var declaredType = $"{(setToNull ? GetTypeNameForCSharp(type) : "var")}";
-            var identifier = GetTypeNameForIdentifier(type, VarScope.Local);
+            var declaredType = $"{(setToNull ? GetNameForCSharp(type) : "var")}";
+            var identifier = GetIdentifier(type, VarScope.Local);
             // ReSharper disable once PossibleNullReferenceException
             if (setToNull && type.IsValueType) return $"{declaredType} {identifier};";
             if (setToNull) return $"{declaredType} {identifier} = null;";
-            return $"{declaredType} {identifier} = {GetInstance(type)};";
+            return $"{declaredType} {identifier} = {GetInstantiation(type)};";
         }
 
         public string GetMockInstance(Type interfaceType)
         {
-            return $"GenerateMock<{GetTypeNameForCSharp(interfaceType)}>()";
+            return $"GenerateMock<{GetNameForCSharp(interfaceType)}>()";
         }
 
-        public string GetTypeNameForCSharp(Type type)
+        public string GetNameForCSharp(Type type)
         {
             return m_TypeHandler.GetNameForCSharp(type);
         }
@@ -95,7 +95,7 @@ namespace BloodyUnitTests
 
             var arguments = GetMethodArguments(ctor, useVariables: false, nonDefault: false);
 
-            var declarationStart = $"var {GetTypeNameForIdentifier(type, VarScope.Local)} = new {GetTypeNameForCSharp(type)}(";
+            var declarationStart = $"var {GetIdentifier(type, VarScope.Local)} = new {GetNameForCSharp(type)}(";
 
             var offset = new string(' ', declarationStart.Length);
 
@@ -138,23 +138,14 @@ namespace BloodyUnitTests
         /// </summary>
         private bool CanInstantiate(Type type, ICollection<Type> typeHistory)
         {
-            if (type.IsValueType) return true;
-            if (type == typeof(string)) return true;
-            if (IsArrayAssignable(type)) return true;
-            if (IsDictionaryAssignable(type)) return true;
-            if (type.IsInterface) return true;
-            if (type.IsAbstract) return false;
+            if (m_TypeHandler.CanGetInstantiation(type)) return true;
 
             // No circular dependencies
             if (typeHistory.Contains(type)) return false;
             typeHistory.Add(type);
 
-            if (type.IsArray && CanInstantiate(type.GetElementType(), typeHistory)) return true;
-
             // Deal with classes
             if (!type.IsClass) return false;
-            // Deal with certain types that we have specially handle
-            if (IsFuncActionOrList(type)) return true;
 
             var ctor = type.GetConstructors()
                            .OrderByDescending(c => c.GetParameters().Length)
@@ -163,18 +154,6 @@ namespace BloodyUnitTests
 
             return ctor.GetParameters()
                        .All(p => !p.IsOut && CanInstantiate(p.ParameterType, typeHistory));
-        }
-
-        private bool IsFuncActionOrList(Type type)
-        {
-            var genArgs = type.GetGenericArguments();
-            if (genArgs.Length != 1) return false;
-            var handledTypes = new[] {
-                typeof(Func<>).MakeGenericType(genArgs),
-                typeof(Action<>).MakeGenericType(genArgs),
-                typeof(List<>).MakeGenericType(genArgs)
-            };
-            return handledTypes.Any(type.IsAssignableFrom);
         }
 
         public string[] GetMethodArguments(MethodBase methodBase, bool useVariables, bool nonDefault)
@@ -197,7 +176,7 @@ namespace BloodyUnitTests
                 }
                 else if (IsInstantiationTerse(pType))
                 {
-                    arguments[index] = GetInstance(pType, nonDefault);
+                    arguments[index] = GetInstantiation(pType, nonDefault);
                 }
             }
 
@@ -224,28 +203,7 @@ namespace BloodyUnitTests
             return type.IsAssignableFrom(elementType.MakeArrayType()) ? elementType : null;
         }
 
-        private bool IsDictionaryAssignable(Type type)
-        {
-            return GetDictionaryType(type).key != null;
-        }
-
-        private Type GetDictionaryTypeForAssignment(Type type)
-        {
-            var gArgs = type.GetGenericArguments();
-            if (gArgs.Length != 2) return (null);
-            var dictType = typeof(Dictionary<,>).MakeGenericType(gArgs);
-            return type.IsAssignableFrom(dictType) ? dictType : null;
-        }
-
-        private (Type key, Type value) GetDictionaryType(Type type)
-        {
-            var gArgs = type.GetGenericArguments();
-            if (gArgs.Length != 2) return (null, null);
-            var dictType = typeof(Dictionary<,>).MakeGenericType(gArgs);
-            return type.IsAssignableFrom(dictType) ? (gArgs[0], gArgs[1]) : (null, null);
-        }
-
-        private string GetTypeNameForIdentifier(Type type)
+        private string GetIdentifier(Type type)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
             return m_TypeHandler.GetNameForIdentifier(type);

@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BloodyUnitTests.ContentCreators
 {
@@ -80,7 +78,7 @@ namespace BloodyUnitTests.ContentCreators
 
             if (variableDeclarations.Union(outVariableDeclarations).Any()) lines.Add(string.Empty);
 
-            var instanceName = m_CSharpWriter.GetTypeNameForIdentifier(type, VarScope.Local);
+            var instanceName = m_CSharpWriter.GetIdentifier(type, VarScope.Local);
 
             lines.AddRange(m_CSharpWriter.GetStubbedInstantiation(type));
             lines.Add(string.Empty);
@@ -101,7 +99,7 @@ namespace BloodyUnitTests.ContentCreators
                     {
                         var arrayElementType = m_CSharpWriter.GetArrayElementType(pType);
                         if(arrayElementType.IsValueType) continue;
-                        var instance = m_CSharpWriter.GetTypeNameForCSharp(arrayElementType);
+                        var instance = m_CSharpWriter.GetNameForCSharp(arrayElementType);
                         copyOfArguments[i] = $"new {instance}[] {{ null }}";
                         testNameSuffix = "contains null";
                     }

@@ -65,7 +65,7 @@ namespace BloodyUnitTests.ContentCreators
 
             if (parameters.Length == 0) return new string[0];
 
-            var arguments = parameters.Select(p => m_CSharpWriter.GetInstance(p.ParameterType)).ToArray();
+            var arguments = parameters.Select(p => m_CSharpWriter.GetInstantiation(p.ParameterType)).ToArray();
 
             int namedParameterStart = parameters.Length;
             for (var i = parameters.Length-1; i >=0; i--)
@@ -90,20 +90,12 @@ namespace BloodyUnitTests.ContentCreators
                 {
                     arguments[i] = $"{parameters[i].Name}: {arguments[i]}";
                 }
-                //else if (t.IsArray)
-                //{
-                //    arguments[i] = $"new {m_CSharpWriter.GetTypeNameForCSharp(t.GetElementType())}[0]";
-                //}
-                //else if (t == typeof(object))
-                //{
-                //    arguments[i] = "new object()";
-                //}
             }
 
             var indent = new string(' ', 4);
-            lines.Add($"private static {m_CSharpWriter.GetTypeNameForCSharp(type)} Create{m_CSharpWriter.GetTypeNameForIdentifier(type, VarScope.Member)}()");
+            lines.Add($"private static {m_CSharpWriter.GetNameForCSharp(type)} Create{m_CSharpWriter.GetIdentifier(type, VarScope.Member)}()");
             lines.Add($"{{");
-            lines.Add($"{indent}return new {m_CSharpWriter.GetTypeNameForCSharp(type)}({string.Join(", ", arguments)});");
+            lines.Add($"{indent}return new {m_CSharpWriter.GetNameForCSharp(type)}({string.Join(", ", arguments)});");
             lines.Add($"}}");
             return lines.ToArray();
         }

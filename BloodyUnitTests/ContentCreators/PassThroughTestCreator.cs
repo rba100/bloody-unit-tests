@@ -35,10 +35,10 @@ namespace BloodyUnitTests.ContentCreators
         {
             var isVoid = method.ReturnType == typeof(void);
 
-            var mockVarName = $"mock{m_CSharpWriter.GetTypeNameForIdentifier(interfaceType, VarScope.Member)}";
+            var mockVarName = $"mock{m_CSharpWriter.GetIdentifier(interfaceType, VarScope.Member)}";
             var mockVarNameOffset = new string(' ', mockVarName.Length);
             var resultDeclaration = isVoid ? string.Empty : "var result = ";
-            var sutVarName = m_CSharpWriter.GetTypeNameForIdentifier(classToTest.Name, VarScope.Local);
+            var sutVarName = m_CSharpWriter.GetIdentifier(classToTest.Name, VarScope.Local);
 
             var methodVariables = m_CSharpWriter
                 .GetVariableDeclarationsForParameters(method.GetParameters()
@@ -76,7 +76,7 @@ namespace BloodyUnitTests.ContentCreators
             lines.AddRange(methodVariables.Select(v => $"    {v}"));
             if (!isVoid)
             {
-                lines.Add($"    var expectedResult = {m_CSharpWriter.GetInstance(method.ReturnType, true)};");
+                lines.Add($"    var expectedResult = {m_CSharpWriter.GetInstantiation(method.ReturnType, true)};");
             }
             lines.Add($"    var {mockVarName} = {m_CSharpWriter.GetMockInstance(interfaceType)};");
             lines.Add($"    {mockVarName}.Expect(m=>m.{method.Name}({methodArgumentsFlat}))");
@@ -85,7 +85,7 @@ namespace BloodyUnitTests.ContentCreators
             {
                 lines.Add($"    {mockVarNameOffset}.Return(expectedResult);");
             }
-            lines.Add($"    var {sutVarName} = new {m_CSharpWriter.GetTypeNameForCSharp(rootType)}({ctorArgumentsFlat});");
+            lines.Add($"    var {sutVarName} = new {m_CSharpWriter.GetNameForCSharp(rootType)}({ctorArgumentsFlat});");
             lines.Add($"    {resultDeclaration}{sutVarName}.{method.Name}({methodArgumentsFlat})");
             lines.Add($"    {mockVarName}.VerifyAllExpectations();");
             if (!isVoid)

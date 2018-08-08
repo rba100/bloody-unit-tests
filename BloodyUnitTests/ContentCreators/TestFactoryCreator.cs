@@ -29,7 +29,7 @@ namespace BloodyUnitTests.ContentCreators
 
             if (!interfaces.Any()) return lines.ToArray();
 
-            var typeName = m_CSharpWriter.GetTypeNameForCSharp(type);
+            var typeName = m_CSharpWriter.GetNameForCSharp(type);
 
             var indent = new string(' ', 4);
 
@@ -45,8 +45,8 @@ namespace BloodyUnitTests.ContentCreators
             if (interfaces.Any()) lines.Add(String.Empty);
             var args = parameters.Select(p =>
             {
-                if (p.ParameterType.IsInterface) return m_CSharpWriter.GetTypeNameForIdentifier(p.Name, VarScope.Member);
-                return m_CSharpWriter.GetInstance(p.ParameterType);
+                if (p.ParameterType.IsInterface) return m_CSharpWriter.GetIdentifier(p.Name, VarScope.Member);
+                return m_CSharpWriter.GetInstantiation(p.ParameterType);
             });
 
             // Create
@@ -63,7 +63,7 @@ namespace BloodyUnitTests.ContentCreators
             foreach (var i in interfaces.Where(i => i.ParameterType.Namespace?.StartsWith(nameof(System)) != true))
             {
                 if (!i.ParameterType.IsInterface) continue;
-                lines.Add($"{indent}{indent}{m_CSharpWriter.GetTypeNameForIdentifier(i.Name, VarScope.Member)}.VerifyAllExpectations();");
+                lines.Add($"{indent}{indent}{m_CSharpWriter.GetIdentifier(i.Name, VarScope.Member)}.VerifyAllExpectations();");
             }
             lines.Add($"{indent}}}");
             lines.Add("}");
@@ -74,8 +74,8 @@ namespace BloodyUnitTests.ContentCreators
         private string GetPublicFieldInterfaceMock(ParameterInfo parameter)
         {
             var t = parameter.ParameterType;
-            var typeName = m_CSharpWriter.GetTypeNameForCSharp(t);
-            return $"public {typeName} {m_CSharpWriter.GetTypeNameForIdentifier(parameter.Name, VarScope.Member)}" +
+            var typeName = m_CSharpWriter.GetNameForCSharp(t);
+            return $"public {typeName} {m_CSharpWriter.GetIdentifier(parameter.Name, VarScope.Member)}" +
                    $" = {m_CSharpWriter.GetMockInstance(t)};";
         }
     }
