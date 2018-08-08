@@ -17,7 +17,7 @@ namespace BloodyUnitTests.ContentCreators
         private string[] GetNullConstructorArgsTestInner(Type type)
         {
             var typeName = type.Name;
-            List<string> lines = new List<string>();
+            var lines = new List<string>();
 
             var testCases = GetConstructorNullTestCaseSource(type);
             if (!testCases.Any()) return new string[0];

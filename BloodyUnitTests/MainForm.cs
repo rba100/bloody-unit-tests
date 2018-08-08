@@ -75,9 +75,9 @@ namespace BloodyUnitTests
             {
                 if (!File.Exists(filePath)) return;
                 m_Assembly = Assembly.LoadFrom(filePath);
-                comboBox1.DataSource = m_Assembly.GetTestableClasses();
+                comboBox1.DataSource = m_Assembly.GetTestableClassTypes().Select(c => c.Name).ToList();
                 comboBox1.SelectedIndex = 0;
-                btCreateTests.Enabled = true;
+                btTestClass.Enabled = true;
             }
             catch (Exception ex)
             {
@@ -103,7 +103,7 @@ namespace BloodyUnitTests
             }
         }
 
-        private void btCreateTests_Click(object sender, EventArgs e)
+        private void btTestClass_Click(object sender, EventArgs e)
         {
             try
             {
@@ -124,12 +124,20 @@ namespace BloodyUnitTests
             }
         }
 
+        private void btTestAssembly_Click(object sender, EventArgs e)
+        {
+            using (var testAllForm = new WriteAllTests(m_Assembly))
+            {
+                testAllForm.ShowDialog(this);
+            }
+        }
+
         private Assembly m_Assembly;
 
         private void btLoadAssembly_DragDrop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetData(DataFormats.FileDrop) is string[] data 
-                && data.Length == 1 
+            if (e.Data.GetData(DataFormats.FileDrop) is string[] data
+                && data.Length == 1
                 && File.Exists(data[0]))
             {
                 LoadAssembly(data[0]);

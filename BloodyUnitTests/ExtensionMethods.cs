@@ -21,14 +21,13 @@ namespace BloodyUnitTests
             }
         }
 
-        public static IList<string> GetTestableClasses(this Assembly assembly)
+        public static IList<Type> GetTestableClassTypes(this Assembly assembly)
         {
             return assembly.GetLoadableTypes()
-                   .Where(t => t.IsClass && !t.IsAbstract)
-                   .Select(t => t.Name)
-                   .Where(n => !n.StartsWith("<"))
-                   .OrderBy(n => n)
-                   .ToList();
+                           .Where(t => t.IsClass && !t.IsAbstract)
+                           .Where(n => !n.Name.StartsWith("<"))
+                           .OrderBy(n => n.Name)
+                           .ToList();
         }
 
         public static bool IsMethodTestable(this Type type, MethodInfo method)
