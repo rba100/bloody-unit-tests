@@ -12,9 +12,6 @@ namespace BloodyUnitTests
 
         public void WriteAllTests(Assembly assembly, string nameSpacePrefixFilter, string directoryForOutput)
         {
-            if(!Directory.Exists(directoryForOutput)) throw new ArgumentException(@"output folder does not exist",
-                                                                                  nameof(directoryForOutput));
-
             var testableClasses = assembly.GetTestableClassTypes()
                                           .Where(c=> string.IsNullOrWhiteSpace(nameSpacePrefixFilter) 
                                                      || c.Namespace != null && c.Namespace.StartsWith(nameSpacePrefixFilter))
