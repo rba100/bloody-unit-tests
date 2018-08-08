@@ -16,9 +16,18 @@ namespace BloodyUnitTests.CodeGeneration
         public string GetInstantiation(Type type, bool interestingValue)
         {
             var dictTypes = GetDictionaryType(type);
+            
             var keyTypeName = m_RootHandler.GetNameForCSharp(dictTypes.key);
             var valueTypeName = m_RootHandler.GetNameForCSharp(dictTypes.value);
-            return $"new Dictionary<{keyTypeName},{valueTypeName}>()";
+
+            var keyTypeValue = m_RootHandler.GetInstantiation(dictTypes.key, true);
+            var valueTypeValue = m_RootHandler.GetInstantiation(dictTypes.value, true);
+
+            var invocationSuffix = interestingValue 
+                ? $"{{ {{ {keyTypeValue} , {valueTypeValue} }} }}" 
+                : "()";
+
+            return $"new Dictionary<{keyTypeName},{valueTypeName}>{invocationSuffix}";
         }
 
         public bool IsInstantiationTerse(Type type)
