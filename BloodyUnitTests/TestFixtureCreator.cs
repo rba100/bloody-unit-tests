@@ -34,6 +34,8 @@ namespace BloodyUnitTests
                                           .Where(c => c.LinesOfCode.Any())
                                           .ToArray();
 
+            if (!contents.Any()) return null;
+
             var namesSpaces = contents.SelectMany(c => c.NamesSpaces);
 
             // Start with namespace declarations

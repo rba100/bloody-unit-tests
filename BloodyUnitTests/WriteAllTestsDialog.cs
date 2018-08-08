@@ -13,16 +13,16 @@ using System.Windows.Forms;
 
 namespace BloodyUnitTests
 {
-    public partial class WriteAllTests : Form
+    public partial class WriteAllTestsDialog : Form
     {
         public Assembly TargetAssembly { get; set; }
 
-        public WriteAllTests(Assembly targetAssembly) : this()
+        public WriteAllTestsDialog(Assembly targetAssembly) : this()
         {
             TargetAssembly = targetAssembly;
         }
 
-        public WriteAllTests()
+        public WriteAllTestsDialog()
         {
             InitializeComponent();
         }

@@ -110,7 +110,7 @@ namespace BloodyUnitTests
                 var type = m_Assembly.GetLoadableTypes().First(t => t.Name == comboBox1.SelectedItem as string);
 
                 var editor = GetDefaultEditor();
-                editor.Text = TestFixtureCreator.CreateTestFixture(type);
+                editor.Text = TestFixtureCreator.CreateTestFixture(type) ?? "This class has nothing!";
 
                 var tab = new TabPage(comboBox1.SelectedItem as string);
                 tab.Controls.Add(editor);
@@ -126,7 +126,7 @@ namespace BloodyUnitTests
 
         private void btTestAssembly_Click(object sender, EventArgs e)
         {
-            using (var testAllForm = new WriteAllTests(m_Assembly))
+            using (var testAllForm = new WriteAllTestsDialog(m_Assembly))
             {
                 testAllForm.ShowDialog(this);
             }

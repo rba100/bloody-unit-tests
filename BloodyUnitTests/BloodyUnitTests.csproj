@@ -113,11 +113,11 @@
     <Compile Include="ContentCreators\TestFactoryCreator.cs" />
     <Compile Include="ContentCreators\ConstructorNullArgsTestCreator.cs" />
     <Compile Include="CSharpWriter.cs" />
-    <Compile Include="WriteAllTests.cs">
+    <Compile Include="WriteAllTestsDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="WriteAllTests.Designer.cs">
-      <DependentUpon>WriteAllTests.cs</DependentUpon>
+    <Compile Include="WriteAllTestsDialog.Designer.cs">
+      <DependentUpon>WriteAllTestsDialog.cs</DependentUpon>
     </Compile>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
@@ -131,8 +131,8 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="WriteAllTests.resx">
-      <DependentUpon>WriteAllTests.cs</DependentUpon>
+    <EmbeddedResource Include="WriteAllTestsDialog.resx">
+      <DependentUpon>WriteAllTestsDialog.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">

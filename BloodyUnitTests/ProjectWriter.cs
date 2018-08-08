@@ -31,6 +31,7 @@ namespace BloodyUnitTests
 
             foreach (var fixture in typesToFixtures)
             {
+                if (fixture.Value == null) continue;
                 var directory = Path.GetDirectoryName(outputPaths[fixture.Key]);
                 if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
                 File.WriteAllText(outputPaths[fixture.Key], fixture.Value);
@@ -39,33 +40,26 @@ namespace BloodyUnitTests
 
         private static string GetPath(string directoryBase, Type type)
         {
-            string fileName = string.Empty;
-            if (type.Name.EndsWith("Repository")) fileName += "Repositories\\";
-            else if (type.Name.EndsWith("Service")) fileName += "Services\\";
-            else if (type.Name.EndsWith("Controller")) fileName += "Controllers\\";
-            else if (type.Name.EndsWith("Exception")) fileName += "Exceptions\\";
-            else if (type.Name.EndsWith("Manager")) fileName += "Managers\\";
-            else fileName += GetSubFolder(type);
-
-            fileName += StringUtils.ToUpperInitial($"{s_TypeHandler.GetNameForIdentifier(type)}Tests.cs");
-
-            return Path.Combine(directoryBase, fileName);
+            var fileName = StringUtils.ToUpperInitial($"{s_TypeHandler.GetNameForIdentifier(type)}Tests.cs");
+            return Path.Combine(directoryBase, GetSubFolder(type), fileName);
         }
 
         private static string GetSubFolder(Type type)
         {
-            if (type.Name.EndsWith("Repository")) return "Repositories\\";
-            if (type.Name.EndsWith("Service"))    return "Services\\";
-            if (type.Name.EndsWith("Controller")) return "Controllers\\";
-            if (type.Name.EndsWith("Exception"))  return "Exceptions\\";
-            if (type.Name.EndsWith("Manager"))    return "Managers\\";
+            if (type.Name.EndsWith("Repository")) return "Repositories";
+            if (type.Name.EndsWith("Service"))    return "Services";
+            if (type.Name.EndsWith("Controller")) return "Controllers";
+            if (type.Name.EndsWith("Exception"))  return "Exceptions";
+            if (type.Name.EndsWith("Manager"))    return "Managers";
 
             var name = type.GetInterfaces()
                             .Select(i => i.Name)
                             .Select(i => i.StartsWith("I") ? new string(i.Skip(1).ToArray()) : i)
                             .FirstOrDefault(i => type.Name.EndsWith(i));
-            if (name == null) return "Domain\\";
-            return name + "s\\";
+
+            if (name == null) return "Domain";
+
+            return StringUtils.Pluralise(name);
         }
     }
 }
