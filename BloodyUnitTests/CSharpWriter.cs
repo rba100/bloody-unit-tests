@@ -41,9 +41,9 @@ namespace BloodyUnitTests
             switch (varScope)
             {
                 case VarScope.Local:
-                    return GetLocalVariableName(type);
+                    return StringUtils.ToLowerInitial(GetTypeNameForIdentifier(type));
                 case VarScope.Member:
-                    return GetTypeNameForIdentifier(type);
+                    return StringUtils.ToUpperInitial(GetTypeNameForIdentifier(type));
                 default:
                     throw new ArgumentOutOfRangeException(nameof(varScope), varScope, null);
             }
@@ -64,12 +64,10 @@ namespace BloodyUnitTests
             return m_TypeHandler.GetInstantiation(possibleReftype, nonDefault);
         }
 
-        public string GetLocalVariableDeclaration(Type rawType, bool setToNull)
+        public string GetLocalVariableDeclaration(Type type, bool setToNull)
         {
-            var type = rawType.IsByRef ? rawType.GetElementType() : rawType;
             var declaredType = $"{(setToNull ? GetTypeNameForCSharp(type) : "var")}";
             var identifier = GetTypeNameForIdentifier(type, VarScope.Local);
-
             // ReSharper disable once PossibleNullReferenceException
             if (setToNull && type.IsValueType) return $"{declaredType} {identifier};";
             if (setToNull) return $"{declaredType} {identifier} = null;";
@@ -83,7 +81,6 @@ namespace BloodyUnitTests
 
         public string GetTypeNameForCSharp(Type type)
         {
-            if (type == null) throw new ArgumentNullException(nameof(type));
             return m_TypeHandler.GetNameForCSharp(type);
         }
 
@@ -118,13 +115,14 @@ namespace BloodyUnitTests
 
         public string[] GetVariableDeclarationsForParameters(IEnumerable<ParameterInfo> parameters, bool setToNull)
         {
-            return parameters.Where(p => !p.ParameterType.IsValueType 
-                                         || HasParamKeyword(p) 
+            return parameters.Where(p => !p.ParameterType.IsValueType
+                                         || HasParamKeyword(p)
                                          || p.ParameterType.IsEnum
                                          || p.ParameterType == typeof(DateTime)
                                          || p.ParameterType == typeof(DateTime?))
                              .Where(p => !IsInstantiationTerse(p.ParameterType) || HasParamKeyword(p))
                              .Select(p => p.ParameterType)
+                             .Select(t => t.IsByRef ? t.GetElementType() : t)
                              .Distinct()
                              .Select(t => GetLocalVariableDeclaration(t, setToNull))
                              .ToArray();
@@ -242,9 +240,9 @@ namespace BloodyUnitTests
         private (Type key, Type value) GetDictionaryType(Type type)
         {
             var gArgs = type.GetGenericArguments();
-            if (gArgs.Length != 2) return (null,null);
+            if (gArgs.Length != 2) return (null, null);
             var dictType = typeof(Dictionary<,>).MakeGenericType(gArgs);
-            return type.IsAssignableFrom(dictType) ? (gArgs[0], gArgs[1]) : (null,null);
+            return type.IsAssignableFrom(dictType) ? (gArgs[0], gArgs[1]) : (null, null);
         }
 
         private string GetTypeNameForIdentifier(Type type)
@@ -252,47 +250,6 @@ namespace BloodyUnitTests
             if (type == null) throw new ArgumentNullException(nameof(type));
             return m_TypeHandler.GetNameForIdentifier(type);
         }
-
-        private string GetLocalVariableName(Type type)
-        {
-            var varName = GetTypeNameForIdentifier(type);
-            var unRefType = type.IsByRef ? type.GetElementType() : type;
-            if (type.IsClass && type.Namespace != "System") return StringUtils.ToLowerInitial(varName);
-            if (unRefType == typeof(DateTime) || unRefType == typeof(DateTime?)) varName += "Utc";
-            var output = StringUtils.ToLowerInitial(varName);
-            var prefix = type.IsInterface ? "stub" : "dummy";
-            if (s_Keywords.Contains(output)) return $"{prefix}{varName}";
-            return output == type.Name ? output + "1" : output;
-        }
-
-        private static readonly string[] s_Keywords = {
-            "abstract", "add", "as", "ascending",
-            "async", "await", "base", "bool",
-            "break", "by", "byte", "case",
-            "catch", "char", "checked", "class",
-            "const", "continue", "decimal", "default",
-            "delegate", "descending", "do", "double",
-            "dynamic", "else", "enum", "equals",
-            "explicit", "extern", "false", "finally",
-            "fixed", "float", "for", "foreach",
-            "from", "get", "global", "goto",
-            "group", "if", "implicit", "in",
-            "int", "interface", "internal", "into",
-            "is", "join", "let", "lock",
-            "long", "namespace", "new", "null",
-            "object", "on", "operator", "orderby",
-            "out", "override", "params", "partial",
-            "private", "protected", "public", "readonly",
-            "ref", "remove", "return", "sbyte",
-            "sealed", "select", "set", "short",
-            "sizeof", "stackalloc", "static", "string",
-            "struct", "switch", "this", "throw",
-            "true", "try", "typeof", "uint",
-            "ulong", "unchecked", "unsafe", "ushort",
-            "using", "value", "var", "virtual",
-            "void", "volatile", "where", "while",
-            "yield"
-        };
     }
 
     enum VarScope { Local, Member }

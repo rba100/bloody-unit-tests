@@ -62,7 +62,7 @@ namespace BloodyUnitTests.CodeGeneration
 
         public string GetNameForCSharp(Type type)
         {
-            return $"{GetArrayElementType(type)}[]";
+            return $"{m_RootHandler.GetNameForCSharp(GetArrayElementType(type))}[]";
         }
 
         public void SetRoot(ITypeHandler handler)

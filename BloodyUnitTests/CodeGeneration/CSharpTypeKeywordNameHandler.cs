@@ -2,10 +2,8 @@
 
 namespace BloodyUnitTests.CodeGeneration
 {
-    class CSharpKeywordTypeNameHandler : IRecursiveTypeHandler
+    class CSharpTypeKeywordNameHandler : IRecursiveTypeHandler
     {
-        private ITypeHandler m_RootHandler;
-
         public bool CanGetInstantiation(Type type)
         {
             return false;
@@ -73,7 +71,6 @@ namespace BloodyUnitTests.CodeGeneration
 
         public void SetRoot(ITypeHandler handler)
         {
-            m_RootHandler = handler;
         }
     }
 }

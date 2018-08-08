@@ -8,7 +8,7 @@ namespace BloodyUnitTests.CodeGeneration
             var compositeHandler = new CompositeRecursiveTypeHandler(new IRecursiveTypeHandler[]
             {
                 // Specific handlers
-                new CSharpKeywordTypeNameHandler(),
+                new CSharpTypeKeywordNameHandler(),
                 new SimpleDelegateTypeHandler(),
                 new DateTimeTypeHandler(),
                 new BuiltInTypesHandler(),
@@ -28,13 +28,16 @@ namespace BloodyUnitTests.CodeGeneration
                 new FallbackRecursiveTypeHandler(),
             });
 
-            var nameRulesHandler = new TypeNameRulesTypeHandler(compositeHandler);
+            var nameRulesHandler = new InterfaceNameRuleHandler(compositeHandler);
 
             var cachingHandler = new CachingTypeHandler(nameRulesHandler);
 
-            compositeHandler.SetRoot(cachingHandler);
+            compositeHandler.SetRoot(cachingHandler); // Re-entry point
 
-            return cachingHandler;
+            // Apply keyword avoidance after any recursion has occurred.
+            var keywordAvoianceFilter = new CSharpKeyworkClashAvoidanceTypeHandler(cachingHandler);
+
+            return keywordAvoianceFilter;
         }
     }
 }

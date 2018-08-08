@@ -40,10 +40,18 @@ namespace BloodyUnitTests.ContentCreators
             var resultDeclaration = isVoid ? string.Empty : "var result = ";
             var sutVarName = m_CSharpWriter.GetTypeNameForIdentifier(classToTest.Name, VarScope.Local);
 
-            var methodVariables = method.GetParameters()
-                                        .Where(m_CSharpWriter.ShouldUseVariableForParameter)
-                                        .Where(p => p.ParameterType != interfaceType)
-                                        .Select(p => m_CSharpWriter.GetLocalVariableDeclaration(p.ParameterType, false));
+            var methodVariables = m_CSharpWriter
+                .GetVariableDeclarationsForParameters(method.GetParameters()
+                                                            .Where(p => p.ParameterType != interfaceType), 
+                                                      false);
+
+
+            //var methodVariables = method.GetParameters()
+            //                            .Where(m_CSharpWriter.ShouldUseVariableForParameter)
+            //                            .Where(p => p.ParameterType != interfaceType)
+            //                            .Select(p => p.ParameterType)
+            //                            .Select(t => t.IsByRef ? t.GetElementType() : t)
+            //                            .Select(t => m_CSharpWriter.GetLocalVariableDeclaration(t, false));
 
             var rootType = constructor.DeclaringType;
 

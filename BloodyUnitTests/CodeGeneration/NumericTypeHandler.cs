@@ -5,8 +5,6 @@ namespace BloodyUnitTests.CodeGeneration
 {
     class NumericTypeHandler : IRecursiveTypeHandler
     {
-        private ITypeHandler m_RootHandler;
-
         private static readonly Type[] s_SupportedTypes =
         {
             typeof(short),
@@ -22,7 +20,6 @@ namespace BloodyUnitTests.CodeGeneration
 
         public void SetRoot(ITypeHandler handler)
         {
-            m_RootHandler = handler;
         }
 
         public bool CanGetInstantiation(Type type)

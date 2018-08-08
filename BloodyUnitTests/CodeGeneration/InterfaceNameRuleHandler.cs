@@ -3,11 +3,11 @@ using System.Linq;
 
 namespace BloodyUnitTests.CodeGeneration
 {
-    class TypeNameRulesTypeHandler : ITypeHandler
+    class InterfaceNameRuleHandler : ITypeHandler
     {
         private readonly ITypeHandler m_InnerHandler;
 
-        public TypeNameRulesTypeHandler(ITypeHandler innerHandler)
+        public InterfaceNameRuleHandler(ITypeHandler innerHandler)
         {
             m_InnerHandler = innerHandler;
         }
