@@ -88,6 +88,7 @@
     <Compile Include="CodeGeneration\CompositeRecursiveTypeHandler.cs" />
     <Compile Include="CodeGeneration\StringAndCharTypeHandler.cs" />
     <Compile Include="CodeGeneration\TypeHandlerFactory.cs" />
+    <Compile Include="CodeGeneration\ValueTupleTypeHandler.cs" />
     <Compile Include="ContentCreators\ClassContent.cs" />
     <Compile Include="ContentCreators\HelperMethodContentCreator.cs" />
     <Compile Include="ContentCreators\InvalidArgumentTestCreator.cs" />

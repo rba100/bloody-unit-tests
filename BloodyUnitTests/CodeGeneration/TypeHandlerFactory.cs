@@ -16,7 +16,8 @@ namespace BloodyUnitTests.CodeGeneration
                 new NumericTypeHandler(),
                 new NullableTypeHandler(),
                 new StringAndCharTypeHandler(),
-                new ListTypeHandler(), 
+                new ListTypeHandler(),
+                new ValueTupleTypeHandler(),
 
                 // General handlers
                 new GeneralDictionaryTypeHandler(),

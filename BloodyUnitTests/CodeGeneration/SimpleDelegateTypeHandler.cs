@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace BloodyUnitTests.CodeGeneration
@@ -19,7 +18,6 @@ namespace BloodyUnitTests.CodeGeneration
             var actionType = s_ActionType.MakeGenericType(genArgs);
             return type.IsAssignableFrom(funcType) || type.IsAssignableFrom(actionType);
         }
-
 
         public bool CanGetInstantiation(Type type)
         {

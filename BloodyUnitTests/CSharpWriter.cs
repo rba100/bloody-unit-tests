@@ -160,9 +160,14 @@ namespace BloodyUnitTests
         {
             var parameters = methodBase.GetParameters();
 
+            var paramterTypesClean = parameters
+                .Select(p => p.ParameterType.IsByRef
+                            ? p.ParameterType.GetElementType()
+                            : p.ParameterType);
+
             var arguments = useVariables
-                ? parameters.Select(p => p.ParameterType).Select(t => StringUtils.ToLowerInitial(m_TypeHandler.GetNameForIdentifier(t))).ToArray()
-                : parameters.Select(p => p.ParameterType).Select(t => m_TypeHandler.GetInstantiation(t, nonDefault)).ToArray();
+                ? paramterTypesClean.Select(t => StringUtils.ToLowerInitial(m_TypeHandler.GetNameForIdentifier(t))).ToArray()
+                : paramterTypesClean.Select(t => m_TypeHandler.GetInstantiation(t, nonDefault)).ToArray();
 
             for (var index = 0; index < parameters.Length; index++)
             {

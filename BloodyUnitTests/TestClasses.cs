@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
+// ReSharper disable NotAccessedField.Local
 // ReSharper disable ArrangeTypeModifiers
 // ReSharper disable UnusedParameter.Local
 // ReSharper disable UnusedParameter.Global
@@ -66,6 +67,11 @@ namespace BloodyUnitTests
     class _TestClass2
     {
         public void Thing(DateTime? val, object o)
+        {
+
+        }
+
+        public void TakesTuple((int, string) valuePair, object o)
         {
 
         }
