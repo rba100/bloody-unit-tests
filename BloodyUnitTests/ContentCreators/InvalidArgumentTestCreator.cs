@@ -39,7 +39,6 @@ namespace BloodyUnitTests.ContentCreators
 
         private string[] GetTestCaseSource(Type type)
         {
-
             var hasArrayAssignables = type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
                                        .Where(type.IsMethodTestable)
                                        .Where(m => m.GetParameters()
