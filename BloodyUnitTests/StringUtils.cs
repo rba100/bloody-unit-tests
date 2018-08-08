@@ -4,7 +4,9 @@ namespace BloodyUnitTests
 {
     static class StringUtils
     {
-        private static readonly char[] s_Vowels = {'a', 'e', 'i', 'o', 'u'};
+        private static readonly char[] s_Vowels = { 'a', 'e', 'i', 'o', 'u' };
+
+        private static readonly string[] s_Siblants = { "s", "x", "ch", "sh", "z" };
 
         internal static string ToLowerInitial(string str)
         {
@@ -18,11 +20,11 @@ namespace BloodyUnitTests
 
         internal static string Pluralise(string input)
         {
-            if(input.Length < 3) return $"{input}s";
-            if (input.EndsWith("y") && !s_Vowels.Contains(input[input.Length - 2]))
+            if (input.Length > 2 && input.EndsWith("y") && !s_Vowels.Contains(input[input.Length - 2]))
             {
                 return input.Substring(0, input.Length - 1) + "ies";
             }
+            if (s_Siblants.Any(input.EndsWith)) return $"{input}es";
             return $"{input}s";
         }
     }

@@ -51,8 +51,8 @@ namespace BloodyUnitTests.CodeGeneration
 
         public string GetNameForIdentifier(Type type)
         {
-            var elementTypeName = m_RootHandler.GetNameForIdentifier(GetArrayElementType(type));
-            return $"{elementTypeName}s";
+            var identifier = m_RootHandler.GetNameForIdentifier(GetArrayElementType(type));
+            return StringUtils.Pluralise($"{identifier}");
         }
 
         public bool CanGetNameForCSharp(Type type)
