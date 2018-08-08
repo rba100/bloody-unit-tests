@@ -45,11 +45,27 @@ namespace BloodyUnitTests
             else if (type.Name.EndsWith("Controller")) fileName += "Controllers\\";
             else if (type.Name.EndsWith("Exception")) fileName += "Exceptions\\";
             else if (type.Name.EndsWith("Manager")) fileName += "Managers\\";
-            else fileName += "Domain\\";
+            else fileName += GetSubFolder(type);
 
             fileName += StringUtils.ToUpperInitial($"{s_TypeHandler.GetNameForIdentifier(type)}Tests.cs");
 
             return Path.Combine(directoryBase, fileName);
+        }
+
+        private static string GetSubFolder(Type type)
+        {
+            if (type.Name.EndsWith("Repository")) return "Repositories\\";
+            if (type.Name.EndsWith("Service"))    return "Services\\";
+            if (type.Name.EndsWith("Controller")) return "Controllers\\";
+            if (type.Name.EndsWith("Exception"))  return "Exceptions\\";
+            if (type.Name.EndsWith("Manager"))    return "Managers\\";
+
+            var name = type.GetInterfaces()
+                            .Select(i => i.Name)
+                            .Select(i => i.StartsWith("I") ? new string(i.Skip(1).ToArray()) : i)
+                            .FirstOrDefault(i => type.Name.EndsWith(i));
+            if (name == null) return "Domain\\";
+            return name + "s\\";
         }
     }
 }

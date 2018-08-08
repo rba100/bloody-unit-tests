@@ -85,6 +85,7 @@
             // 
             // btTestAssembly
             // 
+            this.btTestAssembly.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btTestAssembly.Location = new System.Drawing.Point(703, 12);
             this.btTestAssembly.Name = "btTestAssembly";
             this.btTestAssembly.Size = new System.Drawing.Size(85, 23);

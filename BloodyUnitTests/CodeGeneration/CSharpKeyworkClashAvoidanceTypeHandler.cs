@@ -19,7 +19,7 @@ namespace BloodyUnitTests.CodeGeneration
             // don't allow identifiers to match c# keywords.
             if (s_Keywords.Contains(rawName))
             {
-                var prefix = type.IsInterface ? "Stub" : "Dummy";
+                var prefix = type.IsInterface ? "stub" : "dummy";
                 return $"{prefix}{rawName}";
             }
 
