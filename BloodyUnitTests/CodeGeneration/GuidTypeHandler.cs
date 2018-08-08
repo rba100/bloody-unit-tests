@@ -2,23 +2,16 @@
 
 namespace BloodyUnitTests.CodeGeneration
 {
-    class DateTimeTypeHandler : IRecursiveTypeHandler
+    class GuidTypeHandler : IRecursiveTypeHandler
     {
-        private bool CanHandle(Type type)
-        {
-            return type == typeof(DateTime);
-        }
-
         public bool CanGetInstantiation(Type type)
         {
-            return CanHandle(type);
+            return type == typeof(Guid);
         }
 
         public string GetInstantiation(Type type, bool interestingValue)
         {
-            return interestingValue 
-                ? "DateTime.MaxValue.ToUniversalTime()"
-                : "DateTime.UtcNow";
+            return interestingValue ? "new Guid(1,2,3,4,5,6,7,8,9,0,1)" : "Guid.Empty";
         }
 
         public bool IsInstantiationTerse(Type type)
@@ -28,29 +21,26 @@ namespace BloodyUnitTests.CodeGeneration
 
         public bool CanGetNameForIdentifier(Type type)
         {
-            return CanHandle(type);
+            return false;
         }
 
         public string GetNameForIdentifier(Type type)
         {
-            // We make assumptions about the tests that the user can correct 
-            // if we're wrong.
-            return "DateTimeUtc";
+            throw new NotImplementedException();
         }
 
         public bool CanGetNameForCSharp(Type type)
         {
-            return CanHandle(type);
+            return false;
         }
 
         public string GetNameForCSharp(Type type)
         {
-            return "DateTime";
+            throw new NotImplementedException();
         }
 
         public void SetRoot(ITypeHandler handler)
         {
-            
         }
     }
 }

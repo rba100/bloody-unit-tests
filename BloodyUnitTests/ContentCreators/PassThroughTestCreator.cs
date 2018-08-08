@@ -40,10 +40,10 @@ namespace BloodyUnitTests.ContentCreators
             var resultDeclaration = isVoid ? string.Empty : "var result = ";
             var sutVarName = m_CSharpWriter.GetIdentifier(classToTest.Name, VarScope.Local);
 
-            var methodVariables = m_CSharpWriter
-                .GetVariableDeclarationsForParameters(method.GetParameters()
-                                                            .Where(p => p.ParameterType != interfaceType), 
-                                                      false, nonDefault: true);
+
+            var methodVariables = method.GetParameters()
+                                        .Where(p => p.ParameterType != interfaceType)
+                                        .PipeInto(p=> m_CSharpWriter.GetVariableDeclarationsForParameters(p, setToNull: false, nonDefault: true));
 
             var rootType = constructor.DeclaringType;
 
@@ -65,7 +65,7 @@ namespace BloodyUnitTests.ContentCreators
             lines.Add("[Test]");
             lines.Add($"public void {method.Name}_delegates_to_{ifParamName}()");
             lines.Add("{");
-            lines.AddRange(methodVariables.Select(v => $"    {v}"));
+            lines.AddRange(methodVariables.IndentBy(4));
             if (!isVoid)
             {
                 lines.Add($"    var expectedResult = {m_CSharpWriter.GetInstantiation(method.ReturnType, true)};");
@@ -99,7 +99,8 @@ namespace BloodyUnitTests.ContentCreators
                 if (!parameters.Any()) return false;
                 var ifParameters = parameters.Where(p => interfaces.Contains(p.ParameterType)).ToArray();
                 if (ifParameters.Length != 1) return false;
-                return parameters.Except(ifParameters).All(p => m_CSharpWriter.CanInstantiate(p.ParameterType));
+                return parameters.Except(ifParameters)
+                                 .All(p => m_CSharpWriter.NoCircularDependenciesOrAbstract(p.ParameterType));
             }
 
             var ctor = type.GetConstructors()

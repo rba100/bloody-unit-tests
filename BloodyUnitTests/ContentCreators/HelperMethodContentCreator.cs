@@ -52,7 +52,7 @@ namespace BloodyUnitTests.ContentCreators
                        .Where(t => t != null && t.IsClass)
                        .Distinct()
                        .Where(t => t.Namespace?.StartsWith(nameof(System)) != true && !t.IsArray)
-                       .Where(m_CSharpWriter.CanInstantiate)
+                       .Where(m_CSharpWriter.NoCircularDependenciesOrAbstract)
                        .ToArray();
         }
 

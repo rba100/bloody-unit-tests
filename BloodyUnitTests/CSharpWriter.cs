@@ -102,11 +102,8 @@ namespace BloodyUnitTests
             sb.Append(declarationStart);
             for (int i = 0; i < arguments.Length; i++)
             {
+                if (i != 0) sb.Append($",{Environment.NewLine}{offset}");
                 sb.Append(arguments[i]);
-                if (i < arguments.Length - 1)
-                {
-                    sb.Append($",{Environment.NewLine}{offset}");
-                }
             }
             sb.AppendLine(");");
 
@@ -115,12 +112,7 @@ namespace BloodyUnitTests
 
         public string[] GetVariableDeclarationsForParameters(IEnumerable<ParameterInfo> parameters, bool setToNull, bool nonDefault)
         {
-            return parameters.Where(p => !p.ParameterType.IsValueType
-                                         || HasParamKeyword(p)
-                                         || p.ParameterType.IsEnum
-                                         || p.ParameterType == typeof(DateTime)
-                                         || p.ParameterType == typeof(DateTime?))
-                             .Where(p => !IsInstantiationTerse(p.ParameterType) || HasParamKeyword(p))
+            return parameters.Where(ShouldUseVariableForParameter)
                              .Select(p => p.ParameterType)
                              .Select(t => t.IsByRef ? t.GetElementType() : t)
                              .Distinct()
@@ -128,24 +120,22 @@ namespace BloodyUnitTests
                              .ToArray();
         }
 
-        public bool CanInstantiate(Type type)
+        public bool NoCircularDependenciesOrAbstract(Type type)
         {
-            return CanInstantiate(type, new List<Type>());
+            return NoCircularDependenciesOrAbstract(type, new List<Type>());
         }
 
         /// <summary>
         /// Returns true for types which this class can construct.
         /// </summary>
-        private bool CanInstantiate(Type type, ICollection<Type> typeHistory)
+        private bool NoCircularDependenciesOrAbstract(Type type, ICollection<Type> typeHistory)
         {
-            if (m_TypeHandler.CanGetInstantiation(type)) return true;
+            if (type.IsClass && type.IsAbstract) return false;
+            if (!type.IsClass) return true;
 
             // No circular dependencies
             if (typeHistory.Contains(type)) return false;
             typeHistory.Add(type);
-
-            // Deal with classes
-            if (!type.IsClass) return false;
 
             var ctor = type.GetConstructors()
                            .OrderByDescending(c => c.GetParameters().Length)
@@ -153,7 +143,8 @@ namespace BloodyUnitTests
             if (ctor == null) return false;
 
             return ctor.GetParameters()
-                       .All(p => !p.IsOut && CanInstantiate(p.ParameterType, typeHistory));
+                       .All(p => !p.IsOut
+                                 && NoCircularDependenciesOrAbstract(p.ParameterType, typeHistory));
         }
 
         public string[] GetMethodArguments(MethodBase methodBase, bool useVariables, bool nonDefault)

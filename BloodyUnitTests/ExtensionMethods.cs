@@ -7,9 +7,18 @@ namespace BloodyUnitTests
 {
     internal static class ExtensionMethods
     {
-        public static TOut Into<TOut, TIn>(this IEnumerable<TIn> enumerable, Func<IEnumerable<TIn>, TOut> intoFunction)
+        public static TOut PipeInto<TOut, TIn>(this IEnumerable<TIn> enumerable, Func<IEnumerable<TIn>, TOut> intoFunction)
         {
             return intoFunction(enumerable);
+        }
+
+        public static IEnumerable<string> IndentBy(this IEnumerable<string> strings, int indentationAmount)
+        {
+            var indent = new string(' ', indentationAmount);
+            foreach (var s in strings)
+            {
+                yield return $"{indent}{s}";
+            }
         }
 
         public static IList<string> GetTestableClasses(this Assembly assembly)

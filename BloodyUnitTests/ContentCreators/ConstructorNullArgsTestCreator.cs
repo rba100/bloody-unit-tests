@@ -51,7 +51,7 @@ namespace BloodyUnitTests.ContentCreators
             var lines = new List<string>();
 
             var variableDeclarations = constructors.SelectMany(i => i.GetParameters())
-                                                   .Into(c => m_CSharpWriter.GetVariableDeclarationsForParameters(c, false, false));
+                                                   .PipeInto(c => m_CSharpWriter.GetVariableDeclarationsForParameters(c, false, false));
 
             foreach (var declaration in variableDeclarations)
             {

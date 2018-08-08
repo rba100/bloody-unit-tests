@@ -33,7 +33,7 @@ namespace BloodyUnitTests
             m_Mappings = mappings;
         }
 
-        public string Process(string argument)
+        public string Process(Guid argument)
         {
             return m_InnerTestDecorator.Process(argument);
         }
@@ -51,7 +51,7 @@ namespace BloodyUnitTests
 
     internal interface ITestDecorator
     {
-        string Process(string argument);
+        string Process(Guid argument);
 
         int Aggregate(int[] argument);
     }
@@ -66,7 +66,7 @@ namespace BloodyUnitTests
 
     class _TestClass2
     {
-        public void Thing(DateTime? val, object o)
+        public void Thing(Guid? val, object o)
         {
 
         }

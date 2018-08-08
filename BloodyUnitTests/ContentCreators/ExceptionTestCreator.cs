@@ -10,6 +10,7 @@ namespace BloodyUnitTests.ContentCreators
         public ClassContent Create(Type type)
         {
             if(!type.IsSubclassOf(typeof(Exception))) return ClassContent.NoContent();
+
             var className = m_CSharpWriter.GetNameForCSharp(type);
             var lines = new List<string>();
 
@@ -31,9 +32,8 @@ namespace BloodyUnitTests.ContentCreators
 public void Exception_message_is_passed_down()
 {{
     var exception = new {0}(""exceptionMesssage"");
-
-        Assert.AreEqual(""exceptionMesssage"", exception.Message);
-    }}";
+    Assert.AreEqual(""exceptionMesssage"", exception.Message);
+}}";
 
         private const string c_DefaultMessage = @"[Test]
 public void DefaultConstructionDoesNotYieldEmptyMessage()
