@@ -23,7 +23,7 @@ namespace BloodyUnitTests.CodeGeneration
 
         public bool IsInstantiationTerse(Type type)
         {
-            return true;
+            return false;
         }
 
         public bool CanGetNameForIdentifier(Type type)

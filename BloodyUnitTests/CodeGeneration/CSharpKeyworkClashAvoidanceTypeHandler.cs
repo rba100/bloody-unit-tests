@@ -24,7 +24,12 @@ namespace BloodyUnitTests.CodeGeneration
             }
 
             // don't allow identifiers to exactly match type names
-            return rawName == type.Name ? rawName + "Value" : rawName;
+            if (rawName != type.Name) return rawName;
+
+            if (type == typeof(string)) return "str";
+            if (type == typeof(int)) return "number";
+
+            return rawName + "Value";
         }
 
         public bool CanGetInstantiation(Type type)

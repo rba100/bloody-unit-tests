@@ -48,7 +48,8 @@ namespace BloodyUnitTests.ContentCreators
                        .Union(type.GetConstructors())
                        .SelectMany(m => m.GetParameters())
                        .Select(p => p.ParameterType)
-                       .Where(p => p.IsClass)
+                       .Select(t => t.IsByRef ? t.GetElementType() : t)
+                       .Where(t => t != null && t.IsClass)
                        .Distinct()
                        .Where(t => t.Namespace?.StartsWith(nameof(System)) != true && !t.IsArray)
                        .Where(m_CSharpWriter.CanInstantiate)
@@ -68,7 +69,7 @@ namespace BloodyUnitTests.ContentCreators
             var arguments = parameters.Select(p => m_CSharpWriter.GetInstantiation(p.ParameterType)).ToArray();
 
             int namedParameterStart = parameters.Length;
-            for (var i = parameters.Length-1; i >=0; i--)
+            for (var i = parameters.Length - 1; i >= 0; i--)
             {
                 var pType = parameters[i].ParameterType;
                 if (pType == typeof(bool) || pType == typeof(int))

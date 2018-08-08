@@ -70,8 +70,8 @@ namespace BloodyUnitTests.ContentCreators
             var inParameters = parametersNeedingVariables.Where(p => !p.IsOut).ToArray();
             var outParamters = parametersNeedingVariables.Where(p => p.IsOut).Except(inParameters).ToArray();
 
-            var variableDeclarations = m_CSharpWriter.GetVariableDeclarationsForParameters(inParameters, setToNull: false);
-            var outVariableDeclarations = m_CSharpWriter.GetVariableDeclarationsForParameters(outParamters, setToNull: true);
+            var variableDeclarations = m_CSharpWriter.GetVariableDeclarationsForParameters(inParameters, setToNull: false, nonDefault: false);
+            var outVariableDeclarations = m_CSharpWriter.GetVariableDeclarationsForParameters(outParamters, setToNull: true, nonDefault: false);
 
             lines.AddRange(variableDeclarations);
             lines.AddRange(outVariableDeclarations);

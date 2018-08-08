@@ -28,7 +28,7 @@ namespace BloodyUnitTests
             switch (varScope)
             {
                 case VarScope.Local:
-                    return StringUtils.ToLowerInitial(typeName);
+                    return typeName;
                 case VarScope.Member:
                     return StringUtils.ToUpperInitial(typeName);
                 default:
@@ -41,7 +41,7 @@ namespace BloodyUnitTests
             switch (varScope)
             {
                 case VarScope.Local:
-                    return StringUtils.ToLowerInitial(GetIdentifier(type));
+                    return GetIdentifier(type);
                 case VarScope.Member:
                     return StringUtils.ToUpperInitial(GetIdentifier(type));
                 default:
@@ -64,14 +64,14 @@ namespace BloodyUnitTests
             return m_TypeHandler.GetInstantiation(possibleReftype, nonDefault);
         }
 
-        private string GetLocalVariableDeclaration(Type type, bool setToNull)
+        private string GetLocalVariableDeclaration(Type type, bool setToNull, bool nonDefault)
         {
             var declaredType = $"{(setToNull ? GetNameForCSharp(type) : "var")}";
             var identifier = GetIdentifier(type, VarScope.Local);
             // ReSharper disable once PossibleNullReferenceException
             if (setToNull && type.IsValueType) return $"{declaredType} {identifier};";
             if (setToNull) return $"{declaredType} {identifier} = null;";
-            return $"{declaredType} {identifier} = {GetInstantiation(type)};";
+            return $"{declaredType} {identifier} = {GetInstantiation(type, nonDefault)};";
         }
 
         public string GetMockInstance(Type interfaceType)
@@ -113,7 +113,7 @@ namespace BloodyUnitTests
             return sb.ToString().Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
         }
 
-        public string[] GetVariableDeclarationsForParameters(IEnumerable<ParameterInfo> parameters, bool setToNull)
+        public string[] GetVariableDeclarationsForParameters(IEnumerable<ParameterInfo> parameters, bool setToNull, bool nonDefault)
         {
             return parameters.Where(p => !p.ParameterType.IsValueType
                                          || HasParamKeyword(p)
@@ -124,7 +124,7 @@ namespace BloodyUnitTests
                              .Select(p => p.ParameterType)
                              .Select(t => t.IsByRef ? t.GetElementType() : t)
                              .Distinct()
-                             .Select(t => GetLocalVariableDeclaration(t, setToNull))
+                             .Select(t => GetLocalVariableDeclaration(t, setToNull, nonDefault))
                              .ToArray();
         }
 

@@ -29,13 +29,12 @@ namespace BloodyUnitTests.CodeGeneration
             });
 
             var nameRulesHandler = new InterfaceNameRuleHandler(compositeHandler);
-
             var cachingHandler = new CachingTypeHandler(nameRulesHandler);
-
             compositeHandler.SetRoot(cachingHandler); // Re-entry point
 
-            // Apply keyword avoidance after any recursion has occurred.
-            var keywordAvoianceFilter = new CSharpKeyworkClashAvoidanceTypeHandler(cachingHandler);
+            // Post-recursion handlers.
+            var lowerCamelCase = new CamelCasingIdentifierHandler(cachingHandler);
+            var keywordAvoianceFilter = new CSharpKeyworkClashAvoidanceTypeHandler(lowerCamelCase);
 
             return keywordAvoianceFilter;
         }
