@@ -40,6 +40,7 @@ namespace BloodyUnitTests
 
             // Start with namespace declarations
             var namesspaces = s_DefaultNamesSpaces.Union(namesSpaces)
+                                                  .Union(new[] { classToTest.Namespace })
                                                   .Distinct().ToList();
 
             var systemNamespaces = namesspaces.Where(ns => ns.StartsWith("System")).OrderBy(ns => ns).ToList();
