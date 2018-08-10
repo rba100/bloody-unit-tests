@@ -46,14 +46,23 @@ namespace BloodyUnitTests.ContentCreators
             if (interfaces.Any()) lines.Add(String.Empty);
             var args = parameters.Select(p =>
             {
-                if (p.ParameterType.IsInterface) return m_CSharpWriter.GetIdentifier(p.Name, VarScope.Member);
+                if (p.ParameterType.IsInterface) return StringUtils.ToUpperInitial(p.Name);
                 return m_CSharpWriter.GetInstantiation(p.ParameterType);
-            });
+            }).ToArray();
 
             // Create
             lines.Add($"{indent}public {typeName} Create()");
             lines.Add($"{indent}{{");
-            lines.Add($"{indent}{indent} return new {typeName}({string.Join(", ", args)});");
+            var declarationStart = $"{indent}{indent}return new {typeName}(";
+            var declarationStartOffset = new string(' ', declarationStart.Length);
+
+            for (var i = 0; i < args.Length; i++)
+            {
+                if(i==0) lines.Add($"{declarationStart}{args[i]},");
+                else if (i < args.Length - 1) lines.Add($"{declarationStartOffset}{args[i]},");
+                else lines.Add($"{declarationStartOffset}{args[i]});");
+            }
+
             lines.Add($"{indent}}}");
 
             lines.Add(String.Empty);
@@ -64,7 +73,7 @@ namespace BloodyUnitTests.ContentCreators
             foreach (var i in interfaces.Where(i => i.ParameterType.Namespace?.StartsWith(nameof(System)) != true))
             {
                 if (!i.ParameterType.IsInterface) continue;
-                lines.Add($"{indent}{indent}{m_CSharpWriter.GetIdentifier(i.Name, VarScope.Member)}.VerifyAllExpectations();");
+                lines.Add($"{indent}{indent}{StringUtils.ToUpperInitial(i.Name)}.VerifyAllExpectations();");
             }
             lines.Add($"{indent}}}");
             lines.Add("}");
@@ -76,7 +85,7 @@ namespace BloodyUnitTests.ContentCreators
         {
             var t = parameter.ParameterType;
             var typeName = m_CSharpWriter.GetNameForCSharp(t);
-            return $"public {typeName} {m_CSharpWriter.GetIdentifier(parameter.Name, VarScope.Member)}" +
+            return $"public {typeName} {StringUtils.ToUpperInitial(parameter.Name)}" +
                    $" = {m_CSharpWriter.GetMockInstance(t)};";
         }
     }

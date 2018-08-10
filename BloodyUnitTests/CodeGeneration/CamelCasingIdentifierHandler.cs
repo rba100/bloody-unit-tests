@@ -8,7 +8,7 @@ namespace BloodyUnitTests.CodeGeneration
 
         public CamelCasingIdentifierHandler(ITypeHandler innerHandler)
         {
-            m_InnerHandler = innerHandler;
+            m_InnerHandler = innerHandler ?? throw new ArgumentNullException(nameof(innerHandler));
         }
 
         public bool CanGetInstantiation(Type type)

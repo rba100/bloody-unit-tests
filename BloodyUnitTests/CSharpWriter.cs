@@ -24,19 +24,6 @@ namespace BloodyUnitTests
             throw new InvalidOperationException("Parameter is neither 'out' or 'ref'");
         }
 
-        public string GetIdentifier(string typeName, VarScope varScope)
-        {
-            switch (varScope)
-            {
-                case VarScope.Local:
-                    return typeName;
-                case VarScope.Member:
-                    return StringUtils.ToUpperInitial(typeName);
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(varScope), varScope, null);
-            }
-        }
-
         public string GetIdentifier(Type type, VarScope varScope)
         {
             switch (varScope)

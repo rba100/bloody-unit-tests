@@ -41,7 +41,7 @@ namespace BloodyUnitTests.ContentCreators
             var mockVarName = $"mock{m_CSharpWriter.GetIdentifier(interfaceType, VarScope.Member)}";
             var mockVarNameOffset = new string(' ', mockVarName.Length);
             var resultDeclaration = isVoid ? string.Empty : "var result = ";
-            var sutVarName = m_CSharpWriter.GetIdentifier(classToTest.Name, VarScope.Local);
+            var sutVarName = m_CSharpWriter.GetIdentifier(classToTest, VarScope.Local);
 
 
             var methodVariables = method.GetParameters()

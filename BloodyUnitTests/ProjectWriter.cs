@@ -8,7 +8,6 @@ namespace BloodyUnitTests
 {
     public class ProjectWriter
     {
-        private static readonly ITypeHandler s_TypeHandler = TypeHandlerFactory.Create();
         private static readonly char[] s_PathInvalidChars = Path.GetInvalidFileNameChars();
 
         public void WriteAllTests(Assembly assembly, string nameSpacePrefixFilter, string directoryForOutput)

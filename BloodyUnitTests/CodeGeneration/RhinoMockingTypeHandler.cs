@@ -28,7 +28,7 @@ namespace BloodyUnitTests.CodeGeneration
 
         public bool IsInstantiationTerse(Type type)
         {
-            return false; // GenerateStub<blah blah> is a bit long
+            return false;
         }
 
         public bool CanGetNameForIdentifier(Type type)

@@ -15,7 +15,7 @@ namespace BloodyUnitTests.CodeGeneration
         private static readonly Type s_7 = typeof(ValueTuple<,,,,,,>);
         private static readonly Type s_8 = typeof(ValueTuple<,,,,,,,>);
 
-        private static Type[] s_HandledTypes = { s_2, s_3, s_4, s_5, s_6, s_7, s_8 };
+        private static readonly Type[] s_HandledTypes = { s_2, s_3, s_4, s_5, s_6, s_7, s_8 };
 
         public bool CanGetInstantiation(Type type)
         {
