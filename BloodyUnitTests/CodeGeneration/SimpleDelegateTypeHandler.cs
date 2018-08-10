@@ -28,7 +28,7 @@ namespace BloodyUnitTests.CodeGeneration
         {
             var genArg = type.GetGenericArguments().FirstOrDefault() ?? typeof(object);
             var funcType = s_FuncType.MakeGenericType(genArg);
-            if (type.IsAssignableFrom(funcType)) return $"() => {{ return {m_RootHandler.GetInstantiation(genArg, interestingValue)}; }}";
+            if (type.IsAssignableFrom(funcType)) return $"() => {m_RootHandler.GetInstantiation(genArg, interestingValue)}";
             return $"_ => {{ }}";
         }
 
