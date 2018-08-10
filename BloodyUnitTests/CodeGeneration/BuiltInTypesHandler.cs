@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace BloodyUnitTests.CodeGeneration
 {
@@ -8,6 +9,8 @@ namespace BloodyUnitTests.CodeGeneration
         {
             return type == typeof(bool)
                    || type == typeof(IntPtr)
+                   || type == typeof(Assembly)
+                   || type == typeof(MethodBase)
                    || type == typeof(Type);
         }
 
@@ -16,13 +19,15 @@ namespace BloodyUnitTests.CodeGeneration
             if (type == typeof(bool)) return interestingValue.ToString().ToLower();
             if (type == typeof(IntPtr)) return interestingValue ? "new IntPtr(1)" : "IntPtr.Zero";
             if (type == typeof(Type)) return "typeof(object)";
+            if (type == typeof(Assembly)) return "Assembly.GetCallingAssembly()";
+            if (type == typeof(MethodBase)) return "MethodBase.GetCurrentMethod()";
 
             throw new NotSupportedException();
         }
 
         public bool IsInstantiationTerse(Type type)
         {
-            return true;
+            return type == typeof(bool) || type == typeof(IntPtr) || type == typeof(Type);
         }
 
         public bool CanGetNameForIdentifier(Type type)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 // ReSharper disable NotAccessedField.Local
 // ReSharper disable ArrangeTypeModifiers
@@ -8,11 +9,12 @@ using System.Collections.Generic;
 // ReSharper disable UnusedMember.Global
 // ReSharper disable InconsistentNaming
 
-namespace BloodyUnitTests
+namespace BloodyUnitTests.TestClasses
 {
-    class _TestClass : ITestDecorator
+    public class _TestClass : ITestDecorator
     {
         private readonly ITestDecorator m_InnerTestDecorator;
+        private readonly Action<string> m_Logger;
         private readonly IReadOnlyDictionary<int, string> m_Mappings;
 
         public _TestClass(ITestDecorator innerTestDecorator,
@@ -20,8 +22,10 @@ namespace BloodyUnitTests
                           IList<string> names,
                           IReadOnlyDictionary<int, string> mappings)
         {
-            m_InnerTestDecorator = innerTestDecorator;
-            m_Mappings = mappings;
+            if (dependency == null) throw new ArgumentNullException(nameof(dependency));
+            if (names == null) throw new ArgumentNullException(nameof(names));
+            m_InnerTestDecorator = innerTestDecorator ?? throw new ArgumentNullException(nameof(innerTestDecorator));
+            m_Mappings = mappings ?? throw new ArgumentNullException(nameof(mappings));
         }
 
         public _TestClass(ITestDecorator innerTestDecorator,
@@ -29,8 +33,10 @@ namespace BloodyUnitTests
                           Action<string> logger, 
                           IReadOnlyDictionary<int, string> mappings)
         {
-            m_InnerTestDecorator = innerTestDecorator;
-            m_Mappings = mappings;
+            if (getDate == null) throw new ArgumentNullException(nameof(getDate));
+            m_InnerTestDecorator = innerTestDecorator ?? throw new ArgumentNullException(nameof(innerTestDecorator));
+            m_Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            m_Mappings = mappings ?? throw new ArgumentNullException(nameof(mappings));
         }
 
         public string Process(Guid argument)
@@ -40,40 +46,43 @@ namespace BloodyUnitTests
 
         public int Aggregate(int[] arguments)
         {
+            if (arguments == null) throw new ArgumentNullException(nameof(arguments));
             return m_InnerTestDecorator.Aggregate(arguments);
         }
 
         public void LogAll(string[] messages, DateTime time)
         {
-            
+            if (messages == null) throw new ArgumentNullException(nameof(messages));
+            if (messages.Contains(null)) throw new ArgumentException(nameof(messages));
+            if (time.Kind != DateTimeKind.Utc) throw new ArgumentException();
         }
     }
 
-    internal interface ITestDecorator
+    public interface ITestDecorator
     {
         string Process(Guid argument);
 
         int Aggregate(int[] argument);
     }
 
-    class InnerObject
+    public class InnerObject
     {
         public InnerObject(IReadOnlyCollection<int> ints, bool writeable)
         {
-
+            if (ints == null) throw new ArgumentNullException(nameof(ints));
         }
     }
 
-    class _TestClass2
+    public class _TestClass2
     {
         public void Thing(Guid? val, object o)
         {
-
+            if (o == null) throw new ArgumentNullException(nameof(o));
         }
 
         public void TakesTuple((int, string) valuePair, object o)
         {
-
+            if (o == null) throw new ArgumentNullException(nameof(o));
         }
     }
 }
