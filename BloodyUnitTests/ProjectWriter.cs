@@ -9,6 +9,7 @@ namespace BloodyUnitTests
     public class ProjectWriter
     {
         private static readonly ITypeHandler s_TypeHandler = TypeHandlerFactory.Create();
+        private static readonly char[] s_PathInvalidChars = Path.GetInvalidFileNameChars();
 
         public void WriteAllTests(Assembly assembly, string nameSpacePrefixFilter, string directoryForOutput)
         {
@@ -37,8 +38,15 @@ namespace BloodyUnitTests
 
         private static string GetPath(string directoryBase, Type type)
         {
-            var fileName = StringUtils.ToUpperInitial($"{s_TypeHandler.GetNameForIdentifier(type)}Tests.cs");
+            var fileName = StringUtils.ToUpperInitial($"{FileSafe(type.Name)}Tests.cs");
             return Path.Combine(directoryBase, GetSubFolder(type), fileName);
+        }
+
+        private static string FileSafe(string input)
+        {
+            var illegalChars = input.Where(s_PathInvalidChars.Contains).Distinct().ToArray();
+            if (!illegalChars.Any()) return input;
+            return new string(input.Except(illegalChars).ToArray());
         }
 
         private static string GetSubFolder(Type type)

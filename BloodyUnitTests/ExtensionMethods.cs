@@ -47,5 +47,20 @@ namespace BloodyUnitTests
                 return e.Types.Where(t => t != null);
             }
         }
+
+        public static string Indent(this string str, int indentation)
+        {
+            var indent = new string(' ', indentation);
+            return indent + str;
+        }
+
+        public static IEnumerable<string> Indent(this IEnumerable<string> strings, int indentation)
+        {
+            var indent = new string(' ', indentation);
+            foreach (var s in strings)
+            {
+                yield return indent + s;
+            }
+        }
     }
 }

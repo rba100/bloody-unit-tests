@@ -11,7 +11,7 @@ namespace BloodyUnitTests
     {
         private static readonly string[] s_DefaultNamesSpaces =
         {
-            "System", "System.Text", "System.Collections.Generic",
+            "System", "System.Collections.Generic",
             "NUnit.Framework", "Rhino.Mocks"
         };
 
@@ -70,18 +70,9 @@ namespace BloodyUnitTests
 
         private static void AddContentWithIdentation(StringBuilder builder, ClassContent content, int identation)
         {
-            foreach (var loc in Indent(content.LinesOfCode, identation))
+            foreach (var loc in content.LinesOfCode.Indent(identation))
             {
                 builder.AppendLine(loc);
-            }
-        }
-
-        private static IEnumerable<string> Indent(IEnumerable<string> strings, int identation)
-        {
-            var indent = new string(' ', identation);
-            foreach (var s in strings)
-            {
-                yield return indent + s;
             }
         }
     }
