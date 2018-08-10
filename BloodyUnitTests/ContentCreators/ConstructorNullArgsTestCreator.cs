@@ -11,21 +11,21 @@ namespace BloodyUnitTests.ContentCreators
 
         public ClassContent Create(Type type)
         {
-            return new ClassContent(GetNullConstructorArgsTestInner(type), new[] { type.Namespace });
+            return GetNullConstructorArgsTestInner(type);
         }
 
-        private string[] GetNullConstructorArgsTestInner(Type type)
+        private ClassContent GetNullConstructorArgsTestInner(Type type)
         {
             var typeName = type.Name;
             var lines = new List<string>();
 
             var testCases = GetConstructorNullTestCaseSource(type);
-            if (!testCases.Any()) return new string[0];
+            if (!testCases.linesOfCode.Any()) return ClassContent.NoContent();
             var indent = new string(' ', 4);
             var testCaseSource = $"{typeName}_constructor_null_argument_testcases";
             lines.Add($"public static IEnumerable<TestCaseData> {testCaseSource}()");
             lines.Add("{");
-            lines.AddRange(testCases.Select(line => $"{indent}{line}"));
+            lines.AddRange(testCases.linesOfCode.Select(line => $"{indent}{line}"));
             lines.Add("}");
 
             lines.Add(string.Empty);
@@ -35,15 +35,19 @@ namespace BloodyUnitTests.ContentCreators
             lines.Add("{");
             lines.Add($"{indent}Assert.Throws<ArgumentNullException>(testDelegate);");
             lines.Add("}");
-            return lines.ToArray();
+            return new ClassContent(lines.ToArray(), testCases.nameSpaces);
         }
 
-        private string[] GetConstructorNullTestCaseSource(Type type)
+        private (string[] linesOfCode, string[] nameSpaces) GetConstructorNullTestCaseSource(Type type)
         {
             var ctors = type.GetConstructors();
             if (!ctors.Any()) ctors = type.GetConstructors(BindingFlags.NonPublic | BindingFlags.CreateInstance);
 
-            return ToConstructorNullArgsTestCaseSourceImp(ctors);
+            var namesSpaces = ctors.SelectMany(c => c.GetParameters())
+                                   .Select(p => p.ParameterType.Namespace)
+                                   .ToArray();
+
+            return (ToConstructorNullArgsTestCaseSourceImp(ctors), namesSpaces);
         }
 
         private string[] ToConstructorNullArgsTestCaseSourceImp(ConstructorInfo[] constructors)

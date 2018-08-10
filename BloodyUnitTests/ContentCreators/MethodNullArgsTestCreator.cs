@@ -14,12 +14,12 @@ namespace BloodyUnitTests.ContentCreators
             var lines = new List<string>();
 
             var testCases = GetMethodNullTestCaseSource(type);
-            if (!testCases.Any()) return ClassContent.NoContent();
+            if (!testCases.linesOfCode.Any()) return ClassContent.NoContent();
 
             var testCaseSource = $"{type.Name}_method_null_argument_testcases";
             lines.Add($"public static IEnumerable<TestCaseData> {testCaseSource}()");
             lines.Add("{");
-            foreach (var line in testCases)
+            foreach (var line in testCases.linesOfCode)
             {
                 lines.Add(new String(' ', 4) + line);
             }
@@ -34,16 +34,20 @@ namespace BloodyUnitTests.ContentCreators
 
             lines.Add("    Assert.Throws<ArgumentNullException>(testDelegate);");
             lines.Add("}");
-            return new ClassContent(lines.ToArray(), new string[0]);
+            return new ClassContent(lines.ToArray(), testCases.namesSpaces);
         }
 
-        private string[] GetMethodNullTestCaseSource(Type type)
+        private (string[] linesOfCode, string[] namesSpaces) GetMethodNullTestCaseSource(Type type)
         {
             var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
                               .Where(type.IsMethodTestable)
                               .ToArray();
 
-            return ToMethodNullArgsTestCaseSourceImp(methods, type);
+            var nameSpaces = methods.SelectMany(m => m.GetParameters())
+                                    .Select(p => p.ParameterType.Namespace)
+                                    .ToArray();
+
+            return (ToMethodNullArgsTestCaseSourceImp(methods, type), nameSpaces);
         }
 
         private string[] ToMethodNullArgsTestCaseSourceImp(MethodInfo[] infos, Type type)

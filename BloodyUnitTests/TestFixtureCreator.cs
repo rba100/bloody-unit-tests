@@ -11,7 +11,7 @@ namespace BloodyUnitTests
     {
         private static readonly string[] s_DefaultNamesSpaces =
         {
-            "System", "System.Text",
+            "System", "System.Text", "System.Collections.Generic",
             "NUnit.Framework", "Rhino.Mocks"
         };
 

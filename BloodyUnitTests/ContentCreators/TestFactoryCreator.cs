@@ -53,7 +53,7 @@ namespace BloodyUnitTests.ContentCreators
             // Create
             lines.Add($"{indent}public {typeName} Create()");
             lines.Add($"{indent}{{");
-            lines.Add($"{indent}{indent} return new {typeName}({string.Join(", ", args)})");
+            lines.Add($"{indent}{indent} return new {typeName}({string.Join(", ", args)});");
             lines.Add($"{indent}}}");
 
             lines.Add(String.Empty);

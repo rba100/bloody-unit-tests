@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -66,12 +67,19 @@ namespace BloodyUnitTests
 
         private string GetLocalVariableDeclaration(Type type, bool setToNull, bool nonDefault)
         {
-            var declaredType = $"{(setToNull ? GetNameForCSharp(type) : "var")}";
+            var declaredType = $"{(setToNull || TypeIsFunction(type) ? GetNameForCSharp(type) : "var")}";
             var identifier = GetIdentifier(type, VarScope.Local);
             // ReSharper disable once PossibleNullReferenceException
             if (setToNull && type.IsValueType) return $"{declaredType} {identifier};";
             if (setToNull) return $"{declaredType} {identifier} = null;";
             return $"{declaredType} {identifier} = {GetInstantiation(type, nonDefault)};";
+        }
+
+        private bool TypeIsFunction(Type type)
+        {
+            if (!type.IsGenericType) return false;
+            var genTypeDef = type.GetGenericTypeDefinition();
+            return genTypeDef == typeof(Func<>) || genTypeDef == typeof(Action<>);
         }
 
         public string GetMockInstance(Type interfaceType)

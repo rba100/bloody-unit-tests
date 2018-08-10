@@ -13,7 +13,7 @@ namespace BloodyUnitTests.ContentCreators
         {
             var (ctor, ifType) = GetPassthroughConstructor(type);
             if (ctor == null) return ClassContent.NoContent();
-            return new ClassContent(GenerateTestMethods(type, ctor, ifType), new[] { ifType.Namespace });
+            return new ClassContent(GenerateTestMethods(type, ctor, ifType), new[] { ifType.Namespace, type.Namespace });
         }
 
         private string[] GenerateTestMethods(Type classToTest, ConstructorInfo constructor, Type interfaceType)
@@ -31,7 +31,10 @@ namespace BloodyUnitTests.ContentCreators
             return lines.ToArray();
         }
 
-        private string[] GenerateTestMethod(Type classToTest, ConstructorInfo constructor, Type interfaceType, MethodInfo method)
+        private string[] GenerateTestMethod(Type classToTest, 
+                                            ConstructorInfo constructor,
+                                            Type interfaceType,
+                                            MethodInfo method)
         {
             var isVoid = method.ReturnType == typeof(void);
 
@@ -61,6 +64,8 @@ namespace BloodyUnitTests.ContentCreators
             var ctorArgumentsFlat = string.Join(", ", ctorArgs);
             var methodArgumentsFlat = string.Join(", ", methodArgs);
 
+            var indent = new string(' ', 4);
+
             var lines = new List<string>();
             lines.Add("[Test]");
             lines.Add($"public void {method.Name}_delegates_to_{ifParamName}()");
@@ -68,21 +73,21 @@ namespace BloodyUnitTests.ContentCreators
             lines.AddRange(methodVariables.IndentBy(4));
             if (!isVoid)
             {
-                lines.Add($"    var expectedResult = {m_CSharpWriter.GetInstantiation(method.ReturnType, true)};");
+                lines.Add($"{indent}var expectedResult = {m_CSharpWriter.GetInstantiation(method.ReturnType, true)};");
             }
-            lines.Add($"    var {mockVarName} = {m_CSharpWriter.GetMockInstance(interfaceType)};");
-            lines.Add($"    {mockVarName}.Expect(m=>m.{method.Name}({methodArgumentsFlat}))");
-            lines.Add($"    {mockVarNameOffset}.Repeat.Once(){(isVoid ? ";" : "")}");
+            lines.Add($"{indent}var {mockVarName} = {m_CSharpWriter.GetMockInstance(interfaceType)};");
+            lines.Add($"{indent}{mockVarName}.Expect(m=>m.{method.Name}({methodArgumentsFlat}))");
+            lines.Add($"{indent}{mockVarNameOffset}.Repeat.Once(){(isVoid ? ";" : "")}");
             if (!isVoid)
             {
-                lines.Add($"    {mockVarNameOffset}.Return(expectedResult);");
+                lines.Add($"{indent}{mockVarNameOffset}.Return(expectedResult);");
             }
-            lines.Add($"    var {sutVarName} = new {m_CSharpWriter.GetNameForCSharp(rootType)}({ctorArgumentsFlat});");
-            lines.Add($"    {resultDeclaration}{sutVarName}.{method.Name}({methodArgumentsFlat})");
-            lines.Add($"    {mockVarName}.VerifyAllExpectations();");
+            lines.Add($"{indent}var {sutVarName} = new {m_CSharpWriter.GetNameForCSharp(rootType)}({ctorArgumentsFlat});");
+            lines.Add($"{indent}{resultDeclaration}{sutVarName}.{method.Name}({methodArgumentsFlat});");
+            lines.Add($"{indent}{mockVarName}.VerifyAllExpectations();");
             if (!isVoid)
             {
-                lines.Add($"    Assert.AreEqual(expectedResult, result);");
+                lines.Add($"{indent}Assert.AreEqual(expectedResult, result);");
             }
             lines.Add("}");
             return lines.ToArray();

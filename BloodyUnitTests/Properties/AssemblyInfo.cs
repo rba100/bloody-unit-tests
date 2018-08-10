@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following
@@ -15,3 +16,6 @@ using System.Runtime.InteropServices;
 [assembly: Guid("802bf306-07e6-41eb-9f9b-ee339af82a81")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+
+
+[assembly: InternalsVisibleTo("BloodyUnitTests.Tests")]
