@@ -21,11 +21,6 @@ namespace BloodyUnitTests.CodeGeneration
             return $"GenerateStub<{m_RootHandler.GetNameForCSharp(type)}>()";
         }
 
-        public string GetMock(Type type)
-        {
-            return $"GenerateMock<{m_RootHandler.GetNameForCSharp(type)}>()";
-        }
-
         public bool IsInstantiationTerse(Type type)
         {
             return false;

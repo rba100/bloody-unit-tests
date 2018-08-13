@@ -87,7 +87,6 @@
     <Compile Include="CodeGeneration\NumericTypeHandler.cs" />
     <Compile Include="CodeGeneration\RhinoMockingTypeHandler.cs" />
     <Compile Include="CodeGeneration\CompositeRecursiveTypeHandler.cs" />
-    <Compile Include="CodeGeneration\StringAndCharTypeHandler.cs" />
     <Compile Include="CodeGeneration\TypeHandlerFactory.cs" />
     <Compile Include="CodeGeneration\ValueTupleTypeHandler.cs" />
     <Compile Include="ContentCreators\ClassContent.cs" />

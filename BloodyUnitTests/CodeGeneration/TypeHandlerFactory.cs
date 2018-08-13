@@ -15,7 +15,6 @@ namespace BloodyUnitTests.CodeGeneration
                 new EnumTypeHandler(),
                 new NumericTypeHandler(),
                 new NullableTypeHandler(),
-                new StringAndCharTypeHandler(),
                 new ListTypeHandler(),
                 new ValueTupleTypeHandler(),
                 new GuidTypeHandler(),
@@ -27,18 +26,18 @@ namespace BloodyUnitTests.CodeGeneration
 
                 // Fallback handlers
                 new RhinoMockingTypeHandler(),
-                new FallbackRecursiveTypeHandler(),
+                new FallbackRecursiveTypeHandler()
             });
 
             var nameRulesHandler = new InterfaceNameRuleHandler(compositeHandler);
-            var cachingHandler = new CachingTypeHandler(nameRulesHandler);
-            compositeHandler.SetRoot(cachingHandler); // Re-entry point
+            compositeHandler.SetRoot(nameRulesHandler); // Re-entry point
 
             // Post-recursion handlers.
-            var lowerCamelCase = new CamelCasingIdentifierHandler(cachingHandler);
+            var lowerCamelCase = new CamelCasingIdentifierHandler(nameRulesHandler);
             var keywordAvoianceFilter = new CSharpKeyworkClashAvoidanceTypeHandler(lowerCamelCase);
+            var cachingHandler = new CachingTypeHandler(keywordAvoianceFilter);
 
-            return keywordAvoianceFilter;
+            return cachingHandler;
         }
     }
 }

@@ -125,6 +125,8 @@ namespace BloodyUnitTests
         /// </summary>
         private bool NoCircularDependenciesOrAbstract(Type type, ICollection<Type> typeHistory)
         {
+            if (type == typeof(string)) return true;
+
             if (type.IsClass && type.IsAbstract) return false;
             if (!type.IsClass) return true;
 
@@ -133,13 +135,12 @@ namespace BloodyUnitTests
             typeHistory.Add(type);
 
             var ctor = type.GetConstructors()
-                           .OrderByDescending(c => c.GetParameters().Length)
+                           .OrderBy(c => c.GetParameters().Length)
                            .FirstOrDefault();
             if (ctor == null) return false;
 
             return ctor.GetParameters()
-                       .All(p => !p.IsOut
-                                 && NoCircularDependenciesOrAbstract(p.ParameterType, typeHistory));
+                       .All(p => !p.IsOut && NoCircularDependenciesOrAbstract(p.ParameterType, typeHistory));
         }
 
         public string[] GetMethodArguments(MethodBase methodBase, bool useVariables, bool nonDefault)
