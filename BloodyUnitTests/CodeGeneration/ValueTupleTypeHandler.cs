@@ -37,12 +37,14 @@ namespace BloodyUnitTests.CodeGeneration
 
         public bool CanGetNameForIdentifier(Type type)
         {
-            return false;
+            return type.IsGenericType && s_HandledTypes.Contains(type.GetGenericTypeDefinition());
         }
 
         public string GetNameForIdentifier(Type type)
         {
-            throw new NotImplementedException();
+            var genArgs = type.GetGenericArguments();
+            var typeNames = string.Join("", genArgs.Select(m_RootHandler.GetNameForIdentifier));
+            return $"{typeNames}";
         }
 
         public bool CanGetNameForCSharp(Type type)
