@@ -31,7 +31,12 @@ namespace BloodyUnitTests
             if (!contents.Any()) return null;
 
             var namespaces = contents.SelectMany(c => c.NamesSpaces)
-                                     .Union(new[] { classToTest.Namespace })
+                                     .Union(new[] 
+                                     {
+                                         classToTest.Namespace,
+                                         "NUnit.Framework",
+                                         "System.Collections.Generic"
+                                     })
                                      .Distinct().ToList();
 
             var systemNamespaces = namespaces.Where(ns => ns.StartsWith("System")).OrderBy(ns => ns).ToList();
