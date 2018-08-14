@@ -30,7 +30,7 @@ namespace BloodyUnitTests
                            .ToList();
         }
 
-        public static bool IsMethodTestable(this Type type, MethodInfo method)
+        public static bool IsMethodTestable(this Type type, MethodBase method)
         {
             return method.Name != "Equals" && !method.IsSpecialName && method.DeclaringType == type;
         }

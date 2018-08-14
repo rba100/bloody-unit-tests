@@ -18,7 +18,7 @@ namespace BloodyUnitTests
                 new ExceptionTestCreator(),
                 new ConstructorNullArgsTestCreator(),
                 new MethodNullArgsTestCreator(),
-                new InvalidArgumentTestCreator(), 
+                new InvalidArgumentTestCreator(),
                 new PassThroughTestCreator(),
                 new HelperMethodContentCreator(),
                 new TestFactoryCreator()
@@ -30,19 +30,21 @@ namespace BloodyUnitTests
 
             if (!contents.Any()) return null;
 
-            var namespaces = contents.SelectMany(c => c.NamesSpaces).Distinct().ToList();
+            var namespaces = contents.SelectMany(c => c.NamesSpaces)
+                                     .Union(new[] { classToTest.Namespace })
+                                     .Distinct().ToList();
 
             var systemNamespaces = namespaces.Where(ns => ns.StartsWith("System")).OrderBy(ns => ns).ToList();
             var staticImports = namespaces.Where(ns => ns.StartsWith("static")).OrderBy(ns => ns).ToList();
             var customNamespaces = namespaces.Except(systemNamespaces.Union(staticImports)).OrderBy(ns => ns).ToList();
 
             systemNamespaces.ForEach(ns => sb.AppendLine($"using {ns};"));
-            sb.AppendLine();
+            if (systemNamespaces.Any()) sb.AppendLine();
             customNamespaces.ForEach(ns => sb.AppendLine($"using {ns};"));
-            sb.AppendLine();
+            if (customNamespaces.Any()) sb.AppendLine();
             staticImports.ForEach(ns => sb.AppendLine($"using {ns};"));
+            if (staticImports.Any()) sb.AppendLine();
 
-            sb.AppendLine();
             sb.AppendLine("[TestFixture]");
             sb.AppendLine($"public class {classToTest.Name}Tests");
             sb.AppendLine("{");

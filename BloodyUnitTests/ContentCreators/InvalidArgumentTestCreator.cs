@@ -13,42 +13,72 @@ namespace BloodyUnitTests.ContentCreators
         {
             var lines = new List<string>();
 
-            var testCases = GetTestCaseSource(type);
-            if (!testCases.Any()) return ClassContent.NoContent();
+            var methodTestCases = GetTestCaseSource(type, type.GetMethods, false);
+            var ctorTestCases = GetTestCaseSource(type, type.GetConstructors, true);
 
-            var testCaseSource = $"{type.Name}_invalid_argument_testcases";
-            lines.Add($"public static IEnumerable<TestCaseData> {testCaseSource}()");
-            lines.Add("{");
-            foreach (var line in testCases)
+            if(!methodTestCases.Union(ctorTestCases).Any()) return ClassContent.NoContent();
+
+            if (methodTestCases.Any())
             {
-                lines.Add(new String(' ', 4) + line);
+                var testCaseSource = $"{type.Name}_invalid_argument_testcases";
+                lines.Add($"public static IEnumerable<TestCaseData> {testCaseSource}()");
+                lines.Add("{");
+                foreach (var line in methodTestCases)
+                {
+                    lines.Add(new String(' ', 4) + line);
+                }
+
+                lines.Add("}");
+
+                lines.Add(string.Empty);
+
+                lines.Add($"[TestCaseSource(nameof({testCaseSource}))]");
+                lines.Add($"public void {type.Name}_invalid_argument_test(TestDelegate testDelegate)");
+                lines.Add("{");
+
+                lines.Add("    Assert.Throws<ArgumentException>(testDelegate);");
+                lines.Add("}");
             }
 
-            lines.Add("}");
+            if(methodTestCases.Any() && ctorTestCases.Any()) lines.Add(string.Empty);
 
-            lines.Add(string.Empty);
+            if (ctorTestCases.Any())
+            {
+                var testCaseSource = $"{type.Name}_constructor_invalid_argument_testcases";
+                lines.Add($"public static IEnumerable<TestCaseData> {testCaseSource}()");
+                lines.Add("{");
+                foreach (var line in ctorTestCases)
+                {
+                    lines.Add(new String(' ', 4) + line);
+                }
 
-            lines.Add($"[TestCaseSource(nameof({testCaseSource}))]");
-            lines.Add($"public void {type.Name}_invalid_argument_test(TestDelegate testDelegate)");
-            lines.Add("{");
+                lines.Add("}");
 
-            lines.Add("    Assert.Throws<ArgumentException>(testDelegate);");
-            lines.Add("}");
+                lines.Add(string.Empty);
+
+                lines.Add($"[TestCaseSource(nameof({testCaseSource}))]");
+                lines.Add($"public void {type.Name}_invalid_argument_test(TestDelegate testDelegate)");
+                lines.Add("{");
+
+                lines.Add("    Assert.Throws<ArgumentException>(testDelegate);");
+                lines.Add("}");
+            }
+
             return new ClassContent(lines.ToArray(), m_CSharpWriter.GetNameSpaces());
         }
 
-        private string[] GetTestCaseSource(Type type)
+        private string[] GetTestCaseSource(Type type, Func<BindingFlags,MethodBase[]> methodGetter, bool isCtor)
         {
-            var hasArrayAssignables = type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                                       .Where(type.IsMethodTestable)
+            var hasArrayAssignables = methodGetter(BindingFlags.Public | BindingFlags.Instance)
+                                       .Where(t => isCtor || type.IsMethodTestable(t))
                                        .Where(m => m.GetParameters()
                                                     .Select(p => p.ParameterType)
                                                     .Any(t => m_CSharpWriter.IsArrayAssignable(t) 
                                                           && !m_CSharpWriter.GetArrayElementType(t).IsValueType))
                                        .ToArray();
 
-            var hasDateTimeParameter = type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                                           .Where(type.IsMethodTestable)
+            var hasDateTimeParameter = methodGetter(BindingFlags.Public | BindingFlags.Instance)
+                                           .Where(t => isCtor || type.IsMethodTestable(t))
                                            .Where(m => m.GetParameters()
                                                         .Select(p => p.ParameterType)
                                                         .Any(t=>t == typeof(DateTime) || t == typeof(DateTime?)))
@@ -79,8 +109,11 @@ namespace BloodyUnitTests.ContentCreators
 
             var instanceName = m_CSharpWriter.GetIdentifier(type, VarScope.Local);
 
-            lines.AddRange(m_CSharpWriter.GetStubbedInstantiation(type));
-            lines.Add(string.Empty);
+            if (!isCtor)
+            {
+                lines.AddRange(m_CSharpWriter.GetStubbedInstantiation(type));
+                lines.Add(string.Empty);
+            }
 
             bool testCasesExist = false;
             foreach (var info in testableMethods)
@@ -110,8 +143,10 @@ namespace BloodyUnitTests.ContentCreators
                     else { continue;}
                     testCasesExist = true;
 
+                    var invocation = isCtor ? $"new {m_CSharpWriter.GetNameForCSharp(type)}" : $"{instanceName}.{methodName}";
+
                     lines.Add($"yield return new TestCaseData(new TestDelegate(() => " +
-                              $"{instanceName}.{methodName}({string.Join(", ", copyOfArguments)})))" +
+                              $"{invocation}({string.Join(", ", copyOfArguments)})))" +
                               $".SetName(\"{methodName} with {parameters[i].Name} {testNameSuffix}\");");
                 }
             }
