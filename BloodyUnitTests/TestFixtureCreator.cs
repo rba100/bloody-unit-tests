@@ -34,8 +34,9 @@ namespace BloodyUnitTests
                                      .Union(new[] 
                                      {
                                          classToTest.Namespace,
-                                         "NUnit.Framework",
-                                         "System.Collections.Generic"
+                                         "System",
+                                         "System.Collections.Generic",
+                                         "NUnit.Framework"
                                      })
                                      .Distinct().ToList();
 
