@@ -78,6 +78,8 @@
     <Compile Include="CodeGeneration\GeneralDictionaryTypeHandler.cs" />
     <Compile Include="CodeGeneration\GenericTypeNameHandler.cs" />
     <Compile Include="CodeGeneration\GuidTypeHandler.cs" />
+    <Compile Include="CodeGeneration\INamespaceTracker.cs" />
+    <Compile Include="CodeGeneration\NamespaceTracker.cs" />
     <Compile Include="CodeGeneration\SimpleDelegateTypeHandler.cs" />
     <Compile Include="CodeGeneration\InterfaceNameRuleHandler.cs" />
     <Compile Include="CodeGeneration\IRecursiveTypeHandler.cs" />

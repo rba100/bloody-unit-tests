@@ -34,7 +34,7 @@ namespace BloodyUnitTests.ContentCreators
 
             lines.Add("    Assert.Throws<ArgumentException>(testDelegate);");
             lines.Add("}");
-            return new ClassContent(lines.ToArray(), new[] { type.Namespace });
+            return new ClassContent(lines.ToArray(), m_CSharpWriter.GetNameSpaces());
         }
 
         private string[] GetTestCaseSource(Type type)

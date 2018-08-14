@@ -48,12 +48,6 @@ namespace BloodyUnitTests
             }
         }
 
-        public static string Indent(this string str, int indentation)
-        {
-            var indent = new string(' ', indentation);
-            return indent + str;
-        }
-
         public static IEnumerable<string> Indent(this IEnumerable<string> strings, int indentation)
         {
             var indent = new string(' ', indentation);

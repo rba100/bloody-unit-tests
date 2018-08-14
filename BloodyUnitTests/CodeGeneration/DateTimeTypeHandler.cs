@@ -4,6 +4,8 @@ namespace BloodyUnitTests.CodeGeneration
 {
     class DateTimeTypeHandler : IRecursiveTypeHandler
     {
+        private ITypeHandler m_RootHandler;
+
         private bool CanHandle(Type type)
         {
             return type == typeof(DateTime);
@@ -50,7 +52,12 @@ namespace BloodyUnitTests.CodeGeneration
 
         public void SetRoot(ITypeHandler handler)
         {
-            
+            m_RootHandler = handler;
+        }
+
+        public INamespaceTracker GetNamespaceTracker()
+        {
+            return m_RootHandler.GetNamespaceTracker();
         }
     }
 }

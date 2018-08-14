@@ -4,6 +4,8 @@ namespace BloodyUnitTests.CodeGeneration
 {
     class CSharpTypeKeywordNameHandler : IRecursiveTypeHandler
     {
+        private ITypeHandler m_RootHandler;
+
         public bool CanGetInstantiation(Type type)
         {
             return false;
@@ -69,8 +71,14 @@ namespace BloodyUnitTests.CodeGeneration
             throw new NotSupportedException();
         }
 
+        public INamespaceTracker GetNamespaceTracker()
+        {
+            return m_RootHandler.GetNamespaceTracker();
+        }
+
         public void SetRoot(ITypeHandler handler)
         {
+            m_RootHandler = handler;
         }
     }
 }

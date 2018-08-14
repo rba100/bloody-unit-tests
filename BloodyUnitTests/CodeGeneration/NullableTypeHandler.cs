@@ -53,5 +53,10 @@ namespace BloodyUnitTests.CodeGeneration
         {
             m_RootHandler = handler;
         }
+
+        public INamespaceTracker GetNamespaceTracker()
+        {
+            return m_RootHandler.GetNamespaceTracker();
+        }
     }
 }

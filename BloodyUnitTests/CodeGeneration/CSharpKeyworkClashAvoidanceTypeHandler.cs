@@ -62,6 +62,11 @@ namespace BloodyUnitTests.CodeGeneration
             return m_InnerHandler.GetNameForCSharp(type);
         }
 
+        public INamespaceTracker GetNamespaceTracker()
+        {
+            return m_InnerHandler.GetNamespaceTracker();
+        }
+
         private static readonly string[] s_Keywords = {
             "abstract", "add", "as", "ascending",
             "async", "await", "base", "bool",

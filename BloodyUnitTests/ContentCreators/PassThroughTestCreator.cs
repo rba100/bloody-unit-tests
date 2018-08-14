@@ -13,7 +13,7 @@ namespace BloodyUnitTests.ContentCreators
         {
             var (ctor, ifType) = GetPassthroughConstructor(type);
             if (ctor == null) return ClassContent.NoContent();
-            return new ClassContent(GenerateTestMethods(type, ctor, ifType), new[] { ifType.Namespace, type.Namespace });
+            return new ClassContent(GenerateTestMethods(type, ctor, ifType), m_CSharpWriter.GetNameSpaces());
         }
 
         private string[] GenerateTestMethods(Type classToTest, ConstructorInfo constructor, Type interfaceType)

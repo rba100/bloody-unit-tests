@@ -28,5 +28,11 @@ namespace BloodyUnitTests.CodeGeneration
         /// Only valid when CanGetNameForCSharp
         /// </summary>
         string GetNameForCSharp(Type type);
+
+        /// <summary>
+        /// Returns the namespaces needed for invocations and type names used so far.
+        /// </summary>
+        /// <returns></returns>
+        INamespaceTracker GetNamespaceTracker();
     }
 }

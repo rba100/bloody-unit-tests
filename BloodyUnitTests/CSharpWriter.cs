@@ -10,7 +10,7 @@ namespace BloodyUnitTests
 {
     internal class CSharpWriter
     {
-        private static readonly ITypeHandler s_TypeHandler = TypeHandlerFactory.Create();
+        private readonly ITypeHandler m_TypeHandler = TypeHandlerFactory.Create();
 
         public bool HasParamKeyword(ParameterInfo arg)
         {
@@ -39,17 +39,17 @@ namespace BloodyUnitTests
 
         private bool IsInstantiationTerse(Type type)
         {
-            return s_TypeHandler.IsInstantiationTerse(type);
+            return m_TypeHandler.IsInstantiationTerse(type);
         }
 
         public string GetInstantiation(Type type)
         {
-            return s_TypeHandler.GetInstantiation(type, false);
+            return m_TypeHandler.GetInstantiation(type, false);
         }
 
         public string GetInstantiation(Type possibleReftype, bool nonDefault)
         {
-            return s_TypeHandler.GetInstantiation(possibleReftype, nonDefault);
+            return m_TypeHandler.GetInstantiation(possibleReftype, nonDefault);
         }
 
         private string GetLocalVariableDeclaration(Type type, bool setToNull, bool nonDefault)
@@ -76,7 +76,7 @@ namespace BloodyUnitTests
 
         public string GetNameForCSharp(Type type)
         {
-            return s_TypeHandler.GetNameForCSharp(type);
+            return m_TypeHandler.GetNameForCSharp(type);
         }
 
         public string[] GetStubbedInstantiation(Type type)
@@ -153,8 +153,8 @@ namespace BloodyUnitTests
                             : p.ParameterType);
 
             var arguments = useVariables
-                ? paramterTypesClean.Select(t => StringUtils.ToLowerInitial(s_TypeHandler.GetNameForIdentifier(t))).ToArray()
-                : paramterTypesClean.Select(t => s_TypeHandler.GetInstantiation(t, nonDefault)).ToArray();
+                ? paramterTypesClean.Select(t => StringUtils.ToLowerInitial(m_TypeHandler.GetNameForIdentifier(t))).ToArray()
+                : paramterTypesClean.Select(t => m_TypeHandler.GetInstantiation(t, nonDefault)).ToArray();
 
             for (var index = 0; index < parameters.Length; index++)
             {
@@ -198,7 +198,12 @@ namespace BloodyUnitTests
         private string GetIdentifier(Type type)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
-            return s_TypeHandler.GetNameForIdentifier(type);
+            return m_TypeHandler.GetNameForIdentifier(type);
+        }
+
+        public string[] GetNameSpaces()
+        {
+            return m_TypeHandler.GetNamespaceTracker().GetNamespaces();
         }
     }
 

@@ -1,5 +1,4 @@
-﻿
-namespace BloodyUnitTests.CodeGeneration
+﻿namespace BloodyUnitTests.CodeGeneration
 {
     static class TypeHandlerFactory
     {
@@ -7,7 +6,7 @@ namespace BloodyUnitTests.CodeGeneration
         {
             var compositeHandler = new CompositeRecursiveTypeHandler(new IRecursiveTypeHandler[]
             {
-                // Specific handlers
+                // Specific handlers first
                 new CSharpTypeKeywordNameHandler(),
                 new SimpleDelegateTypeHandler(),
                 new DateTimeTypeHandler(),
@@ -27,7 +26,7 @@ namespace BloodyUnitTests.CodeGeneration
                 // Fallback handlers
                 new RhinoMockingTypeHandler(),
                 new FallbackRecursiveTypeHandler()
-            });
+            }, new NamespaceTracker());
 
             var nameRulesHandler = new InterfaceNameRuleHandler(compositeHandler);
             compositeHandler.SetRoot(nameRulesHandler); // Re-entry point

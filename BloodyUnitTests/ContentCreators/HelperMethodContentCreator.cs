@@ -11,11 +11,6 @@ namespace BloodyUnitTests.ContentCreators
 
         public ClassContent Create(Type type)
         {
-            return GetHelperObjectCreatorsForType(type);
-        }
-
-        private ClassContent GetHelperObjectCreatorsForType(Type type)
-        {
             var lines = new List<string>();
 
             var simpleClasses = GetSupportedDependencies(type);
@@ -37,7 +32,7 @@ namespace BloodyUnitTests.ContentCreators
                 lines.AddRange(declaration);
             }
 
-            return new ClassContent(lines.ToArray(), namesSpaces);
+            return new ClassContent(lines.ToArray(), m_CSharpWriter.GetNameSpaces());
         }
 
         private Type[] GetSupportedDependencies(Type type)

@@ -9,12 +9,6 @@ namespace BloodyUnitTests
 {
     public static class TestFixtureCreator
     {
-        private static readonly string[] s_DefaultNamesSpaces =
-        {
-            "System", "System.Collections.Generic",
-            "NUnit.Framework", "Rhino.Mocks"
-        };
-
         public static string CreateTestFixture(Type classToTest)
         {
             var sb = new StringBuilder();
@@ -36,21 +30,17 @@ namespace BloodyUnitTests
 
             if (!contents.Any()) return null;
 
-            var namesSpaces = contents.SelectMany(c => c.NamesSpaces);
+            var namespaces = contents.SelectMany(c => c.NamesSpaces).Distinct().ToList();
 
-            // Start with namespace declarations
-            var namesspaces = s_DefaultNamesSpaces.Union(namesSpaces)
-                                                  .Union(new[] { classToTest.Namespace })
-                                                  .Distinct().ToList();
-
-            var systemNamespaces = namesspaces.Where(ns => ns.StartsWith("System")).OrderBy(ns => ns).ToList();
-            var customNamespaces = namesspaces.Except(systemNamespaces).OrderBy(ns => ns).ToList();
+            var systemNamespaces = namespaces.Where(ns => ns.StartsWith("System")).OrderBy(ns => ns).ToList();
+            var staticImports = namespaces.Where(ns => ns.StartsWith("static")).OrderBy(ns => ns).ToList();
+            var customNamespaces = namespaces.Except(systemNamespaces.Union(staticImports)).OrderBy(ns => ns).ToList();
 
             systemNamespaces.ForEach(ns => sb.AppendLine($"using {ns};"));
             sb.AppendLine();
             customNamespaces.ForEach(ns => sb.AppendLine($"using {ns};"));
             sb.AppendLine();
-            sb.AppendLine("using static Rhino.Mocks.MockRepository;");
+            staticImports.ForEach(ns => sb.AppendLine($"using {ns};"));
 
             sb.AppendLine();
             sb.AppendLine("[TestFixture]");
@@ -68,9 +58,9 @@ namespace BloodyUnitTests
             return sb.ToString();
         }
 
-        private static void AddContentWithIdentation(StringBuilder builder, ClassContent content, int identation)
+        private static void AddContentWithIdentation(StringBuilder builder, ClassContent content, int indentation)
         {
-            foreach (var loc in content.LinesOfCode.Indent(identation))
+            foreach (var loc in content.LinesOfCode.Indent(indentation))
             {
                 builder.AppendLine(loc);
             }

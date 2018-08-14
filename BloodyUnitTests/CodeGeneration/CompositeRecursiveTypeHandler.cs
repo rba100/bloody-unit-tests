@@ -7,10 +7,13 @@ namespace BloodyUnitTests.CodeGeneration
     class CompositeRecursiveTypeHandler : IRecursiveTypeHandler
     {
         private readonly IReadOnlyCollection<IRecursiveTypeHandler> m_InnerHandlers;
+        private readonly INamespaceTracker m_NamespaceTracker;
 
-        public CompositeRecursiveTypeHandler(IReadOnlyCollection<IRecursiveTypeHandler> innerHandlers)
+        public CompositeRecursiveTypeHandler(IReadOnlyCollection<IRecursiveTypeHandler> innerHandlers,
+                                             INamespaceTracker namespaceTracker)
         {
             m_InnerHandlers = innerHandlers ?? throw new ArgumentNullException(nameof(innerHandlers));
+            m_NamespaceTracker = namespaceTracker ?? throw new ArgumentNullException(nameof(namespaceTracker));
             if (innerHandlers.Any(h => h == null))
             {
                 throw new ArgumentException($@"{nameof(innerHandlers)} cannot contain null",
@@ -35,6 +38,7 @@ namespace BloodyUnitTests.CodeGeneration
 
         public string GetInstantiation(Type type, bool interestingValue)
         {
+            m_NamespaceTracker.RecordNamespace(type.Namespace);
             return m_InnerHandlers.First(h => h.CanGetInstantiation(type))
                                   .GetInstantiation(type, interestingValue);
         }
@@ -63,8 +67,14 @@ namespace BloodyUnitTests.CodeGeneration
 
         public string GetNameForCSharp(Type type)
         {
+            m_NamespaceTracker.RecordNamespace(type.Namespace);
             return m_InnerHandlers.First(h => h.CanGetNameForCSharp(type))
                                   .GetNameForCSharp(type);
+        }
+
+        public INamespaceTracker GetNamespaceTracker()
+        {
+            return m_NamespaceTracker;
         }
     }
 }

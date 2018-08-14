@@ -20,7 +20,7 @@ namespace BloodyUnitTests.ContentCreators
             lines.Add(string.Empty);
             lines.AddRange(GetLines(c_RoundTripTest, className));
 
-            return new ClassContent(lines.ToArray(), new[] { type.Namespace });
+            return new ClassContent(lines.ToArray(), m_CSharpWriter.GetNameSpaces());
         }
 
         private string[] GetLines(string input, string value)

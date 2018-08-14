@@ -11,7 +11,7 @@ namespace BloodyUnitTests.ContentCreators
 
         public ClassContent Create(Type type)
         {
-            return new ClassContent(TestFactoryDeclarationInner(type), new string[0]);
+            return new ClassContent(TestFactoryDeclarationInner(type), m_CSharpWriter.GetNameSpaces());
         }
 
         private string[] TestFactoryDeclarationInner(Type type)

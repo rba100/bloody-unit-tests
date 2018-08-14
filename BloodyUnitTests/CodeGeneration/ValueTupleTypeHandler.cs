@@ -37,7 +37,7 @@ namespace BloodyUnitTests.CodeGeneration
 
         public bool CanGetNameForIdentifier(Type type)
         {
-            return type.IsGenericType && s_HandledTypes.Contains(type.GetGenericTypeDefinition());
+            return CanGetInstantiation(type);
         }
 
         public string GetNameForIdentifier(Type type)
@@ -49,7 +49,7 @@ namespace BloodyUnitTests.CodeGeneration
 
         public bool CanGetNameForCSharp(Type type)
         {
-            return type.IsGenericType && s_HandledTypes.Contains(type.GetGenericTypeDefinition());
+            return CanGetInstantiation(type);
         }
 
         public string GetNameForCSharp(Type type)
@@ -57,6 +57,11 @@ namespace BloodyUnitTests.CodeGeneration
             var genArgs = type.GetGenericArguments();
             var typeNames = string.Join(", ", genArgs.Select(m_RootHandler.GetNameForCSharp));
             return $"({typeNames})";
+        }
+
+        public INamespaceTracker GetNamespaceTracker()
+        {
+            return m_RootHandler.GetNamespaceTracker();
         }
 
         public void SetRoot(ITypeHandler handler)

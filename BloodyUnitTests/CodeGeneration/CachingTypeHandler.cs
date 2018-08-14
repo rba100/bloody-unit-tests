@@ -83,5 +83,10 @@ namespace BloodyUnitTests.CodeGeneration
 
             return m_NameForCSharpCache[type];
         }
+
+        public INamespaceTracker GetNamespaceTracker()
+        {
+            return m_InnerTypeHandler.GetNamespaceTracker();
+        }
     }
 }

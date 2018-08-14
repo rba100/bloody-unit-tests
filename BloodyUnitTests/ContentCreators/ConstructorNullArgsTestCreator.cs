@@ -11,11 +11,6 @@ namespace BloodyUnitTests.ContentCreators
 
         public ClassContent Create(Type type)
         {
-            return GetNullConstructorArgsTestInner(type);
-        }
-
-        private ClassContent GetNullConstructorArgsTestInner(Type type)
-        {
             var typeName = type.Name;
             var lines = new List<string>();
 
@@ -35,7 +30,7 @@ namespace BloodyUnitTests.ContentCreators
             lines.Add("{");
             lines.Add($"{indent}Assert.Throws<ArgumentNullException>(testDelegate);");
             lines.Add("}");
-            return new ClassContent(lines.ToArray(), testCases.nameSpaces);
+            return new ClassContent(lines.ToArray(), m_CSharpWriter.GetNameSpaces());
         }
 
         private (string[] linesOfCode, string[] nameSpaces) GetConstructorNullTestCaseSource(Type type)

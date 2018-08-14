@@ -46,6 +46,11 @@ namespace BloodyUnitTests.CodeGeneration
             throw new NotImplementedException();
         }
 
+        public INamespaceTracker GetNamespaceTracker()
+        {
+            return m_RootHandler.GetNamespaceTracker();
+        }
+
         public void SetRoot(ITypeHandler handler)
         {
             m_RootHandler = handler;

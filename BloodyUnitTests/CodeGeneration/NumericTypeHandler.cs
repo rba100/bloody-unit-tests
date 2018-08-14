@@ -18,8 +18,16 @@ namespace BloodyUnitTests.CodeGeneration
             typeof(decimal)
         };
 
+        private ITypeHandler m_RootHandler;
+
+        public INamespaceTracker GetNamespaceTracker()
+        {
+            return m_RootHandler.GetNamespaceTracker();
+        }
+
         public void SetRoot(ITypeHandler handler)
         {
+            m_RootHandler = handler;
         }
 
         public bool CanGetInstantiation(Type type)

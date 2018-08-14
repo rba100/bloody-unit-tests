@@ -46,5 +46,10 @@ namespace BloodyUnitTests.CodeGeneration
         {
             return m_InnerHandler.GetNameForCSharp(type);
         }
+
+        public INamespaceTracker GetNamespaceTracker()
+        {
+            return m_InnerHandler.GetNamespaceTracker();
+        }
     }
 }

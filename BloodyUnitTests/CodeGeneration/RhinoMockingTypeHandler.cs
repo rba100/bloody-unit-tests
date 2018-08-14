@@ -18,6 +18,8 @@ namespace BloodyUnitTests.CodeGeneration
 
         public string GetInstantiation(Type type, bool interestingValue)
         {
+            m_RootHandler.GetNamespaceTracker().RecordNamespace("Rhino.Mocks");
+            m_RootHandler.GetNamespaceTracker().RecordNamespace("static Rhino.Mocks.MockRepository");
             return $"GenerateStub<{m_RootHandler.GetNameForCSharp(type)}>()";
         }
 
@@ -44,6 +46,11 @@ namespace BloodyUnitTests.CodeGeneration
         public string GetNameForCSharp(Type type)
         {
             throw new NotSupportedException();
+        }
+
+        public INamespaceTracker GetNamespaceTracker()
+        {
+            return m_RootHandler.GetNamespaceTracker();
         }
     }
 }

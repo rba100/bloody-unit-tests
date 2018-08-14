@@ -5,6 +5,8 @@ namespace BloodyUnitTests.CodeGeneration
 {
     class BuiltInTypesHandler : IRecursiveTypeHandler
     {
+        private ITypeHandler m_RootHandler;
+
         public bool CanGetInstantiation(Type type)
         {
             return type == typeof(string) 
@@ -54,8 +56,14 @@ namespace BloodyUnitTests.CodeGeneration
             throw new NotImplementedException();
         }
 
+        public INamespaceTracker GetNamespaceTracker()
+        {
+            return m_RootHandler.GetNamespaceTracker();
+        }
+
         public void SetRoot(ITypeHandler handler)
         {
+            m_RootHandler = handler;
         }
     }
 }
