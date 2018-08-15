@@ -2,11 +2,11 @@
 
 namespace BloodyUnitTests.CodeGeneration
 {
-    class CamelCasingIdentifierHandler : ITypeHandler
+    class LowerInitialIdentifierHandler : ITypeHandler
     {
         private readonly ITypeHandler m_InnerHandler;
 
-        public CamelCasingIdentifierHandler(ITypeHandler innerHandler)
+        public LowerInitialIdentifierHandler(ITypeHandler innerHandler)
         {
             m_InnerHandler = innerHandler ?? throw new ArgumentNullException(nameof(innerHandler));
         }

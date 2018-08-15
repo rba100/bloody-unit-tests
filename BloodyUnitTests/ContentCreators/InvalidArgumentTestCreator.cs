@@ -16,7 +16,7 @@ namespace BloodyUnitTests.ContentCreators
             var methodTestCases = GetTestCaseSource(type, type.GetMethods, false);
             var ctorTestCases = GetTestCaseSource(type, type.GetConstructors, true);
 
-            if(!methodTestCases.Union(ctorTestCases).Any()) return ClassContent.NoContent();
+            if(!methodTestCases.Union(ctorTestCases).Any()) return ClassContent.NoContent;
 
             if (methodTestCases.Any())
             {

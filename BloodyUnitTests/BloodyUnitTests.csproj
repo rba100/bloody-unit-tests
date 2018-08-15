@@ -69,7 +69,7 @@
     <Compile Include="CodeGeneration\ArrayTypeHandler.cs" />
     <Compile Include="CodeGeneration\BuiltInTypesHandler.cs" />
     <Compile Include="CodeGeneration\CachingTypeHandler.cs" />
-    <Compile Include="CodeGeneration\CamelCasingIdentifierHandler.cs" />
+    <Compile Include="CodeGeneration\LowerInitialIdentifierHandler.cs" />
     <Compile Include="CodeGeneration\CSharpKeyworkClashAvoidanceTypeHandler.cs" />
     <Compile Include="CodeGeneration\CSharpTypeKeywordNameHandler.cs" />
     <Compile Include="CodeGeneration\DateTimeTypeHandler.cs" />

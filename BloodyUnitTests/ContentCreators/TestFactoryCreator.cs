@@ -17,13 +17,13 @@ namespace BloodyUnitTests.ContentCreators
             var ctor = type.GetConstructors().FirstOrDefault()
                        ?? type.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
                               .FirstOrDefault();
-            if (ctor == null) return ClassContent.NoContent();
+            if (ctor == null) return ClassContent.NoContent;
 
             var parameters = ctor.GetParameters();
             var interfaces = parameters.Where(p => p.ParameterType.IsInterface).ToArray();
 
             // Don't bother creating a factory unless there are a few dependencies
-            if (interfaces.Length < 3) return ClassContent.NoContent();
+            if (interfaces.Length < 3) return ClassContent.NoContent;
 
             var typeName = m_CSharpWriter.GetNameForCSharp(type);
 

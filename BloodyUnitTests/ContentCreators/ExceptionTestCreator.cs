@@ -10,7 +10,7 @@ namespace BloodyUnitTests.ContentCreators
 
         public ClassContent Create(Type type)
         {
-            if (!type.IsSubclassOf(typeof(Exception))) return ClassContent.NoContent();
+            if (!type.IsSubclassOf(typeof(Exception))) return ClassContent.NoContent;
 
             var className = m_CSharpWriter.GetNameForCSharp(type);
             var lines = new List<string>();

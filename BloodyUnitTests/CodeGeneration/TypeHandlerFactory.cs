@@ -32,7 +32,7 @@
             compositeHandler.SetRoot(nameRulesHandler); // Re-entry point
 
             // Post-recursion handlers.
-            var lowerCamelCase = new CamelCasingIdentifierHandler(nameRulesHandler);
+            var lowerCamelCase = new LowerInitialIdentifierHandler(nameRulesHandler);
             var keywordAvoianceFilter = new CSharpKeyworkClashAvoidanceTypeHandler(lowerCamelCase);
             var cachingHandler = new CachingTypeHandler(keywordAvoianceFilter);
 

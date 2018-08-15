@@ -24,12 +24,12 @@ namespace BloodyUnitTests.CodeGeneration
 
         public string GetInstantiation(Type type, bool interestingValue)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public bool IsInstantiationTerse(Type type)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public bool CanGetNameForIdentifier(Type type)

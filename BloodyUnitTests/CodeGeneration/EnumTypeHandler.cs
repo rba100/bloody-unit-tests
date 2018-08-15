@@ -33,7 +33,7 @@ namespace BloodyUnitTests.CodeGeneration
 
         public string GetNameForIdentifier(Type type)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public bool CanGetNameForCSharp(Type type)
@@ -43,7 +43,7 @@ namespace BloodyUnitTests.CodeGeneration
 
         public string GetNameForCSharp(Type type)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public INamespaceTracker GetNamespaceTracker()

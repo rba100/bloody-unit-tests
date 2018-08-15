@@ -15,7 +15,7 @@ namespace BloodyUnitTests.ContentCreators
             var lines = new List<string>();
 
             var testCases = GetConstructorNullTestCaseSource(type);
-            if (!testCases.linesOfCode.Any()) return ClassContent.NoContent();
+            if (!testCases.linesOfCode.Any()) return ClassContent.NoContent;
             var indent = new string(' ', 4);
             var testCaseSource = $"{typeName}_constructor_null_argument_testcases";
             lines.Add($"public static IEnumerable<TestCaseData> {testCaseSource}()");

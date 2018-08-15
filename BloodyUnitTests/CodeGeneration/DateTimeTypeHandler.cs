@@ -35,8 +35,6 @@ namespace BloodyUnitTests.CodeGeneration
 
         public string GetNameForIdentifier(Type type)
         {
-            // We make assumptions about the tests that the user can correct 
-            // if we're wrong.
             return "DateTimeUtc";
         }
 

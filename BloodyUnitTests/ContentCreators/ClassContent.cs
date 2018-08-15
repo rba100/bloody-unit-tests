@@ -17,9 +17,6 @@ namespace BloodyUnitTests.ContentCreators
 
         public string[] NamesSpaces { get; }
 
-        public static ClassContent NoContent()
-        {
-            return new ClassContent(new string[0], new string[0]);
-        }
+        public static ClassContent NoContent => new ClassContent(new string[0], new string[0]);
     }
 }
