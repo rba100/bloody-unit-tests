@@ -25,7 +25,7 @@ namespace BloodyUnitTests.ContentCreators
                 lines.Add("{");
                 foreach (var line in methodTestCases)
                 {
-                    lines.Add(new String(' ', 4) + line);
+                    lines.Add(new string(' ', 4) + line);
                 }
 
                 lines.Add("}");
@@ -49,7 +49,7 @@ namespace BloodyUnitTests.ContentCreators
                 lines.Add("{");
                 foreach (var line in ctorTestCases)
                 {
-                    lines.Add(new String(' ', 4) + line);
+                    lines.Add(new string(' ', 4) + line);
                 }
 
                 lines.Add("}");

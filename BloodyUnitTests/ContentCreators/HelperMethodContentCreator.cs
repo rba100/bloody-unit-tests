@@ -15,14 +15,6 @@ namespace BloodyUnitTests.ContentCreators
 
             var simpleClasses = GetSupportedDependencies(type);
 
-            var namesSpaces = simpleClasses
-                .SelectMany(c => c.GetConstructors())
-                .SelectMany(c => c.GetParameters())
-                .Select(p => p.ParameterType).Select(t => t.Namespace)
-                .Append(type.Namespace)
-                .Distinct()
-                .ToArray();
-
             for (var i = 0; i < simpleClasses.Length; i++)
             {
                 if (i > 0) lines.Add(string.Empty);

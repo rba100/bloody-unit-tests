@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using BloodyUnitTests.CodeGeneration;
 
 namespace BloodyUnitTests
 {
@@ -29,7 +28,8 @@ namespace BloodyUnitTests
             foreach (var fixture in typesToFixtures)
             {
                 if (fixture.Value == null) continue;
-                var directory = Path.GetDirectoryName(outputPaths[fixture.Key]);
+                var directory = Path.GetDirectoryName(outputPaths[fixture.Key])
+                                ?? throw new Exception($"Could not deduce directory name for {outputPaths[fixture.Key]}");
                 if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
                 File.WriteAllText(outputPaths[fixture.Key], fixture.Value);
             }

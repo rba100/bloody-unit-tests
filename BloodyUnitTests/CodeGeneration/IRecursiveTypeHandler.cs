@@ -1,7 +1,4 @@
-﻿using System.Linq;
-using System.Security.Permissions;
-
-namespace BloodyUnitTests.CodeGeneration
+﻿namespace BloodyUnitTests.CodeGeneration
 {
     interface IRecursiveTypeHandler : ITypeHandler
     {

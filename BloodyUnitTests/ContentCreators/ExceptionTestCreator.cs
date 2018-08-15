@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace BloodyUnitTests.ContentCreators
 {
@@ -9,23 +10,27 @@ namespace BloodyUnitTests.ContentCreators
 
         public ClassContent Create(Type type)
         {
-            if(!type.IsSubclassOf(typeof(Exception))) return ClassContent.NoContent();
+            if (!type.IsSubclassOf(typeof(Exception))) return ClassContent.NoContent();
 
             var className = m_CSharpWriter.GetNameForCSharp(type);
             var lines = new List<string>();
-
             lines.AddRange(GetLines(c_DefaultMessage, className));
             lines.Add(string.Empty);
             lines.AddRange(GetLines(c_MessagePassDown, className));
             lines.Add(string.Empty);
             lines.AddRange(GetLines(c_RoundTripTest, className));
 
-            return new ClassContent(lines.ToArray(), m_CSharpWriter.GetNameSpaces());
+            return new ClassContent(lines.ToArray(),
+                                    new[] 
+                                    {
+                                        "System.IO",
+                                        "System.Runtime.Serialization.Formatters.Binary"
+                                    }.Union(m_CSharpWriter.GetNameSpaces()).ToArray());
         }
 
         private string[] GetLines(string input, string value)
         {
-            return string.Format(input, value).Split(new [] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            return string.Format(input, value).Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         private const string c_MessagePassDown = @"[Test]
@@ -42,7 +47,7 @@ public void DefaultConstructionDoesNotYieldEmptyMessage()
                 Is.Not.Null.Or.Empty);
 }}";
 
-    private const string c_RoundTripTest = @"[Test]
+        private const string c_RoundTripTest = @"[Test]
 public void ParametersAreCorrectAfterSerialisationRoundTrip()
 {{
     var innerException = new Exception(""fakeInnerException"");

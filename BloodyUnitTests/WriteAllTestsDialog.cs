@@ -1,21 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace BloodyUnitTests
 {
     public partial class WriteAllTestsDialog : Form
     {
-        public Assembly TargetAssembly { get; set; }
+        public Assembly TargetAssembly { get; }
 
         public WriteAllTestsDialog(Assembly targetAssembly) : this()
         {
