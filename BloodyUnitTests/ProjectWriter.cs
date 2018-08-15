@@ -61,9 +61,7 @@ namespace BloodyUnitTests
                             .Select(i => i.StartsWith("I") ? new string(i.Skip(1).ToArray()) : i)
                             .FirstOrDefault(i => type.Name.EndsWith(i));
 
-            if (name == null) return "Domain";
-
-            return StringUtils.Pluralise(name);
+            return name == null ? "Domain" : StringUtils.Pluralise(name);
         }
     }
 }
