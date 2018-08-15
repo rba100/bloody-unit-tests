@@ -11,24 +11,19 @@ namespace BloodyUnitTests.ContentCreators
 
         public ClassContent Create(Type type)
         {
-            return new ClassContent(TestFactoryDeclarationInner(type), m_CSharpWriter.GetNameSpaces());
-        }
-
-        private string[] TestFactoryDeclarationInner(Type type)
-        {
             if (type == null) throw new ArgumentNullException(nameof(type));
             var lines = new List<string>();
 
             var ctor = type.GetConstructors().FirstOrDefault()
                        ?? type.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
                               .FirstOrDefault();
-            if (ctor == null) return lines.ToArray();
+            if (ctor == null) return ClassContent.NoContent();
 
             var parameters = ctor.GetParameters();
             var interfaces = parameters.Where(p => p.ParameterType.IsInterface).ToArray();
 
-            // Don't bother creating a factory unless there are many dependencies
-            if (interfaces.Length < 3) return lines.ToArray();
+            // Don't bother creating a factory unless there are a few dependencies
+            if (interfaces.Length < 3) return ClassContent.NoContent();
 
             var typeName = m_CSharpWriter.GetNameForCSharp(type);
 
@@ -38,9 +33,16 @@ namespace BloodyUnitTests.ContentCreators
             lines.Add("{");
 
             // Mocked interface dependencies
-            foreach (var parameter in interfaces)
+            foreach (var parameter in interfaces.OrderBy(IsSystemNamespace))
             {
-                lines.Add(indent + GetPublicFieldInterfaceMock(parameter));
+                if (IsSystemNamespace(parameter))
+                {
+                    lines.Add(indent + GetPublicField(parameter));
+                }
+                else
+                {
+                    lines.Add(indent + GetPublicFieldInterfaceMock(parameter));
+                }
             }
 
             if (interfaces.Any()) lines.Add(String.Empty);
@@ -70,7 +72,7 @@ namespace BloodyUnitTests.ContentCreators
             // Verify all
             lines.Add($"{indent}public void VerifyAllExpectations()");
             lines.Add($"{indent}{{");
-            foreach (var i in interfaces.Where(i => i.ParameterType.Namespace?.StartsWith(nameof(System)) != true))
+            foreach (var i in interfaces.Except(interfaces.Where(IsSystemNamespace)))
             {
                 if (!i.ParameterType.IsInterface) continue;
                 lines.Add($"{indent}{indent}{StringUtils.ToUpperInitial(i.Name)}.VerifyAllExpectations();");
@@ -78,7 +80,18 @@ namespace BloodyUnitTests.ContentCreators
             lines.Add($"{indent}}}");
             lines.Add("}");
 
-            return lines.ToArray();
+            return new ClassContent(lines.ToArray(), m_CSharpWriter.GetNameSpaces()
+                                                                   .Union(new []
+                                                                   {
+                                                                       "Rhino.Mocks",
+                                                                       "static Rhino.Mocks.MockRepository"
+                                                                   })
+                                                                   .ToArray());
+        }
+
+        private bool IsSystemNamespace(ParameterInfo info)
+        {
+            return info.ParameterType.Namespace?.StartsWith(nameof(System)) == true;
         }
 
         private string GetPublicFieldInterfaceMock(ParameterInfo parameter)
@@ -87,6 +100,14 @@ namespace BloodyUnitTests.ContentCreators
             var typeName = m_CSharpWriter.GetNameForCSharp(t);
             return $"public {typeName} {StringUtils.ToUpperInitial(parameter.Name)}" +
                    $" = {m_CSharpWriter.GetMockInstance(t)};";
+        }
+
+        private string GetPublicField(ParameterInfo parameter)
+        {
+            var t = parameter.ParameterType;
+            var typeName = m_CSharpWriter.GetNameForCSharp(t);
+            return $"public {typeName} {StringUtils.ToUpperInitial(parameter.Name)}" +
+                   $" = {m_CSharpWriter.GetInstantiation(t)};";
         }
     }
 }

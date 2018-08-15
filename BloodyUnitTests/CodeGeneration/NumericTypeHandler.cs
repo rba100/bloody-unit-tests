@@ -47,12 +47,12 @@ namespace BloodyUnitTests.CodeGeneration
 
         public bool CanGetNameForIdentifier(Type type)
         {
-            return false;
+            return type == typeof(int);
         }
 
         public string GetNameForIdentifier(Type type)
         {
-            throw new NotSupportedException();
+            return "Int";
         }
 
         public bool CanGetNameForCSharp(Type type)

@@ -116,6 +116,7 @@ namespace BloodyUnitTests.ContentCreators
             }
 
             bool testCasesExist = false;
+
             foreach (var info in testableMethods)
             {
                 var methodName = info.Name;

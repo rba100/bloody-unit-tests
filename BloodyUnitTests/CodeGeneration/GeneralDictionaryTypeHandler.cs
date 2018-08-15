@@ -27,6 +27,8 @@ namespace BloodyUnitTests.CodeGeneration
                 ? $"{{ {{ {keyTypeValue} , {valueTypeValue} }} }}" 
                 : "()";
 
+            m_RootHandler.GetNamespaceTracker().RecordNamespace("System.Collections.Generic");
+
             return $"new Dictionary<{keyTypeName},{valueTypeName}>{invocationSuffix}";
         }
 

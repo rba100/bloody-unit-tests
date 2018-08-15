@@ -29,7 +29,15 @@ namespace BloodyUnitTests.CodeGeneration
 
         public string GetInstantiation(Type type, bool interestingValue)
         {
-            if (type == typeof(byte[])) return interestingValue ? "Encoding.UTF8.GetBytes(\"{}\")" : "new byte[0]";
+            if (type == typeof(byte[]))
+            {
+                if (interestingValue)
+                {
+                    m_RootHandler.GetNamespaceTracker().RecordNamespace("System.Text");
+                    return "Encoding.UTF8.GetBytes(\"{}\")";
+                }
+                return "new byte[0]";
+            }
             if (type == typeof(Type[])) return interestingValue ? "new Type[] { typeof(string) }" : "Type.EmptyTypes";
 
             var eType = GetArrayElementType(type);

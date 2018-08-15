@@ -6,13 +6,18 @@ namespace BloodyUnitTests.CodeGeneration
 {
     class ListTypeHandler : IRecursiveTypeHandler
     {
+        private static readonly Type[] s_SupportedTypes =
+        {
+            typeof(IReadOnlyList<>),
+            typeof(IList<>)
+        };
+
         private ITypeHandler m_RootHandler;
 
         public bool CanGetInstantiation(Type type)
         {
             return type.IsGenericType
-                   && (type.GetGenericTypeDefinition() == typeof(List<>)
-                       || type.GetGenericTypeDefinition() == typeof(IList<>));
+                   && s_SupportedTypes.Contains(type.GetGenericTypeDefinition());
         }
 
         public string GetInstantiation(Type type, bool interestingValue)
