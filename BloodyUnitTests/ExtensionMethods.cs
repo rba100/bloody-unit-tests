@@ -32,7 +32,10 @@ namespace BloodyUnitTests
 
         public static bool IsMethodTestable(this Type type, MethodBase method)
         {
-            return method.Name != "Equals" && !method.IsSpecialName && method.DeclaringType == type;
+            return method.Name != "Equals"
+                   && !method.IsSpecialName 
+                   && method.DeclaringType == type
+                   && !method.IsGenericMethod;
         }
 
         public static IEnumerable<Type> GetLoadableTypes(this Assembly assembly)

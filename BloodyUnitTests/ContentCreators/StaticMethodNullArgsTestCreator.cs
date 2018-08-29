@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace BloodyUnitTests.ContentCreators
 {
@@ -41,6 +42,7 @@ namespace BloodyUnitTests.ContentCreators
         {
             var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Static)
                               .Where(type.IsMethodTestable)
+                              .Where(m => !m.IsDefined(typeof(ExtensionAttribute), inherit: true))
                               .ToArray();
 
             var nameSpaces = methods.SelectMany(m => m.GetParameters())
