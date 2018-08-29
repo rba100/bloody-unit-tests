@@ -95,6 +95,7 @@
     <Compile Include="ContentCreators\ExceptionTestCreator.cs" />
     <Compile Include="ContentCreators\HelperMethodContentCreator.cs" />
     <Compile Include="ContentCreators\InvalidArgumentTestCreator.cs" />
+    <Compile Include="ContentCreators\StaticMethodNullArgsTestCreator.cs" />
     <Compile Include="IContentCreator.cs" />
     <Compile Include="ContentCreators\MethodNullArgsTestCreator.cs" />
     <Compile Include="ContentCreators\PassThroughTestCreator.cs" />

@@ -24,7 +24,7 @@ namespace BloodyUnitTests
         public static IList<Type> GetTestableClassTypes(this Assembly assembly)
         {
             return assembly.GetLoadableTypes()
-                           .Where(t => t.IsClass && !t.IsAbstract)
+                           .Where(t => t.IsClass)
                            .Where(n => !n.Name.StartsWith("<"))
                            .OrderBy(n => n.Name)
                            .ToList();

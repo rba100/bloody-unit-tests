@@ -17,6 +17,7 @@ namespace BloodyUnitTests
                 new ExceptionTestCreator(),
                 new ConstructorNullArgsTestCreator(),
                 new MethodNullArgsTestCreator(),
+                new StaticMethodNullArgsTestCreator(), 
                 new InvalidArgumentTestCreator(),
                 new PassThroughTestCreator(),
                 new HelperMethodContentCreator(),
