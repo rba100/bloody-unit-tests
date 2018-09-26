@@ -49,8 +49,13 @@ namespace BloodyUnitTests.ContentCreators
         {
             var lines = new List<string>();
 
-            var variableDeclarations = constructors.SelectMany(i => i.GetParameters())
-                                                   .PipeInto(c => m_CSharpWriter.GetVariableDeclarationsForParameters(c, false, false));
+            var paramGroups = constructors.Select(i => i.GetParameters()).ToArray();
+            var havingTwoOrMoreNullableColumns = paramGroups.Where(g => g.Count(p => !p.ParameterType.IsValueType) > 1);
+
+            var argTypes = havingTwoOrMoreNullableColumns.SelectMany(g => g);
+
+            var variableDeclarations = argTypes
+                          .Distinct().Select(c => m_CSharpWriter.GetLocalVariableDeclaration(c.ParameterType, false, false));
 
             foreach (var declaration in variableDeclarations)
             {

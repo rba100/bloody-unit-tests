@@ -57,7 +57,7 @@ namespace BloodyUnitTests.ContentCreators
             if (!infos.Any()) return lines.ToArray();
 
             var parametersForVars = infos.Select(i => i.GetParameters())
-                                         .Where(p => p.Length > 1)
+                                         .Where(g => g.Count(p => !p.ParameterType.IsValueType) > 1)
                                          .SelectMany(p => p)
                                          .ToArray();
 

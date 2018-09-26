@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-
+using System.Windows.Forms.VisualStyles;
 using BloodyUnitTests.CodeGeneration;
 
 namespace BloodyUnitTests
@@ -52,7 +52,7 @@ namespace BloodyUnitTests
             return m_TypeHandler.GetInstantiation(possibleReftype, nonDefault);
         }
 
-        private string GetLocalVariableDeclaration(Type type, bool setToNull, bool nonDefault)
+        public string GetLocalVariableDeclaration(Type type, bool setToNull, bool nonDefault)
         {
             var declaredType = $"{(setToNull || TypeIsFunction(type) ? GetNameForCSharp(type) : "var")}";
             var identifier = GetIdentifier(type, VarScope.Local);
