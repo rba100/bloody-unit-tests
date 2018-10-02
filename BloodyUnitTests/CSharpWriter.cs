@@ -72,6 +72,7 @@ namespace BloodyUnitTests
         public string GetMockInstance(Type interfaceType)
         {
             m_TypeHandler.GetNamespaceTracker().RecordNamespace("Rhino.Mocks");
+            m_TypeHandler.GetNamespaceTracker().RecordNamespace("static Rhino.Mocks.MockRepository");
             return $"GenerateMock<{GetNameForCSharp(interfaceType)}>()";
         }
 
