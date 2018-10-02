@@ -61,6 +61,7 @@ namespace BloodyUnitTests.ContentCreators
                                             CSharpWriter cSharpWriter)
         {
             var isVoid = method.ReturnType == typeof(void);
+            if (!isVoid && !method.ReturnType.IsAssignableFrom(innerMethod.ReturnType)) return new string[0];
 
             var mockVarName = $"mock{cSharpWriter.GetIdentifier(interfaceType, VarScope.Member)}";
             var mockVarNameOffset = new string(' ', mockVarName.Length);
@@ -100,7 +101,7 @@ namespace BloodyUnitTests.ContentCreators
             lines.AddRange(commonMethodVariables.IndentBy(4));
             if (!isVoid)
             {
-                lines.Add($"{indent}var expectedResult = {cSharpWriter.GetInstantiation(method.ReturnType, true)};");
+                lines.Add($"{indent}var expectedResult = {cSharpWriter.GetInstantiation(innerMethod.ReturnType, true)};");
             }
             lines.Add($"{indent}var {mockVarName} = {cSharpWriter.GetMockInstance(interfaceType)};");
             lines.Add($"{indent}{mockVarName}.Expect(m=>m.{innerMethod.Name}({innerMethodArgumentsFlat}))");

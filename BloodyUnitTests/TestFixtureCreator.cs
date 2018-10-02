@@ -38,7 +38,6 @@ namespace BloodyUnitTests
                                          "NUnit.Framework"
                                      })
                                      .Distinct().ToList();
-
             
             var systemNamespaces = namespaces.Where(ns => ns.StartsWith("System")).OrderBy(ns => ns).ToList();
             var staticImports = namespaces.Where(ns => ns.StartsWith("static")).OrderBy(ns => ns).ToList();
