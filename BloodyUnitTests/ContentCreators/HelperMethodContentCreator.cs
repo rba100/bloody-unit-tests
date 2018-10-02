@@ -32,7 +32,7 @@ namespace BloodyUnitTests.ContentCreators
             return type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
                        .OfType<MethodBase>()
                        .Where(m => m.DeclaringType != typeof(object))
-                       .Union(type.GetConstructors())
+                       .Concat(type.GetConstructors())
                        .SelectMany(m => m.GetParameters())
                        .Select(p => p.ParameterType)
                        .Select(t => t.IsByRef ? t.GetElementType() : t)

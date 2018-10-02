@@ -35,10 +35,10 @@ namespace BloodyUnitTests
             }
         }
 
-        private static string GetPath(string directoryBase, Type type)
+        private string GetPath(string directoryBase, Type type)
         {
             var fileName = StringUtils.ToUpperInitial($"{FileSafe(type.Name)}Tests.cs");
-            return Path.Combine(directoryBase, GetSubFolder(type), fileName);
+            return Path.Combine(directoryBase, CSharpWriter.GetClassCategory(type), fileName);
         }
 
         private static string FileSafe(string input)
@@ -46,22 +46,6 @@ namespace BloodyUnitTests
             var illegalChars = input.Where(s_PathInvalidChars.Contains).Distinct().ToArray();
             if (!illegalChars.Any()) return input;
             return new string(input.Except(illegalChars).ToArray());
-        }
-
-        private static string GetSubFolder(Type type)
-        {
-            if (type.Name.EndsWith("Repository")) return "Repositories";
-            if (type.Name.EndsWith("Service"))    return "Services";
-            if (type.Name.EndsWith("Controller")) return "Controllers";
-            if (type.Name.EndsWith("Exception"))  return "Exceptions";
-            if (type.Name.EndsWith("Manager"))    return "Managers";
-
-            var name = type.GetInterfaces()
-                            .Select(i => i.Name)
-                            .Select(i => i.StartsWith("I") ? new string(i.Skip(1).ToArray()) : i)
-                            .FirstOrDefault(i => type.Name.EndsWith(i));
-
-            return name == null ? "Domain" : StringUtils.Pluralise(name);
         }
     }
 }

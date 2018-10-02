@@ -85,4 +85,24 @@ namespace BloodyUnitTests.TestClasses
             if (o == null) throw new ArgumentNullException(nameof(o));
         }
     }
+
+    public class _TestClass3
+    {
+        private readonly ITestDelegate m_TestDelegate;
+
+        public _TestClass3(ITestDelegate testDelegate)
+        {
+            m_TestDelegate = testDelegate;
+        }
+
+        public int Passthrough(bool input, string otherInput)
+        {
+            return m_TestDelegate.TestMethod(otherInput, input);
+        }
+    }
+
+    public interface ITestDelegate
+    {
+        int TestMethod(string input, bool otherInput);
+    }
 }

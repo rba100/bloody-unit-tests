@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Windows.Forms.VisualStyles;
+
 using BloodyUnitTests.CodeGeneration;
 
 namespace BloodyUnitTests
@@ -71,6 +71,7 @@ namespace BloodyUnitTests
 
         public string GetMockInstance(Type interfaceType)
         {
+            m_TypeHandler.GetNamespaceTracker().RecordNamespace("Rhino.Mocks");
             return $"GenerateMock<{GetNameForCSharp(interfaceType)}>()";
         }
 
@@ -204,6 +205,22 @@ namespace BloodyUnitTests
         public string[] GetNameSpaces()
         {
             return m_TypeHandler.GetNamespaceTracker().GetNamespaces();
+        }
+
+        public static string GetClassCategory(Type type)
+        {
+            if (type.Name.EndsWith("Repository")) return "Repositories";
+            if (type.Name.EndsWith("Service")) return "Services";
+            if (type.Name.EndsWith("Controller")) return "Controllers";
+            if (type.Name.EndsWith("Exception")) return "Exceptions";
+            if (type.Name.EndsWith("Manager")) return "Managers";
+
+            var name = type.GetInterfaces()
+                           .Select(i => i.Name)
+                           .Select(i => i.StartsWith("I") ? new string(i.Skip(1).ToArray()) : i)
+                           .FirstOrDefault(i => type.Name.EndsWith(i));
+
+            return name == null ? "Domain" : StringUtils.Pluralise(name);
         }
     }
 
