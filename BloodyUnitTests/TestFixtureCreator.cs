@@ -2,6 +2,7 @@
 using System.Linq;
 
 using BloodyUnitTests.ContentCreators;
+using BloodyUnitTests.Util;
 
 namespace BloodyUnitTests
 {
@@ -50,7 +51,7 @@ namespace BloodyUnitTests
             staticImports.ForEach(ns => sb.AppendLine($"using {ns};"));
             if (staticImports.Any()) sb.AppendLine();
 
-            var testNs = classToTest.Namespace + $".Tests.Unit.{CSharpWriter.GetClassCategory(classToTest)}";
+            var testNs = classToTest.Namespace + $".Tests.Unit.{StringUtils.GetClassCategory(classToTest)}";
             sb.AppendLine($"namespace {testNs}");
 
             sb.AppendLine("{");

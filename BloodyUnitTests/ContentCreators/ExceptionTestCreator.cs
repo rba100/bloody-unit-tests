@@ -6,13 +6,13 @@ namespace BloodyUnitTests.ContentCreators
 {
     class ExceptionTestCreator : IContentCreator
     {
-        private readonly CSharpWriter m_CSharpWriter = new CSharpWriter();
+        private readonly CSharpService m_CSharpService = new CSharpService();
 
         public ClassContent Create(Type type)
         {
             if (!type.IsSubclassOf(typeof(Exception))) return ClassContent.NoContent;
 
-            var className = m_CSharpWriter.GetNameForCSharp(type);
+            var className = m_CSharpService.GetNameForCSharp(type);
             var lines = new List<string>();
             lines.AddRange(GetLines(c_DefaultMessage, className));
             lines.Add(string.Empty);
@@ -25,12 +25,14 @@ namespace BloodyUnitTests.ContentCreators
                                     {
                                         "System.IO",
                                         "System.Runtime.Serialization.Formatters.Binary"
-                                    }.Union(m_CSharpWriter.GetNameSpaces()).ToArray());
+                                    }.Union(m_CSharpService.GetNameSpaces()).ToArray());
         }
 
         private string[] GetLines(string input, string value)
         {
-            return string.Format(input, value).Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            return string.Format(input, value)
+                         .Split(new[] { Environment.NewLine },
+                                StringSplitOptions.RemoveEmptyEntries);
         }
 
         private const string c_MessagePassDown = @"[Test]

@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using BloodyUnitTests.Util;
 
 namespace BloodyUnitTests.ContentCreators
 {
     public class TestFactoryCreator : IContentCreator
     {
-        private readonly CSharpWriter m_CSharpWriter = new CSharpWriter();
+        private readonly CSharpService m_CSharpService = new CSharpService();
 
         public ClassContent Create(Type type)
         {
@@ -25,7 +26,7 @@ namespace BloodyUnitTests.ContentCreators
             // Don't bother creating a factory unless there are a few dependencies
             if (interfaces.Length < 3) return ClassContent.NoContent;
 
-            var typeName = m_CSharpWriter.GetNameForCSharp(type);
+            var typeName = m_CSharpService.GetNameForCSharp(type);
 
             var indent = new string(' ', 4);
 
@@ -49,7 +50,7 @@ namespace BloodyUnitTests.ContentCreators
             var args = parameters.Select(p =>
             {
                 if (p.ParameterType.IsInterface) return StringUtils.ToUpperInitial(p.Name);
-                return m_CSharpWriter.GetInstantiation(p.ParameterType);
+                return m_CSharpService.GetInstantiation(p.ParameterType);
             }).ToArray();
 
             // Create
@@ -80,7 +81,7 @@ namespace BloodyUnitTests.ContentCreators
             lines.Add($"{indent}}}");
             lines.Add("}");
 
-            return new ClassContent(lines.ToArray(), m_CSharpWriter.GetNameSpaces()
+            return new ClassContent(lines.ToArray(), m_CSharpService.GetNameSpaces()
                                                                    .Union(new []
                                                                    {
                                                                        "Rhino.Mocks",
@@ -97,17 +98,17 @@ namespace BloodyUnitTests.ContentCreators
         private string GetPublicFieldInterfaceMock(ParameterInfo parameter)
         {
             var t = parameter.ParameterType;
-            var typeName = m_CSharpWriter.GetNameForCSharp(t);
+            var typeName = m_CSharpService.GetNameForCSharp(t);
             return $"public {typeName} {StringUtils.ToUpperInitial(parameter.Name)}" +
-                   $" = {m_CSharpWriter.GetMockInstance(t)};";
+                   $" = {m_CSharpService.GetMockInstance(t)};";
         }
 
         private string GetPublicField(ParameterInfo parameter)
         {
             var t = parameter.ParameterType;
-            var typeName = m_CSharpWriter.GetNameForCSharp(t);
+            var typeName = m_CSharpService.GetNameForCSharp(t);
             return $"public {typeName} {StringUtils.ToUpperInitial(parameter.Name)}" +
-                   $" = {m_CSharpWriter.GetInstantiation(t)};";
+                   $" = {m_CSharpService.GetInstantiation(t)};";
         }
     }
 }

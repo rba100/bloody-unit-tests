@@ -8,7 +8,7 @@ namespace BloodyUnitTests.ContentCreators
 {
     class StaticMethodNullArgsTestCreator : IContentCreator
     {
-        private readonly CSharpWriter m_CSharpWriter = new CSharpWriter();
+        private readonly CSharpService m_CSharpService = new CSharpService();
 
         public ClassContent Create(Type type)
         {
@@ -66,25 +66,25 @@ namespace BloodyUnitTests.ContentCreators
             var variablesNeeded = parametersForVars.Where(p => !p.IsOut).ToArray();
             var outVariablesNeeded = parametersForVars.Where(p => p.IsOut).Except(variablesNeeded).ToArray();
 
-            var variableDeclarations = m_CSharpWriter.GetVariableDeclarationsForParameters(variablesNeeded, setToNull: false, nonDefault: false);
-            var outVariableDeclarations = m_CSharpWriter.GetVariableDeclarationsForParameters(outVariablesNeeded, setToNull: true, nonDefault: false);
+            var variableDeclarations = m_CSharpService.GetVariableDeclarationsForParameters(variablesNeeded, setToNull: false, nonDefault: false);
+            var outVariableDeclarations = m_CSharpService.GetVariableDeclarationsForParameters(outVariablesNeeded, setToNull: true, nonDefault: false);
             lines.AddRange(variableDeclarations);
             lines.AddRange(outVariableDeclarations);
             if (variableDeclarations.Union(outVariableDeclarations).Any()) lines.Add(string.Empty);
 
-            var instanceName = m_CSharpWriter.GetNameForCSharp(type);
+            var instanceName = m_CSharpService.GetNameForCSharp(type);
 
             bool testCasesExist = false;
             foreach (var info in infos)
             {
                 var methodName = info.Name;
                 var parameters = info.GetParameters();
-                var arguments = m_CSharpWriter.GetMethodArguments(info, true, false);
+                var arguments = m_CSharpService.GetMethodArguments(info, true, false);
 
                 for (var i = 0; i < parameters.Length; i++)
                 {
                     if (parameters[i].ParameterType.IsValueType) continue;
-                    if (m_CSharpWriter.HasParamKeyword(parameters[i])) continue;
+                    if (m_CSharpService.HasParamKeyword(parameters[i])) continue;
                     testCasesExist = true;
                     var copyOfArguments = new List<string>(arguments) { [i] = "null" };
 

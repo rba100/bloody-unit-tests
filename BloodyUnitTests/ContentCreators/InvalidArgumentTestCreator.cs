@@ -7,14 +7,14 @@ namespace BloodyUnitTests.ContentCreators
 {
     class InvalidArgumentTestCreator : IContentCreator
     {
-        private readonly CSharpWriter m_CSharpWriter = new CSharpWriter();
+        private readonly CSharpService m_CSharpService = new CSharpService();
 
         public ClassContent Create(Type type)
         {
             var lines = new List<string>();
 
-            var methodTestCases = GetTestCaseSource(type, type.GetMethods, false);
-            var ctorTestCases = GetTestCaseSource(type, type.GetConstructors, true);
+            var methodTestCases = GetTestCaseSource(type, type.GetMethods);
+            var ctorTestCases = GetTestCaseSource(type, type.GetConstructors);
 
             if(!methodTestCases.Union(ctorTestCases).Any()) return ClassContent.NoContent;
 
@@ -64,54 +64,55 @@ namespace BloodyUnitTests.ContentCreators
                 lines.Add("}");
             }
 
-            return new ClassContent(lines.ToArray(), m_CSharpWriter.GetNameSpaces());
+            return new ClassContent(lines.ToArray(), m_CSharpService.GetNameSpaces());
         }
 
-        private string[] GetTestCaseSource(Type type, Func<BindingFlags,MethodBase[]> methodGetter, bool isCtor)
+        private string[] GetTestCaseSource(Type type, Func<BindingFlags,MethodBase[]> methodGetter)
         {
             var hasArrayAssignables = methodGetter(BindingFlags.Public | BindingFlags.Instance)
-                                       .Where(t => isCtor || type.IsMethodTestable(t))
+                                       .Where(t => t.IsConstructor || type.IsMethodTestable(t))
                                        .Where(m => m.GetParameters()
                                                     .Select(p => p.ParameterType)
-                                                    .Any(t => m_CSharpWriter.IsArrayAssignable(t) 
-                                                          && !m_CSharpWriter.GetArrayElementType(t).IsValueType))
+                                                    .Any(t => m_CSharpService.IsArrayAssignable(t) 
+                                                          && !m_CSharpService.GetArrayElementType(t).IsValueType))
                                        .ToArray();
 
             var hasDateTimeParameter = methodGetter(BindingFlags.Public | BindingFlags.Instance)
-                                           .Where(t => isCtor || type.IsMethodTestable(t))
+                                           .Where(t => t.IsConstructor || type.IsMethodTestable(t))
                                            .Where(m => m.GetParameters()
                                                         .Select(p => p.ParameterType)
                                                         .Any(t=>t == typeof(DateTime) || t == typeof(DateTime?)))
                                            .ToArray();
 
-            var testableMethods = hasArrayAssignables.Union(hasDateTimeParameter).Distinct().ToArray();
+            var testableMethods = hasArrayAssignables.Concat(hasDateTimeParameter).Distinct().ToArray();
 
             var lines = new List<string>();
 
             if (!testableMethods.Any()) return new string[0];
+            var isCtor = testableMethods.Any(m => m.IsConstructor);
 
             var parametersNeedingVariables = testableMethods.Select(i => i.GetParameters())
                                                             .SelectMany(p => p)
-                                                            .Where(m_CSharpWriter.ShouldUseVariableForParameter)
+                                                            .Where(m_CSharpService.ShouldUseVariableForParameter)
                                                             .GroupBy(p=>p.ParameterType).Select(g=>g.First())
                                                             .ToArray();
 
             var inParameters = parametersNeedingVariables.Where(p => !p.IsOut).ToArray();
             var outParamters = parametersNeedingVariables.Where(p => p.IsOut).Except(inParameters).ToArray();
 
-            var variableDeclarations = m_CSharpWriter.GetVariableDeclarationsForParameters(inParameters, setToNull: false, nonDefault: false);
-            var outVariableDeclarations = m_CSharpWriter.GetVariableDeclarationsForParameters(outParamters, setToNull: true, nonDefault: false);
+            var variableDeclarations = m_CSharpService.GetVariableDeclarationsForParameters(inParameters, setToNull: false, nonDefault: false);
+            var outVariableDeclarations = m_CSharpService.GetVariableDeclarationsForParameters(outParamters, setToNull: true, nonDefault: false);
 
             lines.AddRange(variableDeclarations);
             lines.AddRange(outVariableDeclarations);
 
             if (variableDeclarations.Union(outVariableDeclarations).Any()) lines.Add(string.Empty);
 
-            var instanceName = m_CSharpWriter.GetIdentifier(type, VarScope.Local);
+            var instanceName = m_CSharpService.GetIdentifier(type, VarScope.Local);
 
             if (!isCtor)
             {
-                lines.AddRange(m_CSharpWriter.GetStubbedInstantiation(type));
+                lines.AddRange(m_CSharpService.GetStubbedInstantiation(type));
                 lines.Add(string.Empty);
             }
 
@@ -121,18 +122,18 @@ namespace BloodyUnitTests.ContentCreators
             {
                 var methodName = info.Name;
                 var parameters = info.GetParameters();
-                var arguments = m_CSharpWriter.GetMethodArguments(info, true, false);
+                var arguments = m_CSharpService.GetMethodArguments(info, true, false);
                 for (var i = 0; i < parameters.Length; i++)
                 {
-                    if (m_CSharpWriter.HasParamKeyword(parameters[i])) continue;
+                    if (m_CSharpService.HasParamKeyword(parameters[i])) continue;
                     var pType = parameters[i].ParameterType;
                     var copyOfArguments = new List<string>(arguments);
                     string testNameSuffix;
-                    if (m_CSharpWriter.IsArrayAssignable(pType))
+                    if (m_CSharpService.IsArrayAssignable(pType))
                     {
-                        var arrayElementType = m_CSharpWriter.GetArrayElementType(pType);
+                        var arrayElementType = m_CSharpService.GetArrayElementType(pType);
                         if(arrayElementType.IsValueType) continue;
-                        var instance = m_CSharpWriter.GetNameForCSharp(arrayElementType);
+                        var instance = m_CSharpService.GetNameForCSharp(arrayElementType);
                         copyOfArguments[i] = $"new {instance}[] {{ null }}";
                         testNameSuffix = "contains null";
                     }
@@ -144,7 +145,7 @@ namespace BloodyUnitTests.ContentCreators
                     else { continue;}
                     testCasesExist = true;
 
-                    var invocation = isCtor ? $"new {m_CSharpWriter.GetNameForCSharp(type)}" : $"{instanceName}.{methodName}";
+                    var invocation = isCtor ? $"new {m_CSharpService.GetNameForCSharp(type)}" : $"{instanceName}.{methodName}";
 
                     lines.Add($"yield return new TestCaseData(new TestDelegate(() => " +
                               $"{invocation}({string.Join(", ", copyOfArguments)})))" +

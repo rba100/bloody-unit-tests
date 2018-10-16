@@ -7,7 +7,7 @@ namespace BloodyUnitTests.ContentCreators
 {
     public class ConstructorNullArgsTestCreator : IContentCreator
     {
-        private readonly CSharpWriter m_CSharpWriter = new CSharpWriter();
+        private readonly CSharpService m_CSharpService = new CSharpService();
 
         public ClassContent Create(Type type)
         {
@@ -30,7 +30,7 @@ namespace BloodyUnitTests.ContentCreators
             lines.Add("{");
             lines.Add($"{indent}Assert.Throws<ArgumentNullException>(testDelegate);");
             lines.Add("}");
-            return new ClassContent(lines.ToArray(), m_CSharpWriter.GetNameSpaces());
+            return new ClassContent(lines.ToArray(), m_CSharpService.GetNameSpaces());
         }
 
         private (string[] linesOfCode, string[] nameSpaces) GetConstructorNullTestCaseSource(Type type)
@@ -52,10 +52,11 @@ namespace BloodyUnitTests.ContentCreators
             var paramGroups = constructors.Select(i => i.GetParameters()).ToArray();
             var havingTwoOrMoreNullableColumns = paramGroups.Where(g => g.Count(p => !p.ParameterType.IsValueType) > 1);
 
-            var argTypes = havingTwoOrMoreNullableColumns.SelectMany(g => g);
+            var argTypes = havingTwoOrMoreNullableColumns.SelectMany(g => g)
+                                                         .Where(m_CSharpService.ShouldUseVariableForParameter);
 
             var variableDeclarations = argTypes
-                          .Distinct().Select(c => m_CSharpWriter.GetLocalVariableDeclaration(c.ParameterType, false, false));
+                          .Distinct().Select(c => m_CSharpService.GetLocalVariableDeclaration(c.ParameterType, false, false));
 
             foreach (var declaration in variableDeclarations)
             {
@@ -70,7 +71,7 @@ namespace BloodyUnitTests.ContentCreators
             {
                 var typeName = ctor.DeclaringType?.Name;
                 var parameterTypes = ctor.GetParameters();
-                var arguments = m_CSharpWriter.GetMethodArguments(ctor, true, false);
+                var arguments = m_CSharpService.GetMethodArguments(ctor, true, false);
 
                 for (int i = 0; i < parameterTypes.Length; i++)
                 {

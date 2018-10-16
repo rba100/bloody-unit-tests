@@ -1,7 +1,10 @@
-﻿using System;
+﻿
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+
+using BloodyUnitTests.Util;
 
 namespace BloodyUnitTests
 {
@@ -29,7 +32,7 @@ namespace BloodyUnitTests
             {
                 if (fixture.Value == null) continue;
                 var directory = Path.GetDirectoryName(outputPaths[fixture.Key])
-                                ?? throw new Exception($"Could not deduce directory name for {outputPaths[fixture.Key]}");
+                     ?? throw new Exception($"Could not deduce directory name for {outputPaths[fixture.Key]}");
                 if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
                 File.WriteAllText(outputPaths[fixture.Key], fixture.Value);
             }
@@ -38,7 +41,7 @@ namespace BloodyUnitTests
         private string GetPath(string directoryBase, Type type)
         {
             var fileName = StringUtils.ToUpperInitial($"{FileSafe(type.Name)}Tests.cs");
-            return Path.Combine(directoryBase, CSharpWriter.GetClassCategory(type), fileName);
+            return Path.Combine(directoryBase, StringUtils.GetClassCategory(type), fileName);
         }
 
         private static string FileSafe(string input)

@@ -100,6 +100,7 @@
     <Compile Include="IContentCreator.cs" />
     <Compile Include="ContentCreators\MethodNullArgsTestCreator.cs" />
     <Compile Include="ExtensionMethods.cs" />
+    <Compile Include="Util\IndentedStringBuilder.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -119,12 +120,12 @@
     <Compile Include="Reflection\ParameterInfoExtensions.cs" />
     <Compile Include="Reflection\ReflectionUtils.cs" />
     <Compile Include="Reflection\TypeExtensions.cs" />
-    <Compile Include="StringUtils.cs" />
+    <Compile Include="Util\StringUtils.cs" />
     <Compile Include="TestClasses\TestClasses.cs" />
     <Compile Include="TestFixtureCreator.cs" />
     <Compile Include="ContentCreators\TestFactoryCreator.cs" />
     <Compile Include="ContentCreators\ConstructorNullArgsTestCreator.cs" />
-    <Compile Include="CSharpWriter.cs" />
+    <Compile Include="CSharpService.cs" />
     <Compile Include="WriteAllTestsDialog.cs">
       <SubType>Form</SubType>
     </Compile>

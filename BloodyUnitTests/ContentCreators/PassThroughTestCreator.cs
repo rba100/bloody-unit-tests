@@ -12,7 +12,7 @@ namespace BloodyUnitTests.ContentCreators
     {
         public ClassContent Create(Type type)
         {
-            var cSharpWriter = new CSharpWriter();
+            var cSharpWriter = new CSharpService();
 
             var delegationReports = ReflectionUtils.GetMethodsThatPassthrough(type);
 
@@ -31,7 +31,7 @@ namespace BloodyUnitTests.ContentCreators
 
         private string[] GenerateTestMethods(Type classToTest,
                                              (ConstructorInfo ctor, MethodDelegationReport[] delegations)[] safeCombinations,
-                                             CSharpWriter cSharpWriter)
+                                             CSharpService cSharpService)
         {
             var lines = new List<string>();
             int testCount = 0;
@@ -45,7 +45,7 @@ namespace BloodyUnitTests.ContentCreators
                                                       report.InnerMethodInterfaceType,
                                                       report.Caller,
                                                       report.InnerMethod,
-                                                      cSharpWriter));
+                                                      cSharpService));
                     testCount++;
                 }
             }
@@ -58,27 +58,27 @@ namespace BloodyUnitTests.ContentCreators
                                             Type interfaceType,
                                             MethodInfo method,
                                             MethodInfo innerMethod,
-                                            CSharpWriter cSharpWriter)
+                                            CSharpService cSharpService)
         {
             var isVoid = method.ReturnType == typeof(void);
             if (!isVoid && !method.ReturnType.IsAssignableFrom(innerMethod.ReturnType)) return new string[0];
 
-            var mockVarName = $"mock{cSharpWriter.GetIdentifier(interfaceType, VarScope.Member)}";
+            var mockVarName = $"mock{cSharpService.GetIdentifier(interfaceType, VarScope.Member)}";
             var mockVarNameOffset = new string(' ', mockVarName.Length);
             var resultDeclaration = isVoid ? string.Empty : "var result = ";
-            var sutVarName = cSharpWriter.GetIdentifier(classToTest, VarScope.Local);
+            var sutVarName = cSharpService.GetIdentifier(classToTest, VarScope.Local);
 
 
             var commonMethodVariables = method.GetParameters()
                                         .Where(p => p.ParameterType != interfaceType)
-                                        .PipeInto(p => cSharpWriter.GetVariableDeclarationsForParameters(p, setToNull: false, nonDefault: true));
+                                        .PipeInto(p => cSharpService.GetVariableDeclarationsForParameters(p, setToNull: false, nonDefault: true));
             
 
             var rootType = constructor.DeclaringType;
 
-            var ctorArgs = cSharpWriter.GetMethodArguments(constructor, useVariables: false, nonDefault: true);
-            var methodArgs = cSharpWriter.GetMethodArguments(method, useVariables: true, nonDefault: true);
-            var innerMethodArgs = cSharpWriter.GetMethodArguments(innerMethod, useVariables: true, nonDefault: true);
+            var ctorArgs = cSharpService.GetMethodArguments(constructor, useVariables: false, nonDefault: true);
+            var methodArgs = cSharpService.GetMethodArguments(method, useVariables: true, nonDefault: true);
+            var innerMethodArgs = cSharpService.GetMethodArguments(innerMethod, useVariables: true, nonDefault: true);
             var ifParam = constructor.GetParameters()
                                      .Select((p, i) => new { p, i })
                                      .Single(o => o.p.ParameterType == interfaceType);
@@ -101,16 +101,16 @@ namespace BloodyUnitTests.ContentCreators
             lines.AddRange(commonMethodVariables.IndentBy(4));
             if (!isVoid)
             {
-                lines.Add($"{indent}var expectedResult = {cSharpWriter.GetInstantiation(innerMethod.ReturnType, true)};");
+                lines.Add($"{indent}var expectedResult = {cSharpService.GetInstantiation(innerMethod.ReturnType, true)};");
             }
-            lines.Add($"{indent}var {mockVarName} = {cSharpWriter.GetMockInstance(interfaceType)};");
+            lines.Add($"{indent}var {mockVarName} = {cSharpService.GetMockInstance(interfaceType)};");
             lines.Add($"{indent}{mockVarName}.Expect(m=>m.{innerMethod.Name}({innerMethodArgumentsFlat}))");
             lines.Add($"{indent}{mockVarNameOffset}.Repeat.Once(){(isVoid ? ";" : "")}");
             if (!isVoid)
             {
                 lines.Add($"{indent}{mockVarNameOffset}.Return(expectedResult);");
             }
-            lines.Add($"{indent}var {sutVarName} = new {cSharpWriter.GetNameForCSharp(rootType)}({ctorArgumentsFlat});");
+            lines.Add($"{indent}var {sutVarName} = new {cSharpService.GetNameForCSharp(rootType)}({ctorArgumentsFlat});");
             lines.Add($"{indent}{resultDeclaration}{sutVarName}.{method.Name}({methodArgumentsFlat});");
             lines.Add($"{indent}{mockVarName}.VerifyAllExpectations();");
             if (!isVoid)

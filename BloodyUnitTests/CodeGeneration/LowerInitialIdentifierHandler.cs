@@ -1,4 +1,5 @@
 ﻿using System;
+using BloodyUnitTests.Util;
 
 namespace BloodyUnitTests.CodeGeneration
 {

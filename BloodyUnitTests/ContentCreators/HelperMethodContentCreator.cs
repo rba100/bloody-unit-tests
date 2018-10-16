@@ -7,7 +7,7 @@ namespace BloodyUnitTests.ContentCreators
 {
     class HelperMethodContentCreator : IContentCreator
     {
-        private readonly CSharpWriter m_CSharpWriter = new CSharpWriter();
+        private readonly CSharpService m_CSharpService = new CSharpService();
 
         public ClassContent Create(Type type)
         {
@@ -24,7 +24,7 @@ namespace BloodyUnitTests.ContentCreators
                 lines.AddRange(declaration);
             }
 
-            return new ClassContent(lines.ToArray(), m_CSharpWriter.GetNameSpaces());
+            return new ClassContent(lines.ToArray(), m_CSharpService.GetNameSpaces());
         }
 
         private Type[] GetSupportedDependencies(Type type)
@@ -39,7 +39,7 @@ namespace BloodyUnitTests.ContentCreators
                        .Where(t => t != null && t.IsClass)
                        .Distinct()
                        .Where(t => t.Namespace?.StartsWith(nameof(System)) != true && !t.IsArray)
-                       .Where(m_CSharpWriter.NoCircularDependenciesOrAbstract)
+                       .Where(m_CSharpService.NoCircularDependenciesOrAbstract)
                        .ToArray();
         }
 
@@ -53,7 +53,7 @@ namespace BloodyUnitTests.ContentCreators
 
             if (parameters.Length == 0) return new string[0];
 
-            var arguments = parameters.Select(p => m_CSharpWriter.GetInstantiation(p.ParameterType)).ToArray();
+            var arguments = parameters.Select(p => m_CSharpService.GetInstantiation(p.ParameterType)).ToArray();
 
             int namedParameterStart = parameters.Length;
             for (var i = parameters.Length - 1; i >= 0; i--)
@@ -81,9 +81,9 @@ namespace BloodyUnitTests.ContentCreators
             }
 
             var indent = new string(' ', 4);
-            lines.Add($"private static {m_CSharpWriter.GetNameForCSharp(type)} Create{m_CSharpWriter.GetIdentifier(type, VarScope.Member)}()");
+            lines.Add($"private static {m_CSharpService.GetNameForCSharp(type)} Create{m_CSharpService.GetIdentifier(type, VarScope.Member)}()");
             lines.Add($"{{");
-            lines.Add($"{indent}return new {m_CSharpWriter.GetNameForCSharp(type)}({string.Join(", ", arguments)});");
+            lines.Add($"{indent}return new {m_CSharpService.GetNameForCSharp(type)}({string.Join(", ", arguments)});");
             lines.Add($"}}");
             return lines.ToArray();
         }
