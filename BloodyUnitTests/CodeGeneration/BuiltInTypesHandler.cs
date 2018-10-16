@@ -15,6 +15,7 @@ namespace BloodyUnitTests.CodeGeneration
                    || type == typeof(IntPtr)
                    || type == typeof(Assembly)
                    || type == typeof(MethodBase)
+                   || type == typeof(Uri)
                    || type == typeof(Type);
         }
 
@@ -25,6 +26,7 @@ namespace BloodyUnitTests.CodeGeneration
             if (type == typeof(string)) return interestingValue ? "\"value\"" : "\"\"";
             if (type == typeof(char)) return interestingValue ? "'X'" : "' '";
             if (type == typeof(Type)) return "typeof(object)";
+            if (type == typeof(Uri)) return "new Uri(\"https://example.com\")";
             if (type == typeof(Assembly)) return "Assembly.GetCallingAssembly()";
             if (type == typeof(MethodBase)) return "MethodBase.GetCurrentMethod()";
 
@@ -33,7 +35,11 @@ namespace BloodyUnitTests.CodeGeneration
 
         public bool IsInstantiationTerse(Type type)
         {
-            return type == typeof(string) || type == typeof(char) || type == typeof(bool) || type == typeof(IntPtr) || type == typeof(Type);
+            return type == typeof(string)
+                || type == typeof(char) 
+                || type == typeof(bool) 
+                || type == typeof(IntPtr)
+                || type == typeof(Type);
         }
 
         public bool CanGetNameForIdentifier(Type type)
@@ -43,7 +49,7 @@ namespace BloodyUnitTests.CodeGeneration
 
         public string GetNameForIdentifier(Type type)
         {
-            return "Int";
+            throw new NotSupportedException();
         }
 
         public bool CanGetNameForCSharp(Type type)
