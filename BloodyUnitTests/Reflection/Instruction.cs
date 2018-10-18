@@ -11,10 +11,6 @@ namespace BloodyUnitTests.Reflection
 
         public object Data { get; set; }
 
-        public bool IsMethodCall => Data is MethodInfo;
-
-        public bool IsConstructorCall => Data is MethodInfo;
-
         public override string ToString()
         {
             return $"{Offset:X4} : {OpCode} {FormatData()}";

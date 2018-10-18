@@ -36,6 +36,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\BloodyUnitTests.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -97,6 +98,7 @@
     <Compile Include="ContentCreators\InvalidArgumentTestCreator.cs" />
     <Compile Include="ContentCreators\PassThroughTestCreator.cs" />
     <Compile Include="ContentCreators\StaticMethodNullArgsTestCreator.cs" />
+    <Compile Include="ContentCreators\ExceptionHandlingContentCreator.cs" />
     <Compile Include="IContentCreator.cs" />
     <Compile Include="ContentCreators\MethodNullArgsTestCreator.cs" />
     <Compile Include="ExtensionMethods.cs" />

@@ -62,6 +62,10 @@ namespace BloodyUnitTests.TestClasses
     {
         string Process(Guid argument);
 
+        /// <summary>
+        /// Do stuff.
+        /// </summary>
+        /// <exception cref="NotSupportedException"></exception>
         int Aggregate(int[] argument);
     }
 
