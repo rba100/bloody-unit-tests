@@ -10,13 +10,13 @@ namespace BloodyUnitTests.CodeGeneration
         public bool CanGetInstantiation(Type type)
         {
             return type == typeof(string) 
-                   || type == typeof(char)
-                   || type == typeof(bool)
-                   || type == typeof(IntPtr)
-                   || type == typeof(Assembly)
-                   || type == typeof(MethodBase)
-                   || type == typeof(Uri)
-                   || type == typeof(Type);
+                || type == typeof(char)
+                || type == typeof(bool)
+                || type == typeof(IntPtr)
+                || type == typeof(Assembly)
+                || type == typeof(MethodBase)
+                || type == typeof(Uri)
+                || type == typeof(Type);
         }
 
         public string GetInstantiation(Type type, bool interestingValue)
