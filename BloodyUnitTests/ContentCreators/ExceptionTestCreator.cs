@@ -25,7 +25,7 @@ namespace BloodyUnitTests.ContentCreators
                                     {
                                         "System.IO",
                                         "System.Runtime.Serialization.Formatters.Binary"
-                                    }.Union(m_CSharpService.GetNameSpaces()).ToArray());
+                                    }.Concat(m_CSharpService.GetNameSpaces()).ToArray());
         }
 
         private string[] GetLines(string input, string value)

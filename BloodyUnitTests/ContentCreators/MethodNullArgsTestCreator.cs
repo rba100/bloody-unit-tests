@@ -17,7 +17,7 @@ namespace BloodyUnitTests.ContentCreators
             if (!testCases.linesOfCode.Any()) return ClassContent.NoContent;
 
             var testCaseSource = $"{type.Name}_method_null_argument_testcases";
-            lines.Add($"public static IEnumerable<TestCaseData> {testCaseSource}()");
+            lines.Add($"private static IEnumerable<TestCaseData> {testCaseSource}()");
             lines.Add("{");
             foreach (var line in testCases.linesOfCode)
             {

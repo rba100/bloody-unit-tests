@@ -57,6 +57,24 @@ namespace BloodyUnitTests.Reflection
         private static bool MethodDelegatesTo(MethodInfo caller, MethodInfo callee)
         {
             var ins = InstructionLoader.GetInstructions(caller).ToArray();
+
+            foreach (var instruction in ins)
+            {
+                var methodCall = instruction.Data as MethodBase;
+                if (instruction.OpCode == OpCodes.Callvirt
+                    && methodCall != null)
+                {
+                    var methodCalled = methodCall == callee;
+                    if (methodCalled) return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool MethodDelegatesToExactly(MethodInfo caller, MethodInfo callee)
+        {
+            var ins = InstructionLoader.GetInstructions(caller).ToArray();
             int loadArgCount = 0;
 
             var loadArgTypes = new[] { OpCodes.Ldarg_1, OpCodes.Ldarg_2, OpCodes.Ldarg_3, OpCodes.Ldarg };

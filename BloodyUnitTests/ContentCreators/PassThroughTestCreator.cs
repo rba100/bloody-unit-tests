@@ -22,7 +22,7 @@ namespace BloodyUnitTests.ContentCreators
                                                 .All(cSharpWriter.NoCircularDependenciesOrAbstract))
                                    .ToArray();
 
-            if(!safeCombinations.Any()) return ClassContent.NoContent;
+            if (!safeCombinations.Any()) return ClassContent.NoContent;
 
             var linesOfCode = GenerateTestMethods(type, safeCombinations, cSharpWriter);
 
@@ -40,7 +40,7 @@ namespace BloodyUnitTests.ContentCreators
                 foreach (var report in ctorDelegation.delegations)
                 {
                     if (testCount > 0) lines.Add(string.Empty);
-                    lines.AddRange(GenerateTestMethod(classToTest, 
+                    lines.AddRange(GenerateTestMethod(classToTest,
                                                       ctorDelegation.ctor,
                                                       report.InnerMethodInterfaceType,
                                                       report.Caller,
@@ -68,11 +68,13 @@ namespace BloodyUnitTests.ContentCreators
             var resultDeclaration = isVoid ? string.Empty : "var result = ";
             var sutVarName = cSharpService.GetIdentifier(classToTest, VarScope.Local);
 
-
             var commonMethodVariables = method.GetParameters()
-                                        .Where(p => p.ParameterType != interfaceType)
-                                        .PipeInto(p => cSharpService.GetVariableDeclarationsForParameters(p, setToNull: false, nonDefault: true));
-            
+                                              .Concat(innerMethod.GetParameters())
+                                              .GroupBy(p => p.ParameterType).Select(g => g.First())
+                                              .Where(p => p.ParameterType != interfaceType)
+                                              .PipeInto(p => cSharpService.GetVariableDeclarationsForParameters(
+                                                   p,
+                                                   setToNull: false, nonDefault: true));
 
             var rootType = constructor.DeclaringType;
 

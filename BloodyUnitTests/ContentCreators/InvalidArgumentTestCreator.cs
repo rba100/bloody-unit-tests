@@ -21,7 +21,7 @@ namespace BloodyUnitTests.ContentCreators
             if (methodTestCases.Any())
             {
                 var testCaseSource = $"{type.Name}_method_invalid_argument_testcases";
-                lines.Add($"public static IEnumerable<TestCaseData> {testCaseSource}()");
+                lines.Add($"private static IEnumerable<TestCaseData> {testCaseSource}()");
                 lines.Add("{");
                 foreach (var line in methodTestCases)
                 {

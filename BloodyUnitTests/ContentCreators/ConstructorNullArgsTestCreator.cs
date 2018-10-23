@@ -18,7 +18,7 @@ namespace BloodyUnitTests.ContentCreators
             if (!testCases.linesOfCode.Any()) return ClassContent.NoContent;
             var indent = new string(' ', 4);
             var testCaseSource = $"{typeName}_constructor_null_argument_testcases";
-            lines.Add($"public static IEnumerable<TestCaseData> {testCaseSource}()");
+            lines.Add($"private static IEnumerable<TestCaseData> {testCaseSource}()");
             lines.Add("{");
             lines.AddRange(testCases.linesOfCode.Select(line => $"{indent}{line}"));
             lines.Add("}");
