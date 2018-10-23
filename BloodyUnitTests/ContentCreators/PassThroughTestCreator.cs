@@ -73,8 +73,7 @@ namespace BloodyUnitTests.ContentCreators
                                               .GroupBy(p => p.ParameterType).Select(g => g.First())
                                               .Where(p => p.ParameterType != interfaceType)
                                               .PipeInto(p => cSharpService.GetVariableDeclarationsForParameters(
-                                                   p,
-                                                   setToNull: false, nonDefault: true));
+                                                   p, setToNull: false, nonDefault: true));
 
             var rootType = constructor.DeclaringType;
 

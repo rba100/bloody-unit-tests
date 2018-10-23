@@ -56,7 +56,9 @@ namespace BloodyUnitTests.ContentCreators
                                                          .Where(m_CSharpService.ShouldUseVariableForParameter);
 
             var variableDeclarations = argTypes
-                          .Distinct().Select(c => m_CSharpService.GetLocalVariableDeclaration(c.ParameterType, false, false));
+                          .Distinct()
+                          .Select(c => m_CSharpService.GetLocalVariableDeclaration(c.ParameterType, false, false))
+                          .ToArray();
 
             foreach (var declaration in variableDeclarations)
             {
@@ -66,7 +68,7 @@ namespace BloodyUnitTests.ContentCreators
             if (variableDeclarations.Any()) lines.Add(string.Empty);
 
             bool testCasesExist = false;
-            int preTestLineCount = lines.Count;
+            int testCasesLineIndex = lines.Count;
             foreach (var ctor in constructors)
             {
                 var typeName = ctor.DeclaringType?.Name;
@@ -87,7 +89,7 @@ namespace BloodyUnitTests.ContentCreators
 
             if (testCasesExist)
             {
-                lines.Insert(preTestLineCount, "// ReSharper disable ObjectCreationAsStatement");
+                lines.Insert(testCasesLineIndex, "// ReSharper disable ObjectCreationAsStatement");
                 lines.Add("// ReSharper restore ObjectCreationAsStatement");
             }
 
