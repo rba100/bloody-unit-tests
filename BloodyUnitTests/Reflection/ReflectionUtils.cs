@@ -8,6 +8,15 @@ namespace BloodyUnitTests.Reflection
 {
     public static class ReflectionUtils
     {
+        public static MethodInfo[] GetCalledMethods(MethodInfo methodInfo)
+        {
+            return InstructionLoader.GetInstructions(methodInfo)
+                                    .Where(i => i.OpCode == OpCodes.Callvirt)
+                                    .Select(i=>i.Data)
+                                    .OfType<MethodInfo>()
+                                    .ToArray();
+        }
+
         public static (ConstructorInfo ctor, MethodDelegationReport[] delegations)[]
             GetMethodsThatPassthrough(Type classType)
         {

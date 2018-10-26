@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Xml;
 using System.Xml.Linq;
+using BloodyUnitTests.Reflection;
+using BloodyUnitTests.Util;
 
 namespace BloodyUnitTests.ContentCreators
 {
@@ -29,6 +30,7 @@ namespace BloodyUnitTests.ContentCreators
                                             .Where(t => t.IsInterface);
 
             var methodsToExceptions = new Dictionary<MethodInfo, List<string>>();
+            var exceptionalCircumstances = new List<ExceptionalCircumstance>();
 
             // Get all exceptions that could be thrown by all dependent interfaces
             foreach (var iface in interfaceDependencies)
@@ -60,7 +62,78 @@ namespace BloodyUnitTests.ContentCreators
                 }
             }
 
+            // Scan each method to see if it invokes a method than can throw
+            foreach (var methodInfo in type.GetMethods())
+            {
+                var innerCalls = ReflectionUtils.GetCalledMethods(methodInfo)
+                                                .Where(m=>methodsToExceptions.ContainsKey(m));
+
+                exceptionalCircumstances.AddRange(
+                    innerCalls.SelectMany(call => methodsToExceptions[call].Select(
+                        exName => new ExceptionalCircumstance(methodInfo, call, exName))));
+            }
+
+            lines.AddRange(exceptionalCircumstances.SelectMany(c=>WriteTestMethod(c, csharpService)));
+
             return lines.ToArray();
+        }
+
+        private IEnumerable<string> WriteTestMethod(ExceptionalCircumstance circumstance, 
+                                                    CSharpService cSharpService)
+        {
+            var sanitisedExName = circumstance.ExceptionType.Split('.').Last();
+            var typeUnderTest = circumstance.OuterMethod.DeclaringType;
+            var testMethodName = circumstance.OuterMethod.Name;
+            var innerMethod = circumstance.InnerMethod;
+            var innerDependency = circumstance.InnerMethod.DeclaringType;
+
+            var ctor = typeUnderTest.GetConstructors()
+                                    .FirstOrDefault(c => c.GetParameters()
+                                                          .Any(p => p.ParameterType == innerDependency));
+            if(ctor == null) yield break;
+
+            var ctorParams = ctor.GetParameters();
+            var paramName = ctorParams.FirstOrDefault(p => p.ParameterType == innerDependency).Name;
+            var dummyArgs = string.Join(",", innerMethod.GetParameters().Select(p => DummyValue(p, cSharpService)));
+
+            yield return "[Test]";
+            yield return $"public void {testMethodName}" +
+                         $"_handles_{sanitisedExName}" +
+                         $"_from_{innerDependency.Name}" +
+                         $"_{circumstance.InnerMethod.Name}()";
+            yield return "{";
+            yield return $"    var factory = new {typeUnderTest.Name}Factory();";
+            yield return $"    factory.{StringUtils.ToUpperInitial(paramName)}";
+            yield return $"           .Stub(x => x.{innerMethod.Name}({dummyArgs}))";
+            yield return $"           .IgnoreArguments()";
+            yield return $"           .Throw(new {circumstance.ExceptionType}());";
+            var identifier = cSharpService.GetIdentifier(typeUnderTest, VarScope.Local);
+            yield return $"    var {identifier} = factory.Create();";
+            yield return $"    throw new NotImplementedException(\"Test placeholder not implemented.\");";
+            yield return "}";
+        }
+
+        private string DummyValue(ParameterInfo arg, CSharpService cSharpService)
+        {
+            return !arg.ParameterType.IsValueType || arg.ParameterType.IsArray
+                ? "null" 
+                : cSharpService.GetInstantiation(arg.ParameterType, nonDefault: false);
+        }
+
+        private class ExceptionalCircumstance
+        {
+            public MethodInfo OuterMethod { get; }
+            public MethodInfo InnerMethod { get; }
+            public string ExceptionType { get; }
+
+            public ExceptionalCircumstance(MethodInfo outerMethod,
+                                       MethodInfo innerMethod,
+                                       string exceptionType)
+            {
+                OuterMethod = outerMethod;
+                InnerMethod = innerMethod;
+                ExceptionType = exceptionType;
+            }
         }
     }
 }
