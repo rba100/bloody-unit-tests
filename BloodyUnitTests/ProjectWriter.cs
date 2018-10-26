@@ -23,14 +23,14 @@ namespace BloodyUnitTests
                                                                    nameof(nameSpacePrefixFilter));
 
             var outputPaths = testableClasses.ToDictionary(t => t, t => GetPath(directoryForOutput, t));
-            
-            if(outputPaths.Values.Any(File.Exists)) throw new Exception(@"Some test files already exist");
 
             var typesToFixtures = testableClasses.ToDictionary(t => t, TestFixtureCreator.CreateTestFixture);
 
             foreach (var fixture in typesToFixtures)
             {
                 if (fixture.Value == null) continue;
+                if(File.Exists(outputPaths[fixture.Key])) continue;
+
                 var directory = Path.GetDirectoryName(outputPaths[fixture.Key])
                      ?? throw new Exception($"Could not deduce directory name for {outputPaths[fixture.Key]}");
                 if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);

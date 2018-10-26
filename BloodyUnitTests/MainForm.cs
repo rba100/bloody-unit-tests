@@ -107,12 +107,22 @@ namespace BloodyUnitTests
         {
             try
             {
-                var type = m_Assembly.GetLoadableTypes().First(t => t.Name == comboBox1.SelectedItem as string);
+                var className = comboBox1.SelectedItem as string;
+
+                var existingTab = m_TabContainer.Controls.OfType<TabPage>()
+                                                .FirstOrDefault(p => p.Text == className);
+                if (existingTab != null)
+                {
+                    m_TabContainer.SelectedTab = existingTab;
+                    return;
+                }
+
+                var type = m_Assembly.GetLoadableTypes().First(t => t.Name == className);
 
                 var editor = GetDefaultEditor();
-                editor.Text = TestFixtureCreator.CreateTestFixture(type) ?? "This class has nothing!";
+                editor.Text = TestFixtureCreator.CreateTestFixture(type) ?? "";
 
-                var tab = new TabPage(comboBox1.SelectedItem as string);
+                var tab = new TabPage(className);
                 tab.Controls.Add(editor);
 
                 m_TabContainer.Controls.Add(tab);
