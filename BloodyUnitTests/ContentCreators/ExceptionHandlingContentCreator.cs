@@ -54,9 +54,9 @@ namespace BloodyUnitTests.ContentCreators
                     if (docElement == null) continue;
 
                     var exceptions = docElement.Descendants("exception")
-                                               .Select(e=>e.Attribute("cref")?.Value)
-                                               .Where(v=>v != null)
-                                               .Select(str=>str.Substring(2)); // remove "T:"
+                                               .Select(e => e.Attribute("cref")?.Value)
+                                               .Where(v => v != null)
+                                               .Select(str => str.Substring(2)); // remove "T:"
 
                     methodsToExceptions.Add(ifMethod, new List<string>(exceptions));
                 }
@@ -66,23 +66,29 @@ namespace BloodyUnitTests.ContentCreators
             foreach (var methodInfo in type.GetMethods())
             {
                 var innerCalls = ReflectionUtils.GetCalledMethods(methodInfo)
-                                                .Where(m=>methodsToExceptions.ContainsKey(m));
+                                                .Where(m => methodsToExceptions.ContainsKey(m));
 
                 exceptionalCircumstances.AddRange(
                     innerCalls.SelectMany(call => methodsToExceptions[call].Select(
                         exName => new ExceptionalCircumstance(methodInfo, call, exName))));
             }
 
-            lines.AddRange(exceptionalCircumstances.SelectMany(c=>WriteTestMethod(c, csharpService)));
+            var tests = exceptionalCircumstances.Select((c,i) =>
+            {
+                var methodCode = WriteTestMethod(type, c, csharpService);
+                return i > 0 ? methodCode.Concat(new[] {Environment.NewLine}) : methodCode;
+            });
+
+            lines.AddRange(tests.SelectMany(line => line));
 
             return lines.ToArray();
         }
 
-        private IEnumerable<string> WriteTestMethod(ExceptionalCircumstance circumstance, 
+        private IEnumerable<string> WriteTestMethod(Type typeUnderTest,
+                                                    ExceptionalCircumstance circumstance,
                                                     CSharpService cSharpService)
         {
             var sanitisedExName = circumstance.ExceptionType.Split('.').Last();
-            var typeUnderTest = circumstance.OuterMethod.DeclaringType;
             var testMethodName = circumstance.OuterMethod.Name;
             var innerMethod = circumstance.InnerMethod;
             var innerDependency = circumstance.InnerMethod.DeclaringType;
@@ -90,7 +96,7 @@ namespace BloodyUnitTests.ContentCreators
             var ctor = typeUnderTest.GetConstructors()
                                     .FirstOrDefault(c => c.GetParameters()
                                                           .Any(p => p.ParameterType == innerDependency));
-            if(ctor == null) yield break;
+            if (ctor == null) yield break;
 
             var ctorParams = ctor.GetParameters();
             var paramName = ctorParams.FirstOrDefault(p => p.ParameterType == innerDependency).Name;
@@ -116,7 +122,7 @@ namespace BloodyUnitTests.ContentCreators
         private string DummyValue(ParameterInfo arg, CSharpService cSharpService)
         {
             return !arg.ParameterType.IsValueType || arg.ParameterType.IsArray
-                ? "null" 
+                ? "null"
                 : cSharpService.GetInstantiation(arg.ParameterType, nonDefault: false);
         }
 
