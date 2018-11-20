@@ -49,5 +49,10 @@ namespace BloodyUnitTests
                 MessageBox.Show(ex.ToString());
             }
         }
+
+        private void WriteAllTestsDialog_Load(object sender, EventArgs e)
+        {
+            new ToolTip().SetToolTip(label2, "Generate tests for classes in this root namespace");
+        }
     }
 }

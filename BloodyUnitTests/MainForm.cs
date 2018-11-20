@@ -77,7 +77,7 @@ namespace BloodyUnitTests
             {
                 if (!File.Exists(filePath)) return;
                 m_Assembly = Assembly.LoadFrom(filePath);
-                cbClassList.DataSource = m_Assembly.GetTestableClassTypes().Select(c => c.Name).ToList();
+                cbClassList.DataSource = m_Assembly.GetTestableClassTypes().Select(c => new TypeRef(c)).ToList();
                 cbClassList.SelectedIndex = 0;
                 btTestClass.Enabled = true;
             }
@@ -109,22 +109,22 @@ namespace BloodyUnitTests
         {
             try
             {
-                var className = cbClassList.SelectedItem as string;
+                var classType = cbClassList.SelectedItem as TypeRef;
 
                 var existingTab = m_TabContainer.Controls.OfType<TabPage>()
-                                                .FirstOrDefault(p => p.Text == className);
+                                                .FirstOrDefault(p => p.Text == classType.ToString());
                 if (existingTab != null)
                 {
                     m_TabContainer.SelectedTab = existingTab;
                     return;
                 }
 
-                var type = m_Assembly.GetLoadableTypes().First(t => t.Name == className);
+                var type = classType.Type;
 
                 var editor = GetDefaultEditor();
                 editor.Text = TestFixtureCreator.CreateTestFixture(type) ?? "";
 
-                var tab = new TabPage(className);
+                var tab = new TabPage(classType.ToString());
                 tab.Controls.Add(editor);
 
                 m_TabContainer.Controls.Add(tab);
@@ -155,7 +155,7 @@ namespace BloodyUnitTests
                 LoadAssembly(data[0]);
             }
             else if (e.Data.GetData(DataFormats.Text) is string filePath
-                      && File.Exists(filePath))
+                     && File.Exists(filePath))
             {
                 var filePathL = filePath.ToLower();
                 if (filePathL.EndsWith(".exe") || filePathL.EndsWith(".dll")) LoadAssembly(filePath);
@@ -170,7 +170,8 @@ namespace BloodyUnitTests
                                          .FirstOrDefault();
                     if (best.filePath == null) return; // value type tuple
                     LoadAssembly(best.filePath);
-                    var itemIndex = cbClassList.Items.IndexOf(className);
+                    var match = cbClassList.Items.OfType<TypeRef>().First(t => t.Type.Name == className);
+                    var itemIndex = cbClassList.Items.IndexOf(match);
                     cbClassList.SelectedIndex = itemIndex;
                 }
             }
@@ -238,7 +239,7 @@ namespace BloodyUnitTests
             }
         }
 
-        private object GetClassNameFromCsFile(string filePath)
+        private string GetClassNameFromCsFile(string filePath)
         {
             try
             {
@@ -260,6 +261,21 @@ namespace BloodyUnitTests
             {
                 e.Effect = DragDropEffects.Copy;
             }
+        }
+    }
+
+    public class TypeRef
+    {
+        public Type Type { get; private set; }
+
+        public TypeRef(Type type)
+        {
+            Type = type;
+        }
+
+        public override string ToString()
+        {
+            return Type.Name;
         }
     }
 }

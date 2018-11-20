@@ -41,7 +41,7 @@
             // btOK
             // 
             this.btOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btOK.Location = new System.Drawing.Point(453, 89);
+            this.btOK.Location = new System.Drawing.Point(453, 69);
             this.btOK.Name = "btOK";
             this.btOK.Size = new System.Drawing.Size(75, 23);
             this.btOK.TabIndex = 0;
@@ -52,7 +52,7 @@
             // btCancel
             // 
             this.btCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btCancel.Location = new System.Drawing.Point(534, 89);
+            this.btCancel.Location = new System.Drawing.Point(534, 69);
             this.btCancel.Name = "btCancel";
             this.btCancel.Size = new System.Drawing.Size(75, 23);
             this.btCancel.TabIndex = 0;
@@ -108,11 +108,11 @@
             this.label2.TabIndex = 1;
             this.label2.Text = "Namespace prefix";
             // 
-            // WriteAllTests
+            // WriteAllTestsDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(621, 124);
+            this.ClientSize = new System.Drawing.Size(621, 104);
             this.Controls.Add(this.btChooseFolder);
             this.Controls.Add(this.tbNameSpace);
             this.Controls.Add(this.label2);
@@ -121,9 +121,11 @@
             this.Controls.Add(this.btCancel);
             this.Controls.Add(this.btOK);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "WriteAllTests";
+            this.MaximumSize = new System.Drawing.Size(1000, 143);
+            this.Name = "WriteAllTestsDialog";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Write all tests";
+            this.Load += new System.EventHandler(this.WriteAllTestsDialog_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
