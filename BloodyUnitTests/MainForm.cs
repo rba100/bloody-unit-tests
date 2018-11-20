@@ -154,18 +154,21 @@ namespace BloodyUnitTests
             {
                 LoadAssembly(data[0]);
             }
-            else if (e.Data.GetData(DataFormats.Text) is string str
-                      && File.Exists(str))
+            else if (e.Data.GetData(DataFormats.Text) is string filePath
+                      && File.Exists(filePath))
             {
-                var filePath = str.ToLower();
-                if(filePath.EndsWith(".exe") || filePath.EndsWith(".dll")) LoadAssembly(str);
-                else if(filePath.EndsWith(".cs"))
+                var filePathL = filePath.ToLower();
+                if (filePathL.EndsWith(".exe") || filePathL.EndsWith(".dll")) LoadAssembly(filePath);
+                else if (filePathL.EndsWith(".cs"))
                 {
-                    var ns = GetNameSpaceFromCsFile(str);
-                    var className = GetClassNameFromCsFile(str);
+                    var ns        = GetNameSpaceFromCsFile(filePath);
+                    var className = GetClassNameFromCsFile(filePath);
                     if (ns == null || className == null) return;
                     var assemblies = GetBinariesNearFolder(Path.GetDirectoryName(filePath), ns).ToArray();
-                    var best = assemblies.OrderByDescending(a => a.score).FirstOrDefault();
+                    var best = assemblies.OrderByDescending(a => a.score)   // Most matching parts
+                                         .ThenBy(a => a.filePath.Length)    // Fewest unmatched suffixes
+                                         .FirstOrDefault();
+                    if (best.filePath == null) return; // value type tuple
                     LoadAssembly(best.filePath);
                     var itemIndex = cbClassList.Items.IndexOf(className);
                     cbClassList.SelectedIndex = itemIndex;
@@ -173,26 +176,40 @@ namespace BloodyUnitTests
             }
         }
 
-        private IEnumerable<(int score, string filePath)> GetBinariesNearFolder(string folderPath, string[] nameSpace)
+        private IEnumerable<(int score, string filePath)> GetBinariesNearFolder(string folderPath,
+                                                                                string[] nameSpaceParts)
         {
             string[] binaries = null;
-            string folder = folderPath;
-            for (int i = 3; i > 0; i--)
+            var folder = folderPath;
+            for (var i = 4; i > 0; i--)
             {
                 binaries = GetAllBinaries(folder).ToArray();
                 if (binaries.Any()) break;
                 folder = Directory.GetParent(folder).FullName;
             }
 
-            if (binaries.Any())
+            if (binaries?.Any() == true)
             {
                 foreach (var filePath in binaries)
                 {
                     var fileName = Path.GetFileName(filePath);
-                    var score = nameSpace.Count(nspart => fileName.Contains(nspart));
+                    var score = GetScore(fileName, nameSpaceParts);
+                    if (score == 0) continue;
                     yield return (score, filePath);
                 }
             }
+        }
+
+        private int GetScore(string fileName, string[] nameSpaceParts)
+        {
+            int score = 0, curIndex = 0;
+            foreach (var part in nameSpaceParts)
+            {
+                curIndex = fileName.Substring(curIndex).IndexOf(part, StringComparison.Ordinal);
+                if (curIndex == -1) break;
+                score++;
+            }
+            return score;
         }
 
         private IEnumerable<string> GetAllBinaries(string rootDir)
@@ -212,7 +229,7 @@ namespace BloodyUnitTests
             {
                 var lines = File.ReadAllLines(filePath);
                 var nsDeclaration = lines.First(l => l.Contains("namespace"));
-                return nsDeclaration.Split(new[] {' ', '\t' }, StringSplitOptions.RemoveEmptyEntries)[1]
+                return nsDeclaration.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries)[1]
                                     .Split('.');
             }
             catch
@@ -227,7 +244,7 @@ namespace BloodyUnitTests
             {
                 var lines = File.ReadAllLines(filePath);
                 var classDeclr = lines.First(l => l.Contains(" class "));
-                var parts = classDeclr.Split(new[] {' ', '\t'}, StringSplitOptions.RemoveEmptyEntries);
+                var parts = classDeclr.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
                 var index = Array.IndexOf(parts, "class");
                 return parts[index + 1];
             }
