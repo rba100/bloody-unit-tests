@@ -34,19 +34,22 @@ namespace BloodyUnitTests.ContentCreators
                                              CSharpService cSharpService)
         {
             var lines = new List<string>();
-            int testCount = 0;
+            bool firstOutput = true;
             foreach (var ctorDelegation in safeCombinations)
             {
                 foreach (var report in ctorDelegation.delegations)
                 {
-                    if (testCount > 0) lines.Add(string.Empty);
-                    lines.AddRange(GenerateTestMethod(classToTest,
-                                                      ctorDelegation.ctor,
-                                                      report.InnerMethodInterfaceType,
-                                                      report.Caller,
-                                                      report.InnerMethod,
-                                                      cSharpService));
-                    testCount++;
+                    var methodLines = GenerateTestMethod(classToTest,
+                                                         ctorDelegation.ctor,
+                                                         report.InnerMethodInterfaceType,
+                                                         report.Caller,
+                                                         report.InnerMethod,
+                                                         cSharpService);
+
+                    if (!methodLines.Any()) continue;
+                    if (!firstOutput) lines.Add(string.Empty);
+                    lines.AddRange(methodLines);
+                    firstOutput = false;
                 }
             }
 
@@ -97,7 +100,7 @@ namespace BloodyUnitTests.ContentCreators
 
             var lines = new List<string>();
             lines.Add("[Test]");
-            lines.Add($"public void {method.Name}_delegates_to_{ifParamName}_{innerMethod.Name}()");
+            lines.Add($"public void {method.Name}_delegates_to_{ifParamName}()");
             lines.Add("{");
             lines.AddRange(commonMethodVariables.IndentBy(4));
             if (!isVoid)

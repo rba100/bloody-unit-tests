@@ -22,7 +22,7 @@ namespace BloodyUnitTests.ContentCreators
             lines.Add("{");
             foreach (var line in testCases.linesOfCode)
             {
-                lines.Add(new String(' ', 4) + line);
+                lines.Add(new string(' ', 4) + line);
             }
 
             lines.Add("}");

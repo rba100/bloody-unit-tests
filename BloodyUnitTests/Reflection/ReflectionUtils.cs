@@ -20,9 +20,10 @@ namespace BloodyUnitTests.Reflection
         public static (ConstructorInfo ctor, MethodDelegationReport[] delegations)[]
             GetMethodsThatPassthrough(Type classType)
         {
-            return classType.GetConstructors()
-                            .Select(ctor=> (ctor, GetMethodsThatPassthrough(classType, ctor)))
-                            .ToArray();
+            var ctors = classType.GetConstructors();
+            return ctors
+                   .Select(ctor=> (ctor, GetMethodsThatPassthrough(classType, ctor)))
+                   .ToArray();
         }
 
         public static MethodDelegationReport[] GetMethodsThatPassthrough(Type classType, ConstructorInfo ctor)
@@ -48,8 +49,8 @@ namespace BloodyUnitTests.Reflection
                 if (delegatedMethod != null)
                 {
                     returnList.Add(new MethodDelegationReport(methodInfo,
-                                                  delegatedMethod, 
-                                                  delegateInterfaceType));
+                                                              delegatedMethod, 
+                                                              delegateInterfaceType));
                 }
             }
 

@@ -76,7 +76,7 @@ namespace BloodyUnitTests.ContentCreators
             var tests = exceptionalCircumstances.Select((c,i) =>
             {
                 var methodCode = WriteTestMethod(type, c, csharpService);
-                return i > 0 ? methodCode.Concat(new[] {Environment.NewLine}) : methodCode;
+                return i > 0 ? new[] { "" }.Concat(methodCode) : methodCode;
             });
 
             lines.AddRange(tests.SelectMany(line => line));
@@ -103,10 +103,7 @@ namespace BloodyUnitTests.ContentCreators
             var dummyArgs = string.Join(",", innerMethod.GetParameters().Select(p => DummyValue(p, cSharpService)));
 
             yield return "[Test]";
-            yield return $"public void {testMethodName}" +
-                         $"_handles_{sanitisedExName}" +
-                         $"_from_{innerDependency.Name}" +
-                         $"_{circumstance.InnerMethod.Name}()";
+            yield return $"public void {testMethodName}_handles_{sanitisedExName}()";
             yield return "{";
             yield return $"    var factory = new {typeUnderTest.Name}Factory();";
             yield return $"    factory.{StringUtils.ToUpperInitial(paramName)}";

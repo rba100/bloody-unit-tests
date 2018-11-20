@@ -1,12 +1,13 @@
 ﻿
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
-
+using System.Windows.Forms.VisualStyles;
 using ScintillaNET;
 
 namespace BloodyUnitTests
@@ -20,6 +21,7 @@ namespace BloodyUnitTests
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            new ToolTip().SetToolTip(btLoadAssembly, "Drag and drop assemblies or source files from VS");
         }
 
         private void SetDefaults(Scintilla scintilla)
@@ -75,8 +77,8 @@ namespace BloodyUnitTests
             {
                 if (!File.Exists(filePath)) return;
                 m_Assembly = Assembly.LoadFrom(filePath);
-                comboBox1.DataSource = m_Assembly.GetTestableClassTypes().Select(c => c.Name).ToList();
-                comboBox1.SelectedIndex = 0;
+                cbClassList.DataSource = m_Assembly.GetTestableClassTypes().Select(c => c.Name).ToList();
+                cbClassList.SelectedIndex = 0;
                 btTestClass.Enabled = true;
             }
             catch (Exception ex)
@@ -107,7 +109,7 @@ namespace BloodyUnitTests
         {
             try
             {
-                var className = comboBox1.SelectedItem as string;
+                var className = cbClassList.SelectedItem as string;
 
                 var existingTab = m_TabContainer.Controls.OfType<TabPage>()
                                                 .FirstOrDefault(p => p.Text == className);
@@ -152,11 +154,92 @@ namespace BloodyUnitTests
             {
                 LoadAssembly(data[0]);
             }
+            else if (e.Data.GetData(DataFormats.Text) is string str
+                      && File.Exists(str))
+            {
+                var filePath = str.ToLower();
+                if(filePath.EndsWith(".exe") || filePath.EndsWith(".dll")) LoadAssembly(str);
+                else if(filePath.EndsWith(".cs"))
+                {
+                    var ns = GetNameSpaceFromCsFile(str);
+                    var className = GetClassNameFromCsFile(str);
+                    if (ns == null || className == null) return;
+                    var assemblies = GetBinariesNearFolder(Path.GetDirectoryName(filePath), ns).ToArray();
+                    var best = assemblies.OrderByDescending(a => a.score).FirstOrDefault();
+                    LoadAssembly(best.filePath);
+                    var itemIndex = cbClassList.Items.IndexOf(className);
+                    cbClassList.SelectedIndex = itemIndex;
+                }
+            }
+        }
+
+        private IEnumerable<(int score, string filePath)> GetBinariesNearFolder(string folderPath, string[] nameSpace)
+        {
+            string[] binaries = null;
+            string folder = folderPath;
+            for (int i = 3; i > 0; i--)
+            {
+                binaries = GetAllBinaries(folder).ToArray();
+                if (binaries.Any()) break;
+                folder = Directory.GetParent(folder).FullName;
+            }
+
+            if (binaries.Any())
+            {
+                foreach (var filePath in binaries)
+                {
+                    var fileName = Path.GetFileName(filePath);
+                    var score = nameSpace.Count(nspart => fileName.Contains(nspart));
+                    yield return (score, filePath);
+                }
+            }
+        }
+
+        private IEnumerable<string> GetAllBinaries(string rootDir)
+        {
+            var dlls = Directory.GetFiles(rootDir).Where(f =>
+            {
+                var l = f.ToLower();
+                return l.EndsWith("dll") || l.EndsWith("exe");
+            });
+            var subFolders = Directory.GetDirectories(rootDir);
+            return dlls.Concat(subFolders.SelectMany(GetAllBinaries));
+        }
+
+        private string[] GetNameSpaceFromCsFile(string filePath)
+        {
+            try
+            {
+                var lines = File.ReadAllLines(filePath);
+                var nsDeclaration = lines.First(l => l.Contains("namespace"));
+                return nsDeclaration.Split(new[] {' ', '\t' }, StringSplitOptions.RemoveEmptyEntries)[1]
+                                    .Split('.');
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private object GetClassNameFromCsFile(string filePath)
+        {
+            try
+            {
+                var lines = File.ReadAllLines(filePath);
+                var classDeclr = lines.First(l => l.Contains(" class "));
+                var parts = classDeclr.Split(new[] {' ', '\t'}, StringSplitOptions.RemoveEmptyEntries);
+                var index = Array.IndexOf(parts, "class");
+                return parts[index + 1];
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private void btLoadAssembly_DragEnter(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (e.Data.GetDataPresent(DataFormats.FileDrop) || e.Data.GetDataPresent(DataFormats.Text))
             {
                 e.Effect = DragDropEffects.Copy;
             }

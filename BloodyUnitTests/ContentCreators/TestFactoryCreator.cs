@@ -23,8 +23,8 @@ namespace BloodyUnitTests.ContentCreators
             var parameters = ctor.GetParameters();
             var interfaces = parameters.Where(p => p.ParameterType.IsInterface).ToArray();
 
-            // Don't bother creating a factory unless there are a few dependencies
-            if (interfaces.Length < 3) return ClassContent.NoContent;
+            // Don't bother creating a factory unless there are dependencies
+            if (interfaces.Length == 0) return ClassContent.NoContent;
 
             var typeName = m_CSharpService.GetNameForCSharp(type);
 
@@ -46,7 +46,7 @@ namespace BloodyUnitTests.ContentCreators
                 }
             }
 
-            if (interfaces.Any()) lines.Add(String.Empty);
+            if (interfaces.Any()) lines.Add(string.Empty);
             var args = parameters.Select(p =>
             {
                 if (p.ParameterType.IsInterface) return StringUtils.ToUpperInitial(p.Name);
@@ -68,7 +68,7 @@ namespace BloodyUnitTests.ContentCreators
 
             lines.Add($"{indent}}}");
 
-            lines.Add(String.Empty);
+            lines.Add(string.Empty);
 
             // Verify all
             lines.Add($"{indent}public void VerifyAllExpectations()");

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using BloodyUnitTests.CodeGeneration;
 
 namespace BloodyUnitTests.ContentCreators
 {
@@ -13,14 +14,16 @@ namespace BloodyUnitTests.ContentCreators
         {
             var lines = new List<string>();
 
-            var simpleClasses = GetSupportedDependencies(type);
+            var classTypes = GetSupportedDependencies(type);
+            var secondLevelDependencies = classTypes.SelectMany(GetSupportedDependencies)
+                                                    .Concat(classTypes)
+                                                    .Distinct().ToArray();
 
-            for (var i = 0; i < simpleClasses.Length; i++)
+            for (var i = 0; i < secondLevelDependencies.Length; i++)
             {
                 if (i > 0) lines.Add(string.Empty);
-                var simpleClass = simpleClasses[i];
+                var simpleClass = secondLevelDependencies[i];
                 var declaration = GetBuilderMethod(simpleClass);
-                if (!declaration.Any()) continue;
                 lines.AddRange(declaration);
             }
 
@@ -48,18 +51,24 @@ namespace BloodyUnitTests.ContentCreators
             var lines = new List<string>();
             var parameters = type.GetConstructors()
                                  .OrderByDescending(c => c.GetParameters().Length)
-                                 .First()
+                                 .FirstOrDefault()?
                                  .GetParameters();
 
-            if (parameters.Length == 0) return new string[0];
+            if (parameters == null 
+                || parameters.Length == 0) return new string[0];
 
             var arguments = parameters.Select(p => m_CSharpService.GetInstantiation(p.ParameterType)).ToArray();
 
+            // If the meaning of an argument isn't obvious, we use the named parameter syntax.
+            // 'Non-obvious' is defined as a numeric or boolean literal.
+            // I.e. m_File.Write("c:\myfile.dat", true, 5) 'true' and '5' could mean any number of things.
+            // m_File.Write("c:\myfile.dat", retryOnFail: true, maxAttempts: 5) clears things up.
+            //
             int namedParameterStart = parameters.Length;
             for (var i = parameters.Length - 1; i >= 0; i--)
             {
                 var pType = parameters[i].ParameterType;
-                if (pType == typeof(bool) || pType == typeof(int))
+                if (pType == typeof(bool) || NumericTypeHandler.IsHandled(type))
                 {
                     namedParameterStart = i;
                 }

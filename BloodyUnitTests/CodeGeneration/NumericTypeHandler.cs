@@ -18,6 +18,12 @@ namespace BloodyUnitTests.CodeGeneration
             typeof(decimal)
         };
 
+        public static bool IsHandled(Type type)
+        {
+            return s_SupportedTypes.Contains(type);
+        }
+
+
         private ITypeHandler m_RootHandler;
 
         public INamespaceTracker GetNamespaceTracker()
