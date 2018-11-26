@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -7,8 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
-using System.Windows.Forms.VisualStyles;
 using ScintillaNET;
+using static System.Linq.Enumerable;
 
 namespace BloodyUnitTests
 {
@@ -148,41 +149,55 @@ namespace BloodyUnitTests
 
         private void btLoadAssembly_DragDrop(object sender, DragEventArgs e)
         {
+            string filePath = null;
+
+            // Handle file drop (i.e. from Explorer)
             if (e.Data.GetData(DataFormats.FileDrop) is string[] data
                 && data.Length == 1
                 && File.Exists(data[0]))
             {
-                LoadAssembly(data[0]);
+                filePath = data[0];
             }
-            else if (e.Data.GetData(DataFormats.Text) is string filePath
-                     && File.Exists(filePath))
+            // Handle string drop (i.e. from VS)
+            else if (e.Data.GetData(DataFormats.Text) is string path
+                     && File.Exists(path))
             {
-                var filePathL = filePath.ToLower();
-                if (filePathL.EndsWith(".exe") || filePathL.EndsWith(".dll")) LoadAssembly(filePath);
-                else if (filePathL.EndsWith(".cs"))
-                {
-                    var ns        = GetNameSpaceFromCsFile(filePath);
-                    var className = GetClassNameFromCsFile(filePath);
-                    if (ns == null || className == null) return;
-                    var assemblies = GetBinariesNearFolder(Path.GetDirectoryName(filePath), ns).ToArray();
-                    var best = assemblies.OrderByDescending(a => a.score)   // Most matching parts
-                                         .ThenBy(a => a.filePath.Length)    // Fewest unmatched suffixes
-                                         .FirstOrDefault();
-                    if (best.filePath == null) return; // value type tuple
-                    LoadAssembly(best.filePath);
-                    var match = cbClassList.Items.OfType<TypeRef>().First(t => t.Type.Name == className);
-                    var itemIndex = cbClassList.Items.IndexOf(match);
-                    cbClassList.SelectedIndex = itemIndex;
-                }
+                filePath = path;
             }
+
+            if (filePath == null) return;
+
+            var filePathLower = filePath.ToLower();
+
+            if (filePathLower.EndsWith(".exe") || filePathLower.EndsWith(".dll")) LoadAssembly(filePath);
+            else if (filePathLower.EndsWith(".cs"))
+            {
+                var ns        = GetNameSpaceFromCsFile(filePath);
+                var className = GetClassNameFromCsFile(filePath);
+                if (ns == null || className == null) return;
+                var assemblies = GetBinariesNearFolder(Path.GetDirectoryName(filePath), ns).ToArray();
+                var best = assemblies.OrderByDescending(a => a.score) // Most matching parts
+                                     .ThenBy(a => Path.GetFileName(a.filePath ?? "").Length)  // Shortest file name
+                                     .Select(ToNullable)
+                                     .FirstOrDefault();
+                if (!best.HasValue) return;
+                LoadAssembly(best.Value.filePath);
+                var match = cbClassList.Items.OfType<TypeRef>().First(t => t.Type.Name == className);
+                var itemIndex = cbClassList.Items.IndexOf(match);
+                cbClassList.SelectedIndex = itemIndex;
+            }
+
         }
+
+        private static T? ToNullable<T>(T item) where T : struct { return item; }
 
         private IEnumerable<(int score, string filePath)> GetBinariesNearFolder(string folderPath,
                                                                                 string[] nameSpaceParts)
         {
             string[] binaries = null;
             var folder = folderPath;
-            for (var i = 4; i > 0; i--)
+            const int maxDepth = 4;
+            foreach (var _ in Range(1,maxDepth))
             {
                 binaries = GetAllBinaries(folder).ToArray();
                 if (binaries.Any()) break;
