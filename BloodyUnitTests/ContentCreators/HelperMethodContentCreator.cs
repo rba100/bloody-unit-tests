@@ -32,18 +32,21 @@ namespace BloodyUnitTests.ContentCreators
 
         private Type[] GetSupportedDependencies(Type type)
         {
-            return type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                       .OfType<MethodBase>()
-                       .Where(m => m.DeclaringType != typeof(object))
-                       .Concat(type.GetConstructors())
-                       .SelectMany(m => m.GetParameters())
-                       .Select(p => p.ParameterType)
-                       .Select(t => t.IsByRef ? t.GetElementType() : t)
-                       .Where(t => t != null && t.IsClass)
-                       .Distinct()
-                       .Where(t => t.Namespace?.StartsWith(nameof(System)) != true && !t.IsArray)
-                       .Where(m_CSharpService.NoCircularDependenciesOrAbstract)
-                       .ToArray();
+            var methodTypes = type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                                  .OfType<MethodInfo>()
+                                  .Where(m => m.DeclaringType != typeof(object))
+                                  .SelectMany(m => m.GetParameters().Select(p => p.ParameterType)
+                                                    .Concat(new[] { m.ReturnType }));
+
+            var ctorTypes = type.GetConstructors().SelectMany(m => m.GetParameters().Select(p => p.ParameterType));
+
+            return methodTypes.Concat(ctorTypes)
+                              .Select(t => t.IsByRef ? t.GetElementType() : t)
+                              .Where(t => t != null && t.IsClass)
+                              .Distinct()
+                              .Where(t => t.Namespace?.StartsWith(nameof(System)) != true && !t.IsArray)
+                              .Where(m_CSharpService.NoCircularDependenciesOrAbstract)
+                              .ToArray();
         }
 
         private string[] GetBuilderMethod(Type type)
@@ -54,15 +57,12 @@ namespace BloodyUnitTests.ContentCreators
                                  .FirstOrDefault()?
                                  .GetParameters();
 
-            if (parameters == null 
+            if (parameters == null
                 || parameters.Length == 0) return new string[0];
 
             var arguments = parameters.Select(p => m_CSharpService.GetInstantiation(p.ParameterType)).ToArray();
 
-            // If the meaning of an argument isn't obvious, we use the named parameter syntax.
-            // 'Non-obvious' is defined as a numeric or boolean literal.
-            // I.e. m_File.Write("c:\myfile.dat", true, 5) 'true' and '5' could mean any number of things.
-            // m_File.Write("c:\myfile.dat", retryOnFail: true, maxAttempts: 5) clears things up.
+            // Thing(5) isn't obvious for what 5 does, so we add named parameters for bool and numbers.
             //
             int namedParameterStart = parameters.Length;
             for (var i = parameters.Length - 1; i >= 0; i--)
