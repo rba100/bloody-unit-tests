@@ -1,6 +1,5 @@
 ﻿
 using System;
-using System.CodeDom;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -8,7 +7,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
+
 using ScintillaNET;
+
 using static System.Linq.Enumerable;
 
 namespace BloodyUnitTests
@@ -18,6 +19,7 @@ namespace BloodyUnitTests
         public MainForm()
         {
             InitializeComponent();
+            SetStatus(string.Empty);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -78,13 +80,15 @@ namespace BloodyUnitTests
             {
                 if (!File.Exists(filePath)) return;
                 m_Assembly = Assembly.LoadFrom(filePath);
-                cbClassList.DataSource = m_Assembly.GetTestableClassTypes().Select(c => new TypeRef(c)).ToList();
-                cbClassList.SelectedIndex = 0;
+                var typeList = m_Assembly.GetTestableClassTypes().Select(c => new TypeRef(c)).ToList();
+                cbClassList.DataSource = typeList;
+                if(typeList.Any()) cbClassList.SelectedIndex = 0;
                 btTestClass.Enabled = true;
+                SetStatus(string.Empty);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString());
+                SetStatus($"Error: {ex.Message}");
             }
         }
 
@@ -107,6 +111,11 @@ namespace BloodyUnitTests
         }
 
         private void btTestClass_Click(object sender, EventArgs e)
+        {
+            CreateTestsForSelectedType();
+        }
+
+        private void CreateTestsForSelectedType()
         {
             try
             {
@@ -180,11 +189,17 @@ namespace BloodyUnitTests
                                      .ThenBy(a => Path.GetFileName(a.filePath ?? "").Length)  // Shortest file name
                                      .Select(ToNullable)
                                      .FirstOrDefault();
-                if (!best.HasValue) return;
+                if (!best.HasValue)
+                {
+                    SetStatus(@"Unable to find an assembly built from that source file.");
+                    return;
+                }
                 LoadAssembly(best.Value.filePath);
-                var match = cbClassList.Items.OfType<TypeRef>().First(t => t.Type.Name == className);
+                var match = cbClassList.Items.OfType<TypeRef>().FirstOrDefault(t => t.Type.Name == className);
+                if (match == null) SetStatus(@"The requested type could not be loaded for some reason.");
                 var itemIndex = cbClassList.Items.IndexOf(match);
                 cbClassList.SelectedIndex = itemIndex;
+                CreateTestsForSelectedType();
             }
 
         }
@@ -276,6 +291,12 @@ namespace BloodyUnitTests
             {
                 e.Effect = DragDropEffects.Copy;
             }
+        }
+
+        private void SetStatus(string status)
+        {
+            if (InvokeRequired) { Invoke(new Action(() => SetStatus(status))); }
+            else { statusLabel.Text = status; }
         }
     }
 

@@ -34,6 +34,9 @@
             this.btTestClass = new System.Windows.Forms.Button();
             this.cbClassList = new System.Windows.Forms.ComboBox();
             this.btTestAssembly = new System.Windows.Forms.Button();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.statusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // m_TabContainer
@@ -44,7 +47,7 @@
             this.m_TabContainer.Location = new System.Drawing.Point(12, 42);
             this.m_TabContainer.Name = "m_TabContainer";
             this.m_TabContainer.SelectedIndex = 0;
-            this.m_TabContainer.Size = new System.Drawing.Size(776, 396);
+            this.m_TabContainer.Size = new System.Drawing.Size(776, 383);
             this.m_TabContainer.TabIndex = 0;
             // 
             // btLoadAssembly
@@ -94,11 +97,28 @@
             this.btTestAssembly.UseVisualStyleBackColor = true;
             this.btTestAssembly.Click += new System.EventHandler(this.btTestAssembly_Click);
             // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.statusLabel});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 428);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(800, 22);
+            this.statusStrip1.TabIndex = 4;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // statusLabel
+            // 
+            this.statusLabel.Name = "statusLabel";
+            this.statusLabel.Size = new System.Drawing.Size(118, 17);
+            this.statusLabel.Text = "toolStripStatusLabel1";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.btTestAssembly);
             this.Controls.Add(this.cbClassList);
             this.Controls.Add(this.btTestClass);
@@ -109,7 +129,10 @@
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.Text = "Bloody Unit Tests";
             this.Load += new System.EventHandler(this.Form1_Load);
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -120,6 +143,8 @@
         private System.Windows.Forms.Button btTestClass;
         private System.Windows.Forms.ComboBox cbClassList;
         private System.Windows.Forms.Button btTestAssembly;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel statusLabel;
     }
 }
 

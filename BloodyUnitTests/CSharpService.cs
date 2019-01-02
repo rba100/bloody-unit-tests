@@ -159,19 +159,30 @@ namespace BloodyUnitTests
                 ? paramterTypesClean.Select(t => StringUtils.ToLowerInitial(m_TypeHandler.GetNameForIdentifier(t))).ToArray()
                 : paramterTypesClean.Select(t => m_TypeHandler.GetInstantiation(t, nonDefault)).ToArray();
 
-            for (var index = 0; index < parameters.Length; index++)
+            // at this point 'arguments' is an array of variable names that are assumed
+            // to be in scope. This loop modifies them.
+            for (var i = 0; i < parameters.Length; i++)
             {
-                var pInfo = parameters[index];
+                var pInfo = parameters[i];
                 var pType = pInfo.ParameterType;
-                // MUST tie up with ShouldUseVariableForParameter()
+                // If we need 'out' or 'ref' prefix
                 if (HasParamKeyword(pInfo))
                 {
-                    var argument = arguments[index];
-                    arguments[index] = $"{ParamKeyword(pInfo)} {argument}";
+                    var argument = arguments[i];
+                    arguments[i] = $"{ParamKeyword(pInfo)} {argument}";
                 }
+                // For strings, use the parameter name as the value for ease of reading.
+                else if (pType == typeof(string))
+                {
+                    arguments[i] = $"\"{pInfo.Name.ToLower()}\"";
+                }
+                // For types which don't really need a variable to hold the value 'cos they
+                // have short instantiations, then we just in-line instantiate.
+                // The cost elsewhere that makes the variables should be kept in sync, so we don't
+                // have unused variable declarations lying around.
                 else if (IsInstantiationTerse(pType))
                 {
-                    arguments[index] = GetInstantiation(pType, nonDefault);
+                    arguments[i] = GetInstantiation(pType, nonDefault);
                 }
             }
 
