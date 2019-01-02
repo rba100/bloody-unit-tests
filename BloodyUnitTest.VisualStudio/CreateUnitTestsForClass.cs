@@ -92,6 +92,9 @@ namespace BloodyUnitTest.VisualStudio
         /// <param name="e">Event args.</param>
         private void Execute(object sender, EventArgs e)
         {
+            // https://stackoverflow.com/questions/13219351/add-menu-item-to-cs-files-only-in-visual-studio-solution-explorer
+            // need to conditionally enable this thing
+            
             ThreadHelper.ThrowIfNotOnUIThread();
             var selectedItems = ((UIHierarchy)((DTE2)this.ServiceProvider.GetServiceAsync(typeof(DTE)).Result)
                                               .Windows
