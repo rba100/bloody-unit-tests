@@ -35,7 +35,6 @@ namespace BloodyUnitTests.ContentCreators
                                   .Where(pair => pair.parameter != null).ToArray();
 
             if (parameters.Length != pairs.Length) return ClassContent.NoContent;
-            if (pairs.Any(p => !m_CSharpService.IsInstantiationTerse(p.parameter.ParameterType))) return ClassContent.NoContent;
 
             var lines = new List<string>();
             var verificationLines = new List<string>();
@@ -50,7 +49,7 @@ namespace BloodyUnitTests.ContentCreators
                     ? $"\"{pair.parameter.Name}\""
                     : m_CSharpService.GetInstantiation(pair.parameter.ParameterType);
 
-                lines.Add($"    var {varName} = {initial}");
+                lines.Add($"    var {varName} = {initial};");
                 verificationLines.Add($"    Assert.AreEqual({varName}, {instanceName}.{pair.property.Name});");
             }
             lines.Add("");
