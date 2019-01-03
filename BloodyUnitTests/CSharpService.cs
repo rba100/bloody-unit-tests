@@ -38,7 +38,7 @@ namespace BloodyUnitTests
             }
         }
 
-        private bool IsInstantiationTerse(Type type)
+        public bool IsInstantiationTerse(Type type)
         {
             return m_TypeHandler.IsInstantiationTerse(type);
         }

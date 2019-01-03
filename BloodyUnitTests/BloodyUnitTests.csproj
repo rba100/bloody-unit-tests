@@ -105,6 +105,7 @@
     <Compile Include="CodeGeneration\TypeHandlerFactory.cs" />
     <Compile Include="CodeGeneration\ValueTupleTypeHandler.cs" />
     <Compile Include="ContentCreators\ClassContent.cs" />
+    <Compile Include="ContentCreators\DomainObjectTestCreator.cs" />
     <Compile Include="ContentCreators\ExceptionTestCreator.cs" />
     <Compile Include="ContentCreators\HelperMethodContentCreator.cs" />
     <Compile Include="ContentCreators\InvalidArgumentTestCreator.cs" />
