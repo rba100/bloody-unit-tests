@@ -5,7 +5,9 @@ VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloodyUnitTests", "BloodyUnitTests\BloodyUnitTests.csproj", "{802BF306-07E6-41EB-9F9B-EE339AF82A81}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloodyUnitTests.Tests", "BloodyUnitTests.Tests\BloodyUnitTests.Tests.csproj", "{71790037-57E3-4D70-92D5-B638C8D5A50B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BloodyUnitTests.Tests", "BloodyUnitTests.Tests\BloodyUnitTests.Tests.csproj", "{71790037-57E3-4D70-92D5-B638C8D5A50B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloodyUnitTests.VisualStudio", "BloodyUnitTest.VisualStudio\BloodyUnitTests.VisualStudio.csproj", "{E3064C3F-00C8-4DBF-9A41-1A202E22738C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{71790037-57E3-4D70-92D5-B638C8D5A50B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{71790037-57E3-4D70-92D5-B638C8D5A50B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{71790037-57E3-4D70-92D5-B638C8D5A50B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3064C3F-00C8-4DBF-9A41-1A202E22738C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3064C3F-00C8-4DBF-9A41-1A202E22738C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3064C3F-00C8-4DBF-9A41-1A202E22738C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3064C3F-00C8-4DBF-9A41-1A202E22738C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

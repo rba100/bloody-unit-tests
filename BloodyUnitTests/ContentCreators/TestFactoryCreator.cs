@@ -83,12 +83,12 @@ namespace BloodyUnitTests.ContentCreators
             lines.Add("}");
 
             return new ClassContent(lines.ToArray(), m_CSharpService.GetNameSpaces()
-                                                                   .Union(new[]
-                                                                   {
-                                                                       "Rhino.Mocks",
-                                                                       "static Rhino.Mocks.MockRepository"
-                                                                   })
-                                                                   .ToArray());
+                                                                    .Union(new[]
+                                                                    {
+                                                                        "Rhino.Mocks",
+                                                                        "static Rhino.Mocks.MockRepository"
+                                                                    })
+                                                                    .ToArray());
         }
 
         private bool IsSystemNamespace(ParameterInfo info)

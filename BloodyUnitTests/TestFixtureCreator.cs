@@ -14,8 +14,9 @@ namespace BloodyUnitTests
 
             var contentCreators = new IContentCreator[]
             {
-                new ExceptionTestCreator(),
                 new ConstructorNullArgsTestCreator(),
+                new DomainObjectTestCreator(),
+                new ExceptionTestCreator(),
                 new MethodNullArgsTestCreator(),
                 new StaticMethodNullArgsTestCreator(), 
                 new InvalidArgumentTestCreator(),
