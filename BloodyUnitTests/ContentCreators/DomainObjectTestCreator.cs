@@ -47,7 +47,7 @@ namespace BloodyUnitTests.ContentCreators
                 var varName = StringUtils.ToLowerInitial(pair.parameter.Name);
                 var initial = pair.parameter.ParameterType == typeof(string)
                     ? $"\"{pair.parameter.Name}\""
-                    : m_CSharpService.GetInstantiation(pair.parameter.ParameterType);
+                    : m_CSharpService.GetInstantiation(pair.parameter.ParameterType, true);
 
                 lines.Add($"    var {varName} = {initial};");
                 verificationLines.Add($"    Assert.AreEqual({varName}, {instanceName}.{pair.property.Name});");
