@@ -70,7 +70,6 @@
       <ResourceName>Menus.ctmenu</ResourceName>
     </VSCTCompile>
     <Content Include="index.html" />
-    <Content Include="Resources\CreateUnitTestsForClass.png" />
     <Content Include="Resources\CreateUnitTestsForClassPackage.ico" />
     <Content Include="stylesheet.css" />
   </ItemGroup>

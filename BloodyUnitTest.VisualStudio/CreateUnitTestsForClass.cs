@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Globalization;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 using EnvDTE;
 using EnvDTE80;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
@@ -45,8 +44,48 @@ namespace BloodyUnitTest.VisualStudio
             commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
 
             var menuCommandID = new CommandID(CommandSet, CommandId);
-            var menuItem = new MenuCommand(this.Execute, menuCommandID);
+            var menuItem = new OleMenuCommand(this.Execute, menuCommandID);
+            menuItem.BeforeQueryStatus += OnBeforeQueryStatus;
             commandService.AddCommand(menuItem);
+        }
+
+        private void OnBeforeQueryStatus(object sender, EventArgs e)
+        {
+            if (sender is OleMenuCommand myCommand)
+            {
+                //var files = SelectedFiles();
+                //var valid = files.Length == 1 && files.First().ToLower().EndsWith(".cs");
+                var file = GetProjectItem();
+                var valid = file?.Name.ToLower().EndsWith(".cs") == true;
+                myCommand.Text = valid ? "Generate unit tests" : "oh no!";
+                myCommand.Visible = myCommand.Enabled = valid;
+            }
+        }
+        public static ProjectItem GetProjectItem()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            IntPtr hierarchyPointer, selectionContainerPointer;
+            Object selectedObject = null;
+            IVsMultiItemSelect multiItemSelect;
+            uint projectItemId;
+
+            var monitorSelection =
+                (IVsMonitorSelection)Package.GetGlobalService(typeof(SVsShellMonitorSelection));
+
+            monitorSelection.GetCurrentSelection(out hierarchyPointer,
+                                                 out projectItemId,
+                                                 out multiItemSelect,
+                                                 out selectionContainerPointer);
+
+            if (Marshal.GetTypedObjectForIUnknown(hierarchyPointer,
+                                                  typeof(IVsHierarchy))
+                is IVsHierarchy selectedHierarchy)
+            {
+                ErrorHandler.ThrowOnFailure(selectedHierarchy.GetProperty(projectItemId,
+                                                                          (int)__VSHPROPID.VSHPROPID_ExtObject,
+                                                                          out selectedObject));
+            }
+            return selectedObject as ProjectItem;
         }
 
         /// <summary>
@@ -61,13 +100,7 @@ namespace BloodyUnitTest.VisualStudio
         /// <summary>
         /// Gets the service provider from the owner package.
         /// </summary>
-        private Microsoft.VisualStudio.Shell.IAsyncServiceProvider ServiceProvider
-        {
-            get
-            {
-                return this.package;
-            }
-        }
+        private Microsoft.VisualStudio.Shell.IAsyncServiceProvider ServiceProvider => this.package;
 
         /// <summary>
         /// Initializes the singleton instance of the command.
@@ -92,9 +125,30 @@ namespace BloodyUnitTest.VisualStudio
         /// <param name="e">Event args.</param>
         private void Execute(object sender, EventArgs e)
         {
-            // https://stackoverflow.com/questions/13219351/add-menu-item-to-cs-files-only-in-visual-studio-solution-explorer
-            // need to conditionally enable this thing
-            
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var files = SelectedFiles();
+
+            string message = string.Format(CultureInfo.CurrentCulture, string.Join(", ", files), this.GetType().FullName);
+            string title = "Generate units tests";
+
+            var dte = (DTE2) this.ServiceProvider.GetServiceAsync(typeof(DTE)).Result;
+            var file = dte.ItemOperations.NewFile(@"General\Visual C# Class", "ObjectOne", EnvDTE.Constants.vsViewKindTextView);
+            //var textDocument = file.Document.Object("") as TextDocument;
+            //textDocument.Selection.SelectAll();
+            //textDocument.Selection.Delete();
+            //textDocument.Selection.Insert("Hello, World!");
+            // Show a message box to prove we were here
+            //VsShellUtilities.ShowMessageBox(
+            //    this.package,
+            //    message,
+            //    title,
+            //    OLEMSGICON.OLEMSGICON_INFO,
+            //    OLEMSGBUTTON.OLEMSGBUTTON_OK,
+            //    OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+        }
+
+        private string[] SelectedFiles()
+        {
             ThreadHelper.ThrowIfNotOnUIThread();
             var selectedItems = ((UIHierarchy)((DTE2)this.ServiceProvider.GetServiceAsync(typeof(DTE)).Result)
                                               .Windows
@@ -102,24 +156,13 @@ namespace BloodyUnitTest.VisualStudio
 
             if (selectedItems == null)
             {
-                return;
+                return new string[0];
             }
 
-            var files = from t in selectedItems where (t as UIHierarchyItem)?.Object is ProjectItem
-                    select ((ProjectItem)((UIHierarchyItem)t).Object).FileNames[1];
-            
-
-            string message = string.Format(CultureInfo.CurrentCulture, string.Join(", ", files), this.GetType().FullName);
-            string title = "Generate units tests";
-
-            // Show a message box to prove we were here
-            VsShellUtilities.ShowMessageBox(
-                this.package,
-                message,
-                title,
-                OLEMSGICON.OLEMSGICON_INFO,
-                OLEMSGBUTTON.OLEMSGBUTTON_OK,
-                OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+            var files = from t in selectedItems
+                where (t as UIHierarchyItem)?.Object is ProjectItem
+                select ((ProjectItem)((UIHierarchyItem)t).Object).FileNames[1];
+            return files.ToArray();
         }
     }
 }

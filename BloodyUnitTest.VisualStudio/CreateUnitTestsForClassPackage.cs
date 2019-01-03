@@ -6,10 +6,12 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using EnvDTE;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using Microsoft.Win32;
 using Task = System.Threading.Tasks.Task;
 
@@ -37,6 +39,7 @@ namespace BloodyUnitTest.VisualStudio
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(CreateUnitTestsForClassPackage.PackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
+    [ProvideAutoLoad(UIContextGuids.SolutionExists, PackageAutoLoadFlags.BackgroundLoad)]
     public sealed class CreateUnitTestsForClassPackage : AsyncPackage
     {
         /// <summary>
