@@ -61,12 +61,10 @@ namespace BloodyUnitTests.ContentCreators
 
             for (var i = 0; i < args.Length; i++)
             {
-                if (i == 0) lines.Add($"{declarationStart}{args[i]},");
-                else
-                {
-                    if (i < args.Length - 1) lines.Add($"{declarationStartOffset}{args[i]},");
-                    else lines.Add($"{declarationStartOffset}{args[i]});");
-                }
+                var terminator = i == args.Length - 1 ? ");" : ",";
+                lines.Add(i == 0
+                              ? $"{declarationStart}{args[i]}{terminator}"
+                              : $"{declarationStartOffset}{args[i]}{terminator}");
             }
 
             lines.Add($"{indent}}}");
@@ -85,12 +83,12 @@ namespace BloodyUnitTests.ContentCreators
             lines.Add("}");
 
             return new ClassContent(lines.ToArray(), m_CSharpService.GetNameSpaces()
-                                                                   .Union(new[]
-                                                                   {
-                                                                       "Rhino.Mocks",
-                                                                       "static Rhino.Mocks.MockRepository"
-                                                                   })
-                                                                   .ToArray());
+                                                                    .Union(new[]
+                                                                    {
+                                                                        "Rhino.Mocks",
+                                                                        "static Rhino.Mocks.MockRepository"
+                                                                    })
+                                                                    .ToArray());
         }
 
         private bool IsSystemNamespace(ParameterInfo info)
