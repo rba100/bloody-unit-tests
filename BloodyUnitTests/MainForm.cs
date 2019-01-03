@@ -204,6 +204,19 @@ namespace BloodyUnitTests
 
         }
 
+        public void SelectClass(string className)
+        {
+            var match = cbClassList.Items.OfType<TypeRef>().FirstOrDefault(t => t.Type.Name == className);
+            if (match == null)
+            {
+                SetStatus(@"The requested type could not be loaded for some reason.");
+                return;
+            }
+            var itemIndex = cbClassList.Items.IndexOf(match);
+            cbClassList.SelectedIndex = itemIndex;
+            CreateTestsForSelectedType();
+        }
+
         private static T? ToNullable<T>(T item) where T : struct { return item; }
 
         private IEnumerable<(int score, string filePath)> GetBinariesNearFolder(string folderPath,

@@ -1,7 +1,10 @@
 ﻿using System;
 using System.ComponentModel.Design;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using EnvDTE;
 using EnvDTE80;
@@ -127,17 +130,27 @@ namespace BloodyUnitTests.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             var files = SelectedFiles();
+            if (files.Length != 1) return;
+            var assemblyPath = FileLocator.GetBinaryForSourceFile(files.Single());
+            var className = FileLocator.GetClassNameFromCsFile(files.Single());
+            if (assemblyPath == null || className == null) return;
+            var folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var butExe = Path.Combine(folder, "BloodyUnitTests.exe");
+            if (!File.Exists(butExe)) return;
+            var info = new ProcessStartInfo(butExe, $"\"{assemblyPath}\" \"{className}\"");
+            System.Diagnostics.Process.Start(info);
 
-            string message = string.Format(CultureInfo.CurrentCulture, string.Join(", ", files), this.GetType().FullName);
-            string title = "Generate units tests";
-
-            var dte = (DTE2) this.ServiceProvider.GetServiceAsync(typeof(DTE)).Result;
-            var file = dte.ItemOperations.NewFile(@"General\Visual C# Class", "ObjectOne", EnvDTE.Constants.vsViewKindTextView);
+            // Make a new editor
+            //var dte = (DTE2) this.ServiceProvider.GetServiceAsync(typeof(DTE)).Result;
+            //var file = dte.ItemOperations.NewFile(@"General\Visual C# Class", "ObjectOne", EnvDTE.Constants.vsViewKindTextView);
             //var textDocument = file.Document.Object("") as TextDocument;
             //textDocument.Selection.SelectAll();
             //textDocument.Selection.Delete();
             //textDocument.Selection.Insert("Hello, World!");
             // Show a message box to prove we were here
+
+            //string message = string.Format(CultureInfo.CurrentCulture, string.Join(", ", files), this.GetType().FullName);
+            //string title = "Generate units tests";
             //VsShellUtilities.ShowMessageBox(
             //    this.package,
             //    message,
