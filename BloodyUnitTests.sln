@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloodyUnitTests", "BloodyUn
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BloodyUnitTests.Tests", "BloodyUnitTests.Tests\BloodyUnitTests.Tests.csproj", "{71790037-57E3-4D70-92D5-B638C8D5A50B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloodyUnitTest.VisualStudio", "BloodyUnitTest.VisualStudio\BloodyUnitTest.VisualStudio.csproj", "{E3064C3F-00C8-4DBF-9A41-1A202E22738C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloodyUnitTests.VisualStudio", "BloodyUnitTest.VisualStudio\BloodyUnitTests.VisualStudio.csproj", "{E3064C3F-00C8-4DBF-9A41-1A202E22738C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
