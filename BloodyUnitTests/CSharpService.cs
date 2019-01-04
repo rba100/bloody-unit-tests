@@ -55,7 +55,7 @@ namespace BloodyUnitTests
 
         public string GetLocalVariableDeclaration(Type type, bool setToNull, bool nonDefault)
         {
-            var declaredType = $"{(setToNull || TypeIsFunction(type) ? GetNameForCSharp(type) : "var")}";
+            var declaredType = $"{(setToNull || TypeIsSupportedFunction(type) ? GetNameForCSharp(type) : "var")}";
             var identifier = GetIdentifier(type, VarScope.Local);
             // ReSharper disable once PossibleNullReferenceException
             if (setToNull && type.IsValueType) return $"{declaredType} {identifier};";
@@ -63,7 +63,7 @@ namespace BloodyUnitTests
             return $"{declaredType} {identifier} = {GetInstantiation(type, nonDefault)};";
         }
 
-        private bool TypeIsFunction(Type type)
+        private bool TypeIsSupportedFunction(Type type)
         {
             if (!type.IsGenericType) return false;
             var genTypeDef = type.GetGenericTypeDefinition();

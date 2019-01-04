@@ -50,6 +50,9 @@ namespace BloodyUnitTests.ContentCreators
 
             return parameterTypes.Concat(ctorTypes)
                                  .Select(t => t.IsByRef || t.IsArray ? t.GetElementType() : t)
+                                 .Select(t => t.IsGenericType 
+                                              && t.IsAssignableFrom(t.GetGenericArguments().First().MakeArrayType()) ?
+                                              t.GetGenericArguments().First() : t)
                                  .Where(t => t != null && t.IsClass)
                                  .Distinct()
                                  .Where(t => t.Namespace?.StartsWith(nameof(System)) != true && !t.IsArray)
