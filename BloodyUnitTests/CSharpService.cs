@@ -135,15 +135,18 @@ namespace BloodyUnitTests
 
             // No circular dependencies
             if (typeHistory.Contains(type)) return false;
-            typeHistory.Add(type);
+            
 
             var ctor = type.GetConstructors()
                            .OrderBy(c => c.GetParameters().Length)
                            .FirstOrDefault();
             if (ctor == null) return false;
 
-            return ctor.GetParameters()
+            typeHistory.Add(type);
+            var result = ctor.GetParameters()
                        .All(p => !p.IsOut && NoCircularDependenciesOrAbstract(p.ParameterType, typeHistory));
+            typeHistory.Remove(type);
+            return result;
         }
 
         public string[] GetMethodArguments(MethodBase methodBase, bool useVariables, bool nonDefault)

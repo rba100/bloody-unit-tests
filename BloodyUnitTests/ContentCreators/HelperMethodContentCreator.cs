@@ -14,16 +14,24 @@ namespace BloodyUnitTests.ContentCreators
         {
             var lines = new List<string>();
 
-            var classTypes = GetSupportedDependencies(type);
-            var secondLevelDependencies = classTypes.SelectMany(GetSupportedDependencies)
-                                                    .Concat(classTypes)
-                                                    .Distinct().ToArray();
+            var classTypes = new[] { type };
 
-            for (var i = 0; i < secondLevelDependencies.Length; i++)
+            var dependencyTypes = new List<Type>();
+            for (int i = 0; i < 4; i++)
+            {
+                classTypes = classTypes.SelectMany(GetSupportedDependencies)
+                                       .Distinct().ToArray();
+
+                dependencyTypes.AddRange(classTypes);
+            }
+
+            classTypes = dependencyTypes.Distinct().ToArray();
+
+            for (var i = 0; i < classTypes.Length; i++)
             {
                 if (i > 0) lines.Add(string.Empty);
-                var simpleClass = secondLevelDependencies[i];
-                var declaration = GetBuilderMethod(simpleClass);
+                var depType = classTypes[i];
+                var declaration = GetBuilderMethod(depType);
                 lines.AddRange(declaration);
             }
 
@@ -32,7 +40,7 @@ namespace BloodyUnitTests.ContentCreators
 
         private Type[] GetSupportedDependencies(Type type)
         {
-            var methodTypes = type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+            var parameterTypes = type.GetMethods()
                                   .OfType<MethodInfo>()
                                   .Where(m => m.DeclaringType != typeof(object))
                                   .SelectMany(m => m.GetParameters().Select(p => p.ParameterType)
@@ -40,13 +48,13 @@ namespace BloodyUnitTests.ContentCreators
 
             var ctorTypes = type.GetConstructors().SelectMany(m => m.GetParameters().Select(p => p.ParameterType));
 
-            return methodTypes.Concat(ctorTypes)
-                              .Select(t => t.IsByRef ? t.GetElementType() : t)
-                              .Where(t => t != null && t.IsClass)
-                              .Distinct()
-                              .Where(t => t.Namespace?.StartsWith(nameof(System)) != true && !t.IsArray)
-                              .Where(m_CSharpService.NoCircularDependenciesOrAbstract)
-                              .ToArray();
+            return parameterTypes.Concat(ctorTypes)
+                                 .Select(t => t.IsByRef || t.IsArray ? t.GetElementType() : t)
+                                 .Where(t => t != null && t.IsClass)
+                                 .Distinct()
+                                 .Where(t => t.Namespace?.StartsWith(nameof(System)) != true && !t.IsArray)
+                                 .Where(m_CSharpService.NoCircularDependenciesOrAbstract)
+                                 .ToArray();
         }
 
         private string[] GetBuilderMethod(Type type)
