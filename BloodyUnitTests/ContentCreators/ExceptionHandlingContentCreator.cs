@@ -27,7 +27,8 @@ namespace BloodyUnitTests.ContentCreators
                                             .SelectMany(c => c.GetParameters())
                                             .Select(p => p.ParameterType)
                                             .Distinct()
-                                            .Where(t => t.IsInterface);
+                                            .Where(t => t.IsInterface)
+                                            .Except(type.GetInterfaces());
 
             var methodsToExceptions = new Dictionary<MethodInfo, List<string>>();
             var exceptionalCircumstances = new List<ExceptionalCircumstance>();
