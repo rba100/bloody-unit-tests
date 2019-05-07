@@ -11,13 +11,12 @@ namespace BloodyUnitTests.ContentCreators
 
         public ClassContent Create(Type type)
         {
-            var typeName = type.Name;
             var lines = new List<string>();
 
             var testCases = GetConstructorNullTestCaseSource(type);
             if (!testCases.linesOfCode.Any()) return ClassContent.NoContent;
             var indent = new string(' ', 4);
-            var testCaseSource = $"{typeName}_constructor_null_argument_testcases";
+            var testCaseSource = $"Constructor_null_argument_testcases";
             lines.Add($"private static IEnumerable<TestCaseData> {testCaseSource}()");
             lines.Add("{");
             lines.AddRange(testCases.linesOfCode.Select(line => $"{indent}{line}"));
@@ -26,7 +25,7 @@ namespace BloodyUnitTests.ContentCreators
             lines.Add(string.Empty);
 
             lines.Add($"[TestCaseSource(nameof({testCaseSource}))]");
-            lines.Add($"public void {typeName}_constructor_null_argument_test(TestDelegate testDelegate)");
+            lines.Add($"public void Constructor_null_argument_test(TestDelegate testDelegate)");
             lines.Add("{");
             lines.Add($"{indent}Assert.Throws<ArgumentNullException>(testDelegate);");
             lines.Add("}");
