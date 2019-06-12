@@ -55,7 +55,7 @@ namespace BloodyUnitTests.ContentCreators
             lines.Add("");
             var instanceDeclr = $"    var {instanceName} = new {m_CSharpService.GetNameForCSharp(type)}(";
             var instanceDeclrOffset = new string(' ', instanceDeclr.Length);
-            var args = pairs.Select(p => p.parameter.Name).Select(StringUtils.ToLowerInitial).ToArray();
+            var args = parameters.Select(p => p.Name).Select(StringUtils.ToLowerInitial).ToArray();
             for (var i = 0; i < args.Length; i++)
             {
                 var terminator = i == args.Length - 1 ? ");" : ",";
