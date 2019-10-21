@@ -17,7 +17,7 @@ namespace BloodyUnitTests.ContentCreators
             var testCases = GetMethodNullTestCaseSource(type);
             if (!testCases.linesOfCode.Any()) return ClassContent.NoContent;
 
-            var testCaseSource = $"{type.Name}_static_method_null_argument_testcases";
+            var testCaseSource = $"Static_method_null_argument_testcases";
             lines.Add($"private static IEnumerable<TestCaseData> {testCaseSource}()");
             lines.Add("{");
             foreach (var line in testCases.linesOfCode)
@@ -30,7 +30,7 @@ namespace BloodyUnitTests.ContentCreators
             lines.Add(string.Empty);
 
             lines.Add($"[TestCaseSource(nameof({testCaseSource}))]");
-            lines.Add($"public void {type.Name}_static_method_null_argument_test(TestDelegate testDelegate)");
+            lines.Add($"public void Static_method_null_argument_test(TestDelegate testDelegate)");
             lines.Add("{");
 
             lines.Add("    Assert.Throws<ArgumentNullException>(testDelegate);");

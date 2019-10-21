@@ -74,7 +74,10 @@ namespace BloodyUnitTests.ContentCreators
                         exName => new ExceptionalCircumstance(methodInfo, call, exName))));
             }
 
-            var tests = exceptionalCircumstances.Select((c,i) =>
+            var tests = exceptionalCircumstances
+                .GroupBy(c => new {c.ExceptionType, c.OuterMethod})
+                .Select(g => g.First())
+                .Select((c,i) =>
             {
                 var methodCode = WriteTestMethod(type, c, csharpService);
                 return i > 0 ? new[] { "" }.Concat(methodCode) : methodCode;
@@ -106,7 +109,7 @@ namespace BloodyUnitTests.ContentCreators
             yield return "[Test]";
             yield return $"public void {testMethodName}_handles_{sanitisedExName}()";
             yield return "{";
-            yield return $"    var factory = new {typeUnderTest.Name}Factory();";
+            yield return $"    var factory = new TestHarness();";
             yield return $"    factory.{StringUtils.ToUpperInitial(paramName)}";
             yield return $"           .Stub(x => x.{innerMethod.Name}({dummyArgs}))";
             yield return $"           .IgnoreArguments()";

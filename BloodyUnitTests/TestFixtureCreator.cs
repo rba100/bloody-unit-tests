@@ -23,7 +23,7 @@ namespace BloodyUnitTests
                 new PassThroughTestCreator(),
                 new ExceptionHandlingContentCreator(),
                 new HelperMethodContentCreator(),
-                new TestFactoryCreator()
+                new TestHarnessContentCreator()
             };
 
             var contents = contentCreators.Select(c => c.Create(classToTest))

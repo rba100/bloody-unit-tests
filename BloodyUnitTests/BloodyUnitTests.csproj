@@ -141,7 +141,7 @@
     <Compile Include="Util\StringUtils.cs" />
     <Compile Include="TestClasses\TestClasses.cs" />
     <Compile Include="TestFixtureCreator.cs" />
-    <Compile Include="ContentCreators\TestFactoryCreator.cs" />
+    <Compile Include="ContentCreators\TestHarnessContentCreator.cs" />
     <Compile Include="ContentCreators\ConstructorNullArgsTestCreator.cs" />
     <Compile Include="CSharpService.cs" />
     <Compile Include="WriteAllTestsDialog.cs">

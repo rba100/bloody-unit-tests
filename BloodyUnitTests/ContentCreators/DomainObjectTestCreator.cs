@@ -19,13 +19,6 @@ namespace BloodyUnitTests.ContentCreators
             var parameters = ctrs.Single().GetParameters();
             if (!parameters.Any()) return ClassContent.NoContent;
 
-            // wrapper classes only
-            var methods = type.GetMethods().Where(m=>!m.IsSpecialName
-                                                     && m.DeclaringType != typeof(object)
-                                                     && m.Name != "ToString")
-                              .Select(m => m.Name).ToArray();
-            if (methods.Any()) return ClassContent.NoContent;
-
             var properties = type.GetProperties();
 
             var pairs = properties.Select(p => (property: p,

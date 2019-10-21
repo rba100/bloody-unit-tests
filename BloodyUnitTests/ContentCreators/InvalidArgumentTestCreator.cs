@@ -20,7 +20,7 @@ namespace BloodyUnitTests.ContentCreators
 
             if (methodTestCases.Any())
             {
-                var testCaseSource = $"{type.Name}_method_invalid_argument_testcases";
+                var testCaseSource = $"Invalid_argument_testcases";
                 lines.Add($"private static IEnumerable<TestCaseData> {testCaseSource}()");
                 lines.Add("{");
                 foreach (var line in methodTestCases)
@@ -33,7 +33,7 @@ namespace BloodyUnitTests.ContentCreators
                 lines.Add(string.Empty);
 
                 lines.Add($"[TestCaseSource(nameof({testCaseSource}))]");
-                lines.Add($"public void {type.Name}_method_invalid_arguments(TestDelegate testDelegate)");
+                lines.Add($"public void Method_invalid_arguments(TestDelegate testDelegate)");
                 lines.Add("{");
 
                 lines.Add("    Assert.Throws<ArgumentException>(testDelegate);");
@@ -44,7 +44,7 @@ namespace BloodyUnitTests.ContentCreators
 
             if (ctorTestCases.Any())
             {
-                var testCaseSource = $"{type.Name}_constructor_invalid_argument_testcases";
+                var testCaseSource = $"Constructor_invalid_argument_testcases";
                 lines.Add($"public static IEnumerable<TestCaseData> {testCaseSource}()");
                 lines.Add("{");
                 foreach (var line in ctorTestCases)
@@ -57,7 +57,7 @@ namespace BloodyUnitTests.ContentCreators
                 lines.Add(string.Empty);
 
                 lines.Add($"[TestCaseSource(nameof({testCaseSource}))]");
-                lines.Add($"public void {type.Name}_constructor_invalid_arguments(TestDelegate testDelegate)");
+                lines.Add($"public void Constructor_invalid_arguments(TestDelegate testDelegate)");
                 lines.Add("{");
 
                 lines.Add("    Assert.Throws<ArgumentException>(testDelegate);");
