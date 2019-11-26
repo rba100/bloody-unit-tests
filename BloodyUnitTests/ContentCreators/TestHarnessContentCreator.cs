@@ -23,8 +23,8 @@ namespace BloodyUnitTests.ContentCreators
             var parameters = ctor.GetParameters();
             var interfaces = parameters.Where(p => p.ParameterType.IsInterface).ToArray();
 
-            // Don't bother creating a factory unless there are a few dependencies
-            if (interfaces.Length < 2) return ClassContent.NoContent;
+            // Don't bother creating a factory unless there are dependencies
+            if (interfaces.Length < 1) return ClassContent.NoContent;
 
             var typeName = m_CSharpService.GetNameForCSharp(type);
 
